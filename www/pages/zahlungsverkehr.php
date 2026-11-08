@@ -517,7 +517,7 @@ class Zahlungsverkehr {
             $abstand = $skontobis->diff($heute)->format("%r%a"); // What a load of bullshit, WTF php...
 
             if ($abstand <= 0) {
-                $betrag = round($belegrow['betrag']*(100-($belegrow['skonto']/100)),2);
+                $betrag = round($belegrow['betrag']*(100-$belegrow['skonto'])/100,2);
                 $duedate = $belegrow['skontobis'];
             } else {
                 $betrag = $belegrow['betrag'];
@@ -603,9 +603,9 @@ class Zahlungsverkehr {
                 'id' => $item['id'],
                 'beleg_typ' => $doc_typ,
                 'beleg_id' => $id,
-                'betrag' => $belegrow['betrag'],
-                'waehrung' => $belegrow['waehrung'],
-                'datum_faellig' => $duedate,
+                'betrag' => $item['amount'],
+                'waehrung' => $item['currency'],
+                'datum_faellig' => $item['duedate'],
                 'verwendungszweck' => $item['payment_info'],
                 'adresse' => $adressdaten,
                 'belegdaten' => $belegrow

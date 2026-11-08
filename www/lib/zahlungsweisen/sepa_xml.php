@@ -87,6 +87,8 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
 
     public function ProcessPayment(array $transaction_block): array {
 
+        $execution_date = null;
+
         $payment_result = array(
                 'success' => false,
                 'successful_transactions' => array(),
@@ -109,14 +111,14 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
                 $kurs = $this->app->erp->GetWaehrungUmrechnungskurs($transaction['waehrung'],'EUR');
                 if ($kurs > 0) {
                     $transaction_block['transactions'][$key]['waehrung'] = 'EUR';
-                    $transaction_block['transactions'][$key]['betrag'] = $transaction['betrag']*$kurs;
+                    $transaction_block['transactions'][$key]['betrag'] = round($transaction['betrag']*$kurs,2);
                 } else {
                     $payment_result['errors'][] = "Transaktionen ist nicht in EUR und es existiert kein Umrechnungskurs: ".$transaction['verwendungszweck'];
                     return($payment_result);
                 }
             }
             if (!Sepa_credit_XML_Transfer_initation::validateIBAN($transaction['adresse']['iban'])) {
-                $payment_result['errors'][] = "Empf&auml;nger-IBAN ung&uuml;ltig: ".$$transaction['adresse']['iban']." (".$transaction['adresse']['name'].")";
+                $payment_result['errors'][] = "Empf&auml;nger-IBAN ung&uuml;ltig: ".$transaction['adresse']['iban']." (".$transaction['adresse']['name'].")";
                 return($payment_result);
             };
             if (!empty($transaction['adresse']['swift']) && !Sepa_credit_XML_Transfer_initation::validateBIC($transaction['adresse']['swift'])) {
@@ -126,10 +128,17 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
             if (empty($transaction['adresse']['inhaber'])) {
                 $transaction_block['transactions'][$key]['adresse']['inhaber'] = $transaction['adresse']['name'];
             }
+            $transaction_block['transactions'][$key]['betrag'] = number_format((float)$transaction_block['transactions'][$key]['betrag'],2,'.','');
+            if (!empty($transaction['datum_faellig']) && $transaction['datum_faellig'] != '0000-00-00' && (empty($execution_date) || $transaction['datum_faellig'] < $execution_date)) {
+                $execution_date = $transaction['datum_faellig'];
+            }
             $payment_result['successful_transactions'][] = $transaction['id'];
         }
 
         $datetime = new DateTime();
+        if (empty($execution_date) || $execution_date < $datetime->format('Y-m-d')) {
+            $execution_date = $datetime->format('Y-m-d');
+        }
 
         $message_id = preg_replace("/[^a-z0-9-]+/i", "", $datetime->format('YmdHis')."-".$this->data['bezeichnung']);
 
@@ -205,9 +214,9 @@ class Zahlungsweise_sepa_xml extends Zahlungsweisenmodul
             $smarty->assign('sender_konto', $transaction_block['accountdata']);
             $smarty->assign('transaktionen', $transaction_block['transactions']);
             $smarty->assign('anzahl_transaktionen', is_array($transaction_block['transactions'])?count($transaction_block['transactions']):0);
-            $smarty->assign('gesamt_betrag', array_sum(array_column($transaction_block['transactions'],'amount')));
+            $smarty->assign('gesamt_betrag', number_format(array_sum(array_column($transaction_block['transactions'],'betrag')),2,'.',''));
             $smarty->assign('zeit', $datetime->format('Y-m-d').'T'.$datetime->format('H:i:s'));
-            $smarty->assign('datum', $datetime->format('Y-m-d'));
+            $smarty->assign('datum', $execution_date);
             $smarty->assign('bezeichnung', $this->data['bezeichnung']);
             $smarty->assign('sepa_nachricht_id', $message_id);
             $output = $smarty->fetch('string:'.$template);
