@@ -114,7 +114,8 @@ class DocumentDataService
         $positions = [];
         if ($doctype === 'rechnung' || $doctype === 'gutschrift' || $doctype === 'auftrag') {
             $positions = $this->app->DB->SelectArr(
-                "SELECT p.*, IFNULL(p.ean, a.ean) AS ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$doctype}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC"
+//                "SELECT p.*, IFNULL(p.ean, a.ean) AS ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$doctype}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC" -- Possible bug by importing from tsgoff? _position does not have ean field
+                "SELECT p.*, a.ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$doctype}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC" 
             ) ?: [];
         }
         if (empty($positions)) {

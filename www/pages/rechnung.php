@@ -1337,39 +1337,11 @@ class Rechnung extends GenRechnung
     }
   }
 
-  /*
-    This function is the central interface to get all data for invoice, it should be used and expanded by all modules (E-Invoice, shop, remote, PDF, etc.)
-  */
-  function RechnungGetData($id = null) {
+  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
         if ($id === null) {
             $id = $this->app->Secure->GetGET('id');
         }
-        $id = (int)$id;
-
         $result = $this->app->erp->GetBelegData('rechnung', $id);
-
-        if (empty($result['positionen'])) {
-            throw new Exception("Rechnung enthält keine Positionen!");
-        }
-
-        return $result;
-  }
-
-  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
-        if ($id === null) {
-            $id = $this->app->Secure->GetGET('id');
-        }
-        $result = $this->RechnungGetData($id);
-        $success = true;
-
-        return($result);
-  }
-
-  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
-        if ($id === null) {
-            $id = $this->app->Secure->GetGET('id');
-        }
-        $result = $this->RechnungGetData($id);
         $success = true;
 
         $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];

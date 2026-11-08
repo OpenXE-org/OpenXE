@@ -92,10 +92,7 @@ class RechnungPDF extends BriefpapierCustom {
 
     $lieferschein = $this->app->DB->Select("SELECT belegnr FROM lieferschein WHERE id='$lieferscheinid' LIMIT 1");
 
-   /* if(empty($als) || $als === 'doppel') {
-      $rechnungsnummeranzeigen = false;
-    }
-    else*/if(!empty($belegnr)){
+    if(!empty($belegnr)){
       $rechnungsnummeranzeigen = true;
     }
     $projektabkuerzung = $this->app->DB->Select(sprintf('SELECT abkuerzung FROM projekt WHERE id = %d', $projekt));
@@ -139,48 +136,16 @@ class RechnungPDF extends BriefpapierCustom {
 
     $zahlungsweisetext = $this->app->erp->Zahlungsweisetext("rechnung",$id);
 
-    
-//    if($doppel==1) $als = "doppel";
-
     if($belegnr=="" || $belegnr=="0") $belegnr = "- ".$this->app->erp->Beschriftung("dokument_entwurf");
     else {
       if($doppel==1 || $als=="doppel")
         $belegnr .= " (".$this->app->erp->Beschriftung("dokument_rechnung_kopie").")";
     }
-
-    $posanzeigen = true;    
-/*    if($als=="zahlungserinnerung")
-    {
-      $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_zahlungserinnerung")." ".(is_null($_datum)?$mahnwesen_datum:$_datum);
-      if($this->app->erp->GetKonfiguration("mahnwesen_ze_pos") === '0')$posanzeigen = false;
-    }
-    else if($als=="mahnung1") 
-    {
-      $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_mahnung1")." ".(is_null($_datum)?$mahnwesen_datum:$_datum);
-      if($this->app->erp->GetKonfiguration("mahnwesen_1_pos") === '0')$posanzeigen = false;
-    }
-    else if($als=="mahnung2")
-    {
-      $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_mahnung2")." ".(is_null($_datum)?$mahnwesen_datum:$_datum);
-      if($this->app->erp->GetKonfiguration("mahnwesen_2_pos") === '0')$posanzeigen = false;
-    }
-    else if($als=="mahnung3") 
-    {
-      $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_mahnung3")." ".(is_null($_datum)?$mahnwesen_datum:$_datum);
-      if($this->app->erp->GetKonfiguration("mahnwesen_3_pos") === '0')$posanzeigen = false;
-    }
-    else if($als=="inkasso") 
-    {
-      $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_mahnunginkasso")." ".(is_null($_datum)?$mahnwesen_datum:$_datum);
-      if($this->app->erp->GetKonfiguration("mahnwesen_inkasso_pos") === '0')$posanzeigen = false;
-    }
-    else
-    {*/
+  
       if($rechnungersatz)
         $this->doctypeOrig=($this->app->erp->Beschriftung("bezeichnungrechnungersatz")?$this->app->erp->Beschriftung("bezeichnungrechnungersatz"):$this->app->erp->Beschriftung("dokument_rechnung"))." $belegnr";
       else
         $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_rechnung")." $belegnr";
-//    }
 
     $this->zusatzfooter = " (RE$belegnr)";
 
@@ -376,14 +341,6 @@ class RechnungPDF extends BriefpapierCustom {
       }
     }
 
-
-
-/*    if($als!="" && $als!="doppel")
-    {
-      $body = $this->app->erp->MahnwesenBody($id,$als,$_datum);
-      $footer =$this->app->erp->ParseUserVars("rechnung",$id, $this->app->erp->Beschriftung("rechnung_footer"));
-    }
-    else {*/
       $body = $this->app->erp->Beschriftung("rechnung_header");
       if($bodyzusatz!="") $body=$body."\r\n".$bodyzusatz;
       $body = $this->app->erp->ParseUserVars("rechnung",$id,$body);
@@ -391,7 +348,6 @@ class RechnungPDF extends BriefpapierCustom {
       if ($versandart!="" && $trackingnummer!="" && $this->app->erp->Firmendaten("festetrackingnummer")=="1"){
         $versandinfo = "$versandart: $trackingnummer\r\n";
       }else{ $versandinfo ="";}
-
 
       if($systemfreitext!="") $systemfreitext = "\r\n\r\n".$systemfreitext;
 
@@ -413,7 +369,7 @@ class RechnungPDF extends BriefpapierCustom {
         $footer = $versandinfo."$freitext"."\r\n".$this->app->erp->ParseUserVars("rechnung",$id,$this->app->erp->Beschriftung("rechnung_footer").
           "\r\n$steuer\r\n$zahlungsweisetext").$systemfreitext;
       }
-//    }
+
 
     if ($titel_abw != '') {
         $this->doctypeOrig = $titel_abw;
@@ -427,64 +383,36 @@ class RechnungPDF extends BriefpapierCustom {
           "body"=>$body,
           "footer"=>$footer));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung='$id' ORDER By sort");
-    $this->app->erp->RunHook('rechnungpdf_getrechnung', 2, $id, $artikel);
-    $summe_rabatt = $this->app->DB->Select("SELECT SUM(rabatt) FROM rechnung_position WHERE rechnung='$id'");
-    if($summe_rabatt <> 0) $this->rabatt=1;
+    $this->app->erp->RunHook('rechnungpdf_getrechnung', 2, $id, $belegData['positionen']);
 
-    if($this->app->erp->Firmendaten("modul_verband")=="1") $this->rabatt=1; 
     $steuersatzV = $this->app->erp->GetSteuersatzNormal(false,$id,"rechnung");
     $steuersatzR = $this->app->erp->GetSteuersatzErmaessigt(false,$id,"rechnung");
     $gesamtsteuern = 0;
     $mitumsatzsteuer = $this->app->erp->RechnungMitUmsatzeuer($id);
 
-    $gesamtsumme = 0;
-    $summe = 0;
     $belege_subpositionenstuecklisten = $this->app->erp->Firmendaten('belege_subpositionenstuecklisten');
     $belege_stuecklisteneinrueckenmm = $this->app->erp->Firmendaten('belege_stuecklisteneinrueckenmm');
-    if(!$schreibschutz)$gesamtsumme = 0;
+
     $lastausblenden = false;
-    foreach($artikel as $key=>$value)
+    foreach($belegData['positionen'] as $key=>$value)
     {
-      $artikel[$key]['anzahlunterartikel'] = 0;
-      $artikel[$key]['keineeinzelartikelanzeigen'] = $this->app->DB->Select("SELECT keineeinzelartikelanzeigen FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
+      $belegData['positionen'][$key]['anzahlunterartikel'] = 0;
+      $belegData['positionen'][$key]['keineeinzelartikelanzeigen'] = $this->app->DB->Select("SELECT keineeinzelartikelanzeigen FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
       if($lastausblenden === false)
       {
-        if($artikel[$key]['keineeinzelartikelanzeigen'])$lastausblenden = $key;
+        if($belegData['positionen'][$key]['keineeinzelartikelanzeigen'])$lastausblenden = $key;
       }else{
         if($value['explodiert_parent_artikel'] > 0)
         {
-          $artikel[$lastausblenden]['anzahlunterartikel']++;
-        }elseif($artikel[$key]['keineeinzelartikelanzeigen']){
+          $belegData['positionen'][$lastausblenden]['anzahlunterartikel']++;
+        }elseif($belegData['positionen'][$key]['keineeinzelartikelanzeigen']){
           $lastausblenden = $key;
         }else $lastausblenden = false;
       }
     }
-    //$positionenkaufmaenischrunden = $this->app->erp->Firmendaten('positionenkaufmaenischrunden');
-    $positionenkaufmaenischrunden = $this->app->erp->Projektdaten($projekt,"preisberechnung");
-    $viernachkommastellen_belege = $this->app->erp->Firmendaten('viernachkommastellen_belege');
-    foreach($artikel as $key=>$value)
-    {
-      if($value['umsatzsteuer'] != "ermaessigt" && $value['umsatzsteuer'] != "befreit") $value['umsatzsteuer'] = "normal";
-      $tmpsteuersatz = null;
-      $tmpsteuertext = null;
-      $this->app->erp->GetSteuerPosition('rechnung', $value['id'],$tmpsteuersatz, $tmpsteuertext);
-      if(is_null($value['steuersatz']) || $value['steuersatz'] < 0)
-      {
-        if($value['umsatzsteuer'] == "ermaessigt")
-        {
-          $value['steuersatz'] = $steuersatzR;
-        }elseif($value['umsatzsteuer'] == "befreit")
-        {
-          $value['steuersatz'] = 0;
-        }else{
-          $value['steuersatz'] = $steuersatzV;
-        }
-        if(!is_null($tmpsteuersatz))$value['steuersatz'] = $tmpsteuersatz;
-      }
-      if($tmpsteuertext && !$value['steuertext'])$value['steuertext'] = $tmpsteuertext;
-      if(!$mitumsatzsteuer)$value['steuersatz'] = 0;
 
+    foreach($belegData['positionen'] as $key=>$value)
+    {
       $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
       $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
 
@@ -521,14 +449,13 @@ class RechnungPDF extends BriefpapierCustom {
         $value['lvl'] = 0;
       }
 
-
       if($value['ausblenden_im_pdf']) $check_ausblenden=1;
 
       $value = $this->CheckPosition($value,"rechnung",$this->doctypeid,$value['id']);
 
       $value['menge'] = (float)$value['menge'];
 
-      if($check_ausblenden!=1 && $posanzeigen)// && $als=="") //TODO MAHNWESEN
+      if($check_ausblenden!=1)
       {
         $this->addItem(array(
               'belegposition'=>$value['id'],
@@ -601,66 +528,16 @@ class RechnungPDF extends BriefpapierCustom {
               "rabatt"=>$value['rabatt'],
               "keineeinzelartikelanzeigen"=>$value['keineeinzelartikelanzeigen'],
               "anzahlunterartikel"=>$value['anzahlunterartikel']));
-      }
-      if($positionenkaufmaenischrunden == 3) {
-        $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
-      }else{
-        $netto_gesamt = ((float) $value['menge']) * ((float) $value['preis'] - ((float) $value['preis'] / 100.0 * (float) $value['rabatt']));
-      }
-      $netto_gesamt_ungerundet = $netto_gesamt;
-      if($positionenkaufmaenischrunden)
-      {
-        $netto_gesamt = round($netto_gesamt, 2);
-      }
-      
-      $summe = $summe + $netto_gesamt;
-      
-      if(!isset($summen[$value['steuersatz']]))$summen[$value['steuersatz']] = 0;
-      $tmpbrutto = ($netto_gesamt_ungerundet/100)*$value['steuersatz'];
-      if($positionenkaufmaenischrunden)
-      {
-        $tmpbrutto = round($tmpbrutto, 2);
-      }
-      $summen[$value['steuersatz']] += $tmpbrutto;
-      $gesamtsteuern += $tmpbrutto;
-      /*
-      if($value['umsatzsteuer']=="" || $value['umsatzsteuer']=="normal")
-      {
-        $summeV = $summeV + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzNormal(false,$id,"rechnung"));
-        $totalV = $totalV + $netto_gesamt;
-      }
-      else {
-        $summeR = $summeR + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzErmaessigt(false,$id,"rechnung"));
-        $totalR = $totalR + $netto_gesamt;
-      }
-      */
-
+      }           
     }
-    
-    if($positionenkaufmaenischrunden && isset($summen) && is_array($summen))
-    {
-      $gesamtsteuern = 0;
-      foreach($summen as $k => $v)
-      {
-        $summen[$k] = round($v, 2);
-        $gesamtsteuern += round($v, 2);
-      }
-    }
-    if($positionenkaufmaenischrunden)
-    {
-      list($summe,$gesamtsumme, $summen) = $this->app->erp->steuerAusBelegPDF($this->table, $this->id);
-      $gesamtsteuern = $gesamtsumme - $summe;
-    }
-
-    // Apply canonical amounts from central DocumentDataService if available
-    if ($belegData && !empty($belegData['summen'])) {
-      $summe = (float)$belegData['summen']['line_extension_amount'];
-      $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
-      $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
-      if (!empty($belegData['summen_nach_steuersatz'])) {
+       
+    // Apply canonical amounts from central DocumentDataService
+    $summe = (float)$belegData['summen']['line_extension_amount'];
+    $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
+    $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
+    if (!empty($belegData['summen_nach_steuersatz'])) {
         $summen = $belegData['summen_nach_steuersatz'];
-      }
-    }
+    }  
     
     if($this->app->erp->RechnungMitUmsatzeuer($id))
     {
