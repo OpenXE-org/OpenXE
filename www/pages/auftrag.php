@@ -3801,8 +3801,7 @@ class Auftrag extends GenAuftrag
   public function AuftragProduktion()
   {
     $auftrag_id = $this->app->Secure->GetGET('id');
-    $this->app->erp->LoadModul('produktion'); // Benoetigt um auftrag_produktion zu laden
-    $modul = $this->app->erp->LoadModul('auftrag_produktion');
+    $modul = $this->app->erp->LoadModul('produktion');
     if(!$modul)
     {
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Der Auftrag kann nicht als Produktion weitergef&uuml; werden, da das Produktions modul nicht geladen werden kann</div>");
