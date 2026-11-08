@@ -209,6 +209,7 @@ class Wareneingang {
                     $heading = array(
                         'Art.-Nummer',
                         'Beschreibung',
+                        'Hersteller Nr.',
                         'Bestellung',
                         'Lieferant-Art.-Nr.',
                         'Lieferdatum',
@@ -223,6 +224,7 @@ class Wareneingang {
                     $width = array(
                         '1%',
                         '25%',
+                        '1%',
                         '1%',
                         '1%',
                         '1%',
@@ -276,6 +278,7 @@ class Wareneingang {
                                 ''
                             )
                         )",
+                        'art.herstellernummer',
                         'b.belegnr',
                         'bp.bestellnummer',
                         "if(
@@ -350,8 +353,8 @@ class Wareneingang {
                     );
                 }
 
-                $alignright = array(7, 8, 9);
-                $datecols = array(4);
+                $alignright = array(8, 9, 10);
+                $datecols = array(5);
 
 //                $menu = "<table cellpadding=0 cellspacing=0><tr><td nowrap>Menge:&nbsp;<input type=\"text\" size=\"5\" name=\"pos[%value%]\">&nbsp;</td></tr></table>";
                 $menucol = 4;
@@ -401,6 +404,7 @@ class Wareneingang {
                         bp.id,
                         ".$this->app->erp->ConcatSQL($artikel_link).",
                         $colBeschreibung as beschreibung,
+                        art.herstellernummer,
                         b.belegnr as `Bestellung`,
                         ".$this->app->erp->ConcatSQL($auswahl).",
                         if(bp.lieferdatum,DATE_FORMAT(bp.lieferdatum,'%d.%m.%Y'),'sofort') as lieferdatum,
@@ -451,11 +455,11 @@ class Wareneingang {
             case 'wareneingang_manuell':
                 $allowed['paketdistribution_list'] = array('list');
 
-                $heading = array('Art.-Nummer', 'Beschreibung', 'Menge', 'Bemerkung','');
-                $width = array(  '5%',          '30%',          '5%',    '15%',      '1%');
+                $heading = array('Art.-Nummer', 'Beschreibung', 'Hersteller Nr.', 'Menge', 'Bemerkung','');
+                $width = array(  '5%',          '30%',          '10%',            '5%',    '15%',      '1%');
 
-                $findcols = array('nummer','name_de','id','id');
-                $searchsql = array('');
+                $findcols = array('nummer','name_de','herstellernummer','id','id');
+                $searchsql = array('name_de','herstellernummer','ean');
 
                 $alignright = array('5');
                 $defaultorder = 1;
@@ -463,9 +467,9 @@ class Wareneingang {
 
                 $auswahl = array (
                     '<input type=\"text\" name=\"manuell_artikel_ids[]\" value=\"',
-                    ['sql' => 'a.id'],
+                    ['sql' => 'art.id'],
                     '" hidden/>',
-                    ['sql' => 'a.nummer']
+                    ['sql' => 'art.nummer']
                 );
 
                 $input_for_menge = array(
@@ -489,11 +493,12 @@ class Wareneingang {
                         id,
                         ".$this->app->erp->ConcatSQL($auswahl).",
                         name_de,
+                        herstellernummer,
                         ".$this->app->erp->ConcatSQL($input_for_menge).",
-                        ".$this->app->erp->ConcatSQL($input_for_bemerkung)."
-                        ''
+                        ".$this->app->erp->ConcatSQL($input_for_bemerkung).",
+                        '' as menu
                     FROM
-                        artikel a
+                        artikel art
                 ";
 
                 $where = "geloescht <> 1";
@@ -1229,13 +1234,13 @@ class Wareneingang {
                  */
 
 
-                $heading = array('Pos.', 'Art.-Nummer', 'Beschreibung', 'Bestellung', 'Lieferant-Art.-Nr.', 'Menge','Standardlager', 'Bemerkung','Bearbeiter', '', '','','');
-                $width = array(  '1%',   '5%',          '30%',          '5%',         '5%',                 '5%',   '5%',            '15%',       '5%'       ,'1%', '1%','1%','1%');
+                $heading = array('Pos.', 'Art.-Nummer', 'Beschreibung', 'Hersteller Nr.', 'Bestellung', 'Lieferant-Art.-Nr.', 'Menge','Standardlager', 'Bemerkung','Bearbeiter', '', '','','');
+                $width = array(  '1%',   '1%',          '24%',          '1%',             '5%',         '5%',                 '5%',   '5%',            '15%',       '5%'       ,'1%', '1%','1%','1%');
 
-                $findcols = array('p.pos', 'p.artikel', 'p.name', 'p.bestellbezug', 'p.lieferantnummer', 'p.menge', 'lagerplatz_bezeichnung', 'p.bemerkung','p.bearbeiter','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig');
+                $findcols = array('p.pos', 'p.artikel', 'p.name', 'p.herstellernummer', 'p.bestellbezug', 'p.lieferantnummer', 'p.menge', 'lagerplatz_bezeichnung', 'p.bemerkung','p.bearbeiter','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig','p.vorlaeufig');
                 $searchsql = array('p.nummer', 'p.name', 'p.bemerkung');
 
-                $alignright = array('5');
+                $alignright = array(7);
                 $defaultorder = 1;
                 $defaultorderdesc = 0;
 
@@ -1282,6 +1287,7 @@ class Wareneingang {
                             p.pos,
                             p.artikel,
                             p.name,
+                            p.herstellernummer,
                             p.bestellbezug,
                             p.lieferantnummer,
                             p.menge,
@@ -1300,6 +1306,7 @@ class Wareneingang {
                                     bestellung_position.bestellnummer as lieferantnummer,
                                     ".$this->app->erp->ConcatSQL($artikel_link)." as artikel,
                                     artikel.name_de as name,
+                                    artikel.herstellernummer,
                                     " . $this->app->erp->FormatMenge("paketdistribution.menge") . " as menge,
                                     if (paketdistribution.vorlaeufig,lager_platz.kurzbezeichnung,'') AS lagerplatz_bezeichnung,
                                     paketdistribution.bemerkung,

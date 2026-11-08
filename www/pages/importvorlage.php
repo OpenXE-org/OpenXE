@@ -49,8 +49,8 @@ class Importvorlage extends GenImportvorlage {
 
   const numeric_fields = array(
         'stuecklistemenge', // 1
-        'lieferanteinkaufnetto\D+([\d]+)*\D*', // 3
-        'verkaufspreis\D+([\d]+)*\D*', //  10
+        'lieferanteinkaufnetto([\d]+)', // 3
+        'verkaufspreis([\d]+)', //  10
         'lager_menge_addieren', // 1
         'provision', // 1
         'vk_geplant', // 1
@@ -61,15 +61,15 @@ class Importvorlage extends GenImportvorlage {
         'breite', // 1
         'hoehe', // 1
         'laenge', // 1
-        'lager_menge_addieren\D+([\d]+)*\D*', // 5
-        'lager_menge_total\D+([\d]+)*\D*', //  5
-        'verkaufspreis\D+([\d]+)*\D*netto', //  10
-        'verkaufspreis\D+([\d]+)*\D*preisfuermenge', // 10
-        'verkaufspreis\D+([\d]+)*\D*menge', // 10
+        'lager_menge_addieren([\d]+)', // 5
+        'lager_menge_total([\d]+)', //  5
+        'verkaufspreis([\d]+)netto', //  10
+        'verkaufspreis([\d]+)preisfuermenge', // 10
+        'verkaufspreis([\d]+)menge', // 10
         'verkaufspreisvgruppe', // 10
-        'verkaufspreis\D+([\d]+)*\D*kundennummer', // 10
+        'verkaufspreis([\d]+)kundennummer', // 10
         'pseudopreis', // 1
-        'provision\D+([\d]+)*\D*', // 2
+        'provision([\d]+)', // 2
     );
 
     /*
@@ -77,11 +77,11 @@ class Importvorlage extends GenImportvorlage {
     * Regex
     */
     const handled_fields = array(
-        '/nummer/',
-        '/lieferantname/',
-        '/lieferantnummer/',
-        '/shopid(_[\d]+)/',
-        '/shopaktiv(_[\d]+)/'
+        'nummer',
+        'lieferantname',
+        'lieferantnummer',
+        'shopid(_[\d]+)',
+        'shopaktiv(_[\d]+)'
     );
 
   public $javascript = [
@@ -833,15 +833,6 @@ class Importvorlage extends GenImportvorlage {
 
   public function ImportvorlageMenu()
   {
-    $id = $this->app->Secure->GetGET('id');
-    $bezeichnung = empty($id)?'':$this->app->DB->Select(
-      sprintf(
-        'SELECT `bezeichnung` FROM `importvorlage` WHERE `id` = %d LIMIT 1',
-        $id
-      )
-    );
-    $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
-
     if($this->app->Secure->GetGET('action')==='list')
     {
       $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list', '&Uuml;bersicht');
@@ -850,10 +841,22 @@ class Importvorlage extends GenImportvorlage {
     }
     else
     {
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
-      $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list','Zur&uuml;ck zur &Uuml;bersicht');
+        $id = $this->app->Secure->GetGET('id');
+        if (empty($id)) {
+            return;
+        }
+        $bezeichnung = empty($id)?'':$this->app->DB->Select(
+          sprintf(
+            'SELECT `bezeichnung` FROM `importvorlage` WHERE `id` = %d LIMIT 1',
+            $id
+          )
+        );
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
+
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=edit&id='.$id,'Details');
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=import&id='.$id,'Import starten: Datei heraufladen');
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=formate&id='.$id,'Formate');
+        $this->app->erp->MenuEintrag('index.php?module=importvorlage&action=list','Zur&uuml;ck zur &Uuml;bersicht');
     }
 
     $this->importVorlagePopup();
@@ -1823,6 +1826,8 @@ class Importvorlage extends GenImportvorlage {
                 {
                   case "name_de":
                   case "name_en":
+                  case "shop_name_de":
+                  case "shop_name_en":
                   case "uebersicht_de":
                   case "uebersicht_en":
                   case "beschreibung_online_de":
@@ -3063,7 +3068,13 @@ class Importvorlage extends GenImportvorlage {
                   default:
                     $handled = false;
                     foreach (SELF::handled_fields as $handled_field) {
-                        if (preg_match($handled_field, $value)) {
+                        if (preg_match("/".$handled_field."/", $value)) {
+                            $handled = true;
+                            break;
+                        }
+                    }
+                    foreach (SELF::numeric_fields as $numeric_field) {
+                        if (preg_match("/".$numeric_field."/", $value)) {
                             $handled = true;
                             break;
                         }
@@ -4378,11 +4389,16 @@ class Importvorlage extends GenImportvorlage {
                 // Create a row dataset (without checked and cmd)
                 $row = array();
                 $error_text = "";
-                $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname');
+                $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname', 'sort');
                 $error = $this->create_row_set($tmp, $i, $allowed_fields, $row, $error_text);
                 $dateien_result = $this->PrepareDateien($tmp, $i, $allowed_fields, $global_data);
-                $dateiname = basename($dateien_result['result_row']['additional_file']['path']);
+                $dateiname = basename($dateien_result['result_row']['additional_file']['path']);                
                 if ($error !== false) {
+
+                    if (!isset($row['sort'])) {
+                        $row['sort'] = -1;
+                    }
+
                     switch ($row['dateiaktion']) {
                         case 'zip':
                             $fileid = $this->app->erp->CreateDateiWithStichwort(
@@ -4394,7 +4410,8 @@ class Importvorlage extends GenImportvorlage {
                                         ersteller: $this->app->User->GetName(),
                                         subjekt: $row['stichwort'],
                                         objekt: $dateien_result['result_row']['datei_objekt']['wert'],
-                                        parameter: $dateien_result['result_row']['datei_objekt']['id']
+                                        parameter: $dateien_result['result_row']['datei_objekt']['id'],
+                                        sort: $row['sort']
                                 );
                             if (empty($fileid)) {
                                 $importvorlagedoresult['messages'][] = "Datei wurde nicht angelegt: ".$dateiname;
@@ -4410,7 +4427,7 @@ class Importvorlage extends GenImportvorlage {
                         case 'aendern':
                             foreach ($dateien_result['result_row']['dms_dateien'] as $datei_id) {
                                 if (!empty($row['stichwort'])) {
-                                    $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id']);
+                                    $this->app->erp->AddDateiStichwort($datei_id,$row['stichwort'],$dateien_result['result_row']['datei_objekt']['wert'],$dateien_result['result_row']['datei_objekt']['id'], sort: $row['sort']);
                                 }
                                 $this->app->erp->ModifyDateiMetadata($datei_id, $row['dateiname'], $row['titel'], $row['beschreibung']);
                             }
@@ -5410,10 +5427,10 @@ class Importvorlage extends GenImportvorlage {
         $action="create";
         $checked = "";
         break;
-        case 'dateien':
-
+       case 'dateien':
+        
             $action_anzeige = '';
-            $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname');
+            $allowed_fields = array('dateiaktion', 'quellpfad', 'objekt', 'objektsuchfeld', 'objektnummer', 'stichwort', 'dateiname', 'titel', 'beschreibung', 'sprache', 'dms-objekt', 'dms-objektsuchfeld', 'dms-objektnummer', 'dms-stichwort', 'dms-dateiname', 'sort');
             // Create a row dataset (without checked and cmd)
             foreach($fields as $key => $value) {
                 $checkfields[$key][0] = $value;
@@ -5656,7 +5673,7 @@ class Importvorlage extends GenImportvorlage {
 
             switch ($dateiaktion) {
                 case 'url':
-                    $action_anzeige .= 'Dateiaktion URL nicht implementiert. ';
+                    $action_anzeige .= 'Dateiaktion URL nicht implementiert.';
                 break;
                 case 'zip':
                     if (empty($dms_dateien)) {
@@ -5673,7 +5690,7 @@ class Importvorlage extends GenImportvorlage {
                 break;
                 case 'entfernen':
                     $action = 'update';
-                    $action_anzeige .= count($dms_dateien).' Dateiverknüpfung(en) entfernen im DMS';
+                    $action_anzeige .= count($dms_dateien).' Dateiverknüpfung(en) entfernen im DMS nicht implementert.';
                 break;
                 default:
                     $action_anzeige .= 'Unbekannte Dateiaktion'.$dateiaktion;

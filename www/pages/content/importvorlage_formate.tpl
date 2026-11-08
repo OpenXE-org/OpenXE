@@ -29,8 +29,10 @@
 							<tr><td>artikelbeschreibung_en</td><td>Artikelbeschreibung (EN)</td><td></td></tr>
 							<tr><td>kurztext_de</td><td>Kurztext (DE)</td><td></td></tr>
 							<tr><td>kurztext_en</td><td>Kurztext (EN)</td><td></td></tr>
-							<tr><td>uebersicht_de</td><td>Onlineshop / Artikelbeschreibung (DE)</td><td></td></tr>
-							<tr><td>uebersicht_en</td><td>Onlineshop / Artikelbeschreibung (EN)</td><td></td></tr>
+							<tr><td>shop_name_de</td><td>Artikelname Onlineshop (DE)</td><td></td></tr>
+							<tr><td>shop_name_en</td><td>Artikelname Onlineshop (EN)</td><td></td></tr>
+							<tr><td>uebersicht_de</td><td>Artikelbeschreibung Onlineshop (DE)</td><td></td></tr>
+							<tr><td>uebersicht_en</td><td>Artikelbeschreibung Onlineshop (EN)</td><td></td></tr>
 							<tr><td>metatitle_de</td><td></td><td></td></tr>
 							<tr><td>metatitle_en</td><td></td><td></td></tr>
 							<tr><td>metadescription_de</td><td></td><td></td></tr>
@@ -698,9 +700,9 @@
 							    <td>zip, url, aendern, entfernen</td>
 							    <td>
                                     zip: Datei aus ZIP-Datei laden</i><br>
-                                    url: Datei von URL laden<br>
+                                    url: Datei von URL laden (nicht implementiert)<br>
                                     aendern: Dateidaten im OpenXE-DMS ändern<br>
-                                    entfernen: Dateiverknüpfung im OpenXE-DMS entfernen<br>
+                                    entfernen: Dateiverknüpfung im OpenXE-DMS entfernen (nicht implementiert)<br>
                                 </td>
 						    </tr>
 						    <tr>
@@ -765,9 +767,14 @@
 							    <td></td>
 							    <td></td>
 						    </tr>
+                            <tr>
+							    <td>sort</td>
+							    <td>Sortierreihenfolge im DMS</td>
+							    <td></td>
+						    </tr>
 						    <tr>
 							    <td>sprache</td>
-							    <td></td>
+							    <td>Nicht implementiert</td>
 							    <td>[SPRACHEN]</td>
 						    </tr>
 					    </table>

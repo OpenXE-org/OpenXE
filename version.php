@@ -1,7 +1,7 @@
 <?php 
 
 $version="OSS"; 
-$version_revision="1.12";
+$version_revision="1.13";
 $gitinfo = file_get_contents("../gitinfo.json");
 if (!empty($gitinfo)) {
   $gitinfo = json_decode($gitinfo);

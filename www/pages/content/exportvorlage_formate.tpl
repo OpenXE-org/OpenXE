@@ -6,6 +6,7 @@
 		<li><a href="#tabs-3">{|Zeiterfassung|}</a></li>
 		<li><a href="#tabs-4">{|Rechnung|}</a></li>
 		<li><a href="#tabs-5">{|Beleg Positionen|}</a></li>
+		<li><a href="#tabs-6">{|Dateien|}</a></li>
 	</ul>
 
 	<div id="tabs-1">
@@ -18,14 +19,18 @@
 								<th>Variable</th>
 								<th>Beschreibung</th>
 								<th>Kommentar</th>
-                            <tr><td><u>nummer</u></td><td></td><td></td><td></td><td></td></tr>
-                            <tr><td>name_de</td><td></td><td></td><td></td><td></td></tr>
-                            <tr><td>name_en</td><td></td><td></td></tr>
-                            <tr><td>kurztext_de</td><td></td><td></td></tr>
-                            <tr><td>kurztext_en</td><td></td><td></td></tr>
-                            <tr><td>artikelbeschreibung_de</td><td></td><td></td></tr>
-                            <tr><td>artikelbeschreibung_en</td><td></td><td></td></tr>
-                            <tr><td>anabregs_text</td><td></td><td></td></tr>
+							</tr>
+                            <tr><td>nummer</td><td></td><td></td></tr>
+							<tr><td>name_de</td><td>Artikelname (DE)</td><td></td></tr>
+							<tr><td>name_en</td><td>Artikelname (EN)</td><td></td></tr>
+							<tr><td>artikelbeschreibung_de</td><td>Artikelbeschreibung (DE)</td><td></td></tr>
+							<tr><td>artikelbeschreibung_en</td><td>Artikelbeschreibung (EN)</td><td></td></tr>
+							<tr><td>kurztext_de</td><td>Kurztext (DE)</td><td></td></tr>
+							<tr><td>kurztext_en</td><td>Kurztext (EN)</td><td></td></tr>
+							<tr><td>shop_name_de</td><td>Artikelname Onlineshop (DE)</td><td></td></tr>
+							<tr><td>shop_name_en</td><td>Artikelname Onlineshop (EN)</td><td></td></tr>
+							<tr><td>uebersicht_de</td><td>Artikelbeschreibung Onlineshop (DE)</td><td></td></tr>
+							<tr><td>uebersicht_en</td><td>Artikelbeschreibung Onlineshop (EN)</td><td></td></tr>
                             <tr><td>internerkommentar</td><td></td><td></td></tr>
                             <tr><td>hersteller</td><td></td><td></td></tr>
                             <tr><td>typ</td><td></td><td></td></tr>
@@ -342,5 +347,65 @@
 				</div>
 			</div>
 		</div>
+    </div>
+    <div id="tabs-6">
+	    <div class="row">
+		    <div class="col-xs-12 col-sm-1 col-sm-height">
+			    <div class="inside inside-full-height">
+				    <fieldset><legend>{|Dateien|}</legend>
+					    <table class="mkTable">
+						    <tr>
+							    <th width="15%">Variable</th>
+							    <th width="15%">Beschreibung</th>
+							    <th>Kommentar</th>
+						    </tr>
+						    <tr>
+							    <td>objekt</td>
+							    <td rowspan="3">Verknüpftes Objekt</td>
+							    <td>[DATEIOBJEKTE]</td>
+						    </tr>
+						    <tr>
+							    <td>objektsuchfeld</td>
+							    <td>Feld für Objektverknüpfing<br>[DATEISUCHFELDER]</td>
+						    </tr>
+						    <tr>
+							    <td>objektnummer</td>
+							    <td>Z.B. Artikelnummer, Belegnr, etc.</td>
+						    </tr>
+						    <tr>
+							    <td>stichwort</td>
+							    <td>[STICHWOERTER]</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>dateiname</td>
+							    <td></td>
+							    <td></td>
+						    </tr>
+                            <tr>
+							    <td>titel</td>
+							    <td></td>
+							    <td></td>
+						    </tr>
+                            <tr>
+							    <td>beschreibung</td>
+							    <td></td>
+							    <td></td>
+						    </tr>
+                            <tr>
+							    <td>sort</td>
+							    <td>Sortierreihenfolge im DMS</td>
+							    <td></td>
+						    </tr>
+						    <tr>
+							    <td>sprache</td>
+							    <td>Nicht implementiert</td>
+							    <td>[SPRACHEN]</td>
+						    </tr>
+					    </table>
+				    </fieldset>
+			    </div>
+		    </div>
+	    </div>
     </div>
 </div>

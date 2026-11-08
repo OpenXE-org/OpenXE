@@ -44,18 +44,20 @@ class Produktion {
                 $allowed['produktion_list'] = array('list');
 
 //                $heading = array('','','datum', 'art', 'projekt', 'belegnr', 'internet', 'bearbeiter', 'angebot', 'freitext', 'internebemerkung', 'status', 'adresse', 'name', 'abteilung', 'unterabteilung', 'strasse', 'adresszusatz', 'ansprechpartner', 'plz', 'ort', 'land', 'ustid', 'ust_befreit', 'ust_inner', 'email', 'telefon', 'telefax', 'betreff', 'kundennummer', 'versandart', 'vertrieb', 'zahlungsweise', 'zahlungszieltage', 'zahlungszieltageskonto', 'zahlungszielskonto', 'bank_inhaber', 'bank_institut', 'bank_blz', 'bank_konto', 'kreditkarte_typ', 'kreditkarte_inhaber', 'kreditkarte_nummer', 'kreditkarte_pruefnummer', 'kreditkarte_monat', 'kreditkarte_jahr', 'firma', 'versendet', 'versendet_am', 'versendet_per', 'versendet_durch', 'autoversand', 'keinporto', 'keinestornomail', 'abweichendelieferadresse', 'liefername', 'lieferabteilung', 'lieferunterabteilung', 'lieferland', 'lieferstrasse', 'lieferort', 'lieferplz', 'lieferadresszusatz', 'lieferansprechpartner', 'packstation_inhaber', 'packstation_station', 'packstation_ident', 'packstation_plz', 'packstation_ort', 'autofreigabe', 'freigabe', 'nachbesserung', 'gesamtsumme', 'inbearbeitung', 'abgeschlossen', 'nachlieferung', 'lager_ok', 'porto_ok', 'ust_ok', 'check_ok', 'vorkasse_ok', 'nachnahme_ok', 'reserviert_ok', 'bestellt_ok', 'zeit_ok', 'versand_ok', 'partnerid', 'folgebestaetigung', 'zahlungsmail', 'stornogrund', 'stornosonstiges', 'stornorueckzahlung', 'stornobetrag', 'stornobankinhaber', 'stornobankkonto', 'stornobankblz', 'stornobankbank', 'stornogutschrift', 'stornogutschriftbeleg', 'stornowareerhalten', 'stornomanuellebearbeitung', 'stornokommentar', 'stornobezahlt', 'stornobezahltam', 'stornobezahltvon', 'stornoabgeschlossen', 'stornorueckzahlungper', 'stornowareerhaltenretour', 'partnerausgezahlt', 'partnerausgezahltam', 'kennen', 'logdatei', 'bezeichnung', 'datumproduktion', 'anschreiben', 'usereditid', 'useredittimestamp', 'steuersatz_normal', 'steuersatz_zwischen', 'steuersatz_ermaessigt', 'steuersatz_starkermaessigt', 'steuersatz_dienstleistung', 'waehrung', 'schreibschutz', 'pdfarchiviert', 'pdfarchiviertversion', 'typ', 'reservierart', 'auslagerart', 'projektfiliale', 'datumauslieferung', 'datumbereitstellung', 'unterlistenexplodieren', 'charge', 'arbeitsschrittetextanzeigen', 'einlagern_ok', 'auslagern_ok', 'mhd', 'auftragmengenanpassen', 'internebezeichnung', 'mengeoriginal', 'teilproduktionvon', 'teilproduktionnummer', 'parent', 'parentnummer', 'bearbeiterid', 'mengeausschuss', 'mengeerfolgreich', 'abschlussbemerkung', 'auftragid', 'funktionstest', 'seriennummer_erstellen', 'unterseriennummern_erfassen', 'datumproduktionende', 'standardlager', 'Men&uuml;');
-                $heading = array('','','Produktion','Kd-Nr.','Kunde','Vom','Bezeichnung','Soll','Ist','Zeit geplant','Zeit gebucht','Projekt','Status','Monitor','Men&uuml;');
+                $heading = array('','','Produktion','Kd-Nr.','Kunde','Vom','Artikel','Bezeichnung','Hersteller Nr.','Soll','Ist','Zeit geplant','Zeit gebucht','Projekt','Status','Monitor','Men&uuml;');
 
-                $alignright = array(8,9,10,11);
+                $alignright = array(10,11,12,13);
 
-                $width = array('1%','1%','10%'); // Fill out manually later
+                $width = array('1%','1%','1%','10%'); // Fill out manually later
+
+                $artikel_id = "(SELECT artikel FROM produktion_position pp WHERE pp.stuecklistestufe = 1 AND pp.produktion = p.id LIMIT 1)";
 
                 $bezeichnung = "CONCAT (
                             IFNULL((SELECT CONCAT(a.name_de,' (',a.nummer,')','<br>') FROM artikel a INNER JOIN produktion_position pp ON pp.artikel = a.id WHERE pp.stuecklistestufe = 1 AND pp.produktion = p.id LIMIT 1),''),
                             CONCAT('<i>',internebezeichnung,'</i>')
                         )";
 
-                $findcols = array('p.id','p.id','p.belegnr','adresse.kundennummer','adresse.name','p.datum',$bezeichnung,'soll','ist', 'zeit_geplant','zeit_geplant', 'projekt','p.status','icons','id');
+                $findcols = array('p.id','p.id','p.belegnr','adresse.kundennummer','adresse.name','p.datum','a.nummer',$bezeichnung,'a.herstellernummer','soll','ist', 'zeit_geplant','zeit_geplant', 'projekt','p.status','icons','id');
 
                 $searchsql = array('p.belegnr','p.kundennummer','p.name',$bezeichnung);
 
@@ -81,9 +83,9 @@ class Produktion {
 			            adresse.kundennummer,
 			            adresse.name as name,
                         DATE_FORMAT(datum,'%d.%m.%Y') as datum,
-
+                        a.nummer,
                         ".$bezeichnung." as bezeichnung,
-
+                        a.herstellernummer,
 			            FORMAT((SELECT SUM(menge) FROM produktion_position pp WHERE pp.produktion = p.id AND pp.stuecklistestufe = 1),0,'de_DE') as soll,
 			            FORMAT(p.mengeerfolgreich,0,'de_DE') as ist,
 			            \"-\" as zeit_geplant,
@@ -93,7 +95,8 @@ class Produktion {
 	                    (" . $app->YUI->IconsSQL_produktion('p') . ")  AS `icons`,
 			            p.id
 			            FROM produktion p
-			            LEFT JOIN adresse ON adresse.id = p.adresse
+                        LEFT JOIN artikel a ON a.id = $artikel_id
+			            LEFT JOIN adresse ON adresse.id = p.adresse                        
                         ";
 
                 $where = "0";

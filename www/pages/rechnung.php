@@ -1362,6 +1362,16 @@ class Rechnung extends GenRechnung
         $result = $this->RechnungGetData($id);
         $success = true;
 
+        return($result);
+  }
+
+  function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
+        if ($id === null) {
+            $id = $this->app->Secure->GetGET('id');
+        }
+        $result = $this->RechnungGetData($id);
+        $success = true;
+
         $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
 
         $this->remove_html_entities_from_array($result);

@@ -7201,9 +7201,16 @@ class Artikel extends GenArtikel {
       if($tmp)
       {
         $nummer = $tmp[0]['nummer'];
+        $herstellernummer = $tmp[0]['herstellernummer'];
         $name_de = $tmp[0]['name_de'];
 
-        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2',$this->app->erp->LimitChar($name_de,100)." (Artikel $nummer)");
+        if (!str_contains($name_de, $herstellernummer)) {
+            $mpn = ", ".strip_tags($herstellernummer);
+        } else {
+            $mpn = '';
+        }
+
+        $this->app->Tpl->SetText('KURZUEBERSCHRIFT2',$this->app->erp->LimitChar($name_de,100)." ($nummer$mpn)");
         $this->app->erp->MenuEintrag("index.php?module=artikel&action=edit&id=$id",'Details');
 
         $anzahldateien = $this->app->erp->AnzahlDateien("Artikel",$id);

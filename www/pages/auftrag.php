@@ -3205,9 +3205,8 @@ class Auftrag extends GenAuftrag
                 $new_row = array();
                 $new_row[] = $this->app->erp->makemodulelink($item['artikel_nummer'],"artikel","edit",$artikelid);
                 $new_row[] = $this->app->erp->makemodulelink($item['artikel_name'],"artikel","edit",$artikelid);
-
+                $new_row[] = $this->app->erp->makemodulelink($item['menge']+0,"artikel","lager",$artikelid);
                 if ($item['lagerartikel']) {
-                    $new_row[] = $this->app->erp->makemodulelink($item['menge']+0,"artikel","lager",$artikelid);
                     if ($lagername) {
                         $new_row[] = $this->app->erp->makemodulelink($mengefeld_lager,"artikel","lager",$artikelid);
                     }
@@ -3215,6 +3214,8 @@ class Auftrag extends GenAuftrag
                     $new_row[] = $this->app->erp->makemodulelink($item['lagermenge_autoversand']+0,"artikel","lager",$artikelid);
                     $new_row[] = $this->app->erp->makemodulelink($item['lagermenge_nachschub']+0,"artikel","lager",$artikelid);
                     $new_row[] = $this->app->erp->makemodulelink(($item['reserviert_beleg']+0)." / ".($item['reserviert']+0),"artikel","lager",$artikelid);
+                } else {
+                    $new_row = array_pad($new_row, $lagername ? 8 : 7, '-');
                 }
 
                 $table->Addrow($new_row);

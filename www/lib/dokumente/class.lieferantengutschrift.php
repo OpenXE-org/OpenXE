@@ -111,7 +111,8 @@ class LieferantengutschriftPDF extends BriefpapierCustom {
             a.name,
             a.lieferantennummer,
             a.id adresse,
-            a.sprache
+            a.sprache,
+            DATE_FORMAT(k.datum,'%Y%m%d') as datum2
         FROM
             lieferantengutschrift k
         INNER JOIN 
@@ -234,7 +235,7 @@ class LieferantengutschriftPDF extends BriefpapierCustom {
         ]
     );
 
-    $this->filename = $data['datum']."_LG".$data['belegnr'].".pdf";
+    $this->filename = $data['datum2']."_LG".$data['belegnr'].".pdf";
     $this->setBarcode($id);
 
     $corrDetails = array();

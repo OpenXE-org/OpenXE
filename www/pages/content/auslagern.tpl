@@ -38,7 +38,7 @@
                             <tr valign="top">
                                 <td align="center">
                                     <table width="90%">
-                                        <tr>
+                                        <tr hidden>
                                             <td width="170">{|Lagerbewegung|}:</td>
                                             <td align="left">
                                                 <select name="grund">

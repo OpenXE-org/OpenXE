@@ -14679,6 +14679,28 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "shop_name_de",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
+                    "Field": "shop_name_en",
+                    "Type": "varchar(255)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "uebersicht_de",
                     "Type": "text",
                     "Collation": "utf8mb3_general_ci",

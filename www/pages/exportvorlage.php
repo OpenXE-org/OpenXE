@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -48,8 +48,8 @@ class Exportvorlage extends GenExportvorlage {
 
     $this->app->erp->Headlines('Daten Export');
   }
-  
-  public function ExportvorlageFormate() 
+
+  public function ExportvorlageFormate()
   {
     $this->ExportvorlageMenu();
     $this->app->Tpl->Parse('PAGE','exportvorlage_formate.tpl');
@@ -106,11 +106,6 @@ class Exportvorlage extends GenExportvorlage {
 
   function ExportvorlageMenu()
   {
-    $id = $this->app->Secure->GetGET("id");
-    $bezeichnung = $this->app->DB->Select("SELECT bezeichnung FROM exportvorlage WHERE id='$id' LIMIT 1");
-
-    $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
-
     if($this->app->Secure->GetGET("action")=="list")
     {
       $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=create","Neue Exportvorlage anlegen");
@@ -119,10 +114,18 @@ class Exportvorlage extends GenExportvorlage {
     }
     else
     {
-      $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=edit&id=$id","Details");
-      $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=list","Zur&uuml;ck zur &Uuml;bersicht");
-      $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=export&id=$id","Export starten: CSV Datei herunterladen");
-      $this->app->erp->MenuEintrag('index.php?module=exportvorlage&action=formate&id='.$id,'Formate');
+        $id = $this->app->Secure->GetGET("id");
+        if (empty($id)) {
+            return;
+        }
+        $bezeichnung = $this->app->DB->Select("SELECT bezeichnung FROM exportvorlage WHERE id='$id' LIMIT 1");
+
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2',$bezeichnung);
+
+        $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=edit&id=$id","Details");
+        $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=list","Zur&uuml;ck zur &Uuml;bersicht");
+        $this->app->erp->MenuEintrag("index.php?module=exportvorlage&action=export&id=$id","Export starten: CSV Datei herunterladen");
+        $this->app->erp->MenuEintrag('index.php?module=exportvorlage&action=formate&id='.$id,'Formate');
     }
   }
 
@@ -150,7 +153,7 @@ class Exportvorlage extends GenExportvorlage {
         $csv_fields[$fieldsarray_items[0]]= $fieldsarray_items[1];
         $csv_fields_keys[] = $fieldsarray_items[0];
       }
-    }         
+    }
     return $csv_fields;
   }
 
@@ -200,7 +203,7 @@ class Exportvorlage extends GenExportvorlage {
       if(!empty($parameter['format']) && $parameter['format'] === 'xls') {
         $xls = true;
       }
-      
+
       //$bezeichnung = isset($parameter['bezeichnung'])?$parameter['bezeichnung']:'';
       $exporttrennzeichen = isset($parameter['exporttrennzeichen'])?$parameter['exporttrennzeichen']:'semikolon';
       $exporterstezeilenummer = isset($parameter['exporterstezeilenummer'])?$parameter['exporterstezeilenummer']:1;
@@ -373,7 +376,25 @@ ean;';
       case "bestellung_position":
         $sql = "SELECT $sql_fields,bp.id as systemid FROM bestellung_position bp LEFT JOIN bestellung b ON b.id=bp.bestellung";
         break;
-
+      case "dateien":
+            $sql = "SELECT $sql_fields, ds.parameter, d.id as systemid
+            FROM
+                datei d
+            INNER JOIN
+                (
+                    SELECT
+                        MAX(id) as version,
+                        datei
+                    FROM
+                        datei_version
+                    GROUP BY datei
+                ) dv_max ON dv_max.datei = d.id
+            INNER JOIN
+                datei_version dv ON dv.id = dv_max.version
+            INNER
+                JOIN datei_stichwoerter ds ON ds.datei = d.id
+            WHERE d.geloescht != 1";
+        break;
     }
 
     $sql .= ' '.$join. ' ';
@@ -678,6 +699,18 @@ ean;';
             $fields_array[] = "geloescht";
           }
           break;
+        case 'stichwort':
+            $fields_array[] = 'lower(subjekt) as stichwort';
+        break;
+        case 'objekt':
+            $fields_array[] = "objekt";
+        break;
+        case 'objektsuchfeld':
+            $fields_array[] = "'' as objektsuchfeld";
+        break;
+        case 'objektnummer':
+            $fields_array[] = "'' as objektnummer";
+        break;
         default:
           if(($ziel==='angebot' || $ziel==='auftrag' || $ziel === 'rechnung' || $ziel === 'lieferschein' ||
             $ziel === 'bestellung' || $ziel === 'gutschrift') && preg_match('/^[\w]+$/',trim($fieldarray))){
@@ -697,11 +730,11 @@ ean;';
 
       $join = 'SELECT ae.artikel AS artikel, '.implode(',',$pivotParts).'
         FROM
-        (SELECT IF(@previd=e.artikel,@rownum := @rownum + 1,@rownum := 1) as row_nummer, @previd ,@previd:=e.artikel, e.artikel AS artikel, e.name AS name, e.wert AS wert 
-          FROM 
+        (SELECT IF(@previd=e.artikel,@rownum := @rownum + 1,@rownum := 1) as row_nummer, @previd ,@previd:=e.artikel, e.artikel AS artikel, e.name AS name, e.wert AS wert
+          FROM
             (SELECT aew.artikel, ae.name, aew.wert
-            FROM artikeleigenschaften ae 
-            JOIN artikeleigenschaftenwerte aew ON ae.id = aew.artikeleigenschaften 
+            FROM artikeleigenschaften ae
+            JOIN artikeleigenschaftenwerte aew ON ae.id = aew.artikeleigenschaften
             WHERE ae.geloescht=0
             ORDEr BY aew.artikel) AS e
           JOIN (select @rownum := 0) r
@@ -729,12 +762,12 @@ ean;';
       $join =  'SELECT vp.artikel, '.implode(',',$pivotParts).'
         FROM(
         SELECT  IF(@previdvp=vp.artikel,@rownumvp := @rownumvp + 1,@rownumvp := 1) AS row_nummer,@previdvp:=vp.artikel, vp.*
-        FROM 
+        FROM
         (SELECT vp.*, a.kundennummer,g.kennziffer
-                FROM verkaufspreise vp 
+                FROM verkaufspreise vp
             LEFT JOIN adresse a ON vp.adresse = a.id
             LEFT JOIN gruppen g ON vp.gruppe = g.id
-                WHERE vp.geloescht =0 
+                WHERE vp.geloescht =0
                 ORDER BY vp.artikel ASC, vp.preis ASC) AS vp
                 JOIN (select @rownumvp := 0) r
                 JOIN (select @previdvp := 0) p
@@ -875,7 +908,7 @@ ean;';
         }
       break;
 
-      case "artikel": 
+      case "artikel":
         if($systemid > 0 && is_numeric($systemid))
         {
           if(!empty($replacesR['lager_menge'])) {
@@ -948,7 +981,7 @@ ean;';
           }
         }
         break;
-      case "rechnung": 
+      case "rechnung":
 
         if($systemid > 0 && is_numeric($systemid))
         {
@@ -971,7 +1004,7 @@ ean;';
           }
         }
         break;
-      case "gutschrift": 
+      case "gutschrift":
 
         if($systemid > 0 && is_numeric($systemid))
         {
@@ -994,12 +1027,12 @@ ean;';
           }
         }
         break;
-      case "auftrag_position": 
-      case "angebot_position": 
-      case "rechnung_position": 
-      case "lieferschein_position": 
-      case "gutschrift_position": 
-      case "bestellung_position": 
+      case "auftrag_position":
+      case "angebot_position":
+      case "rechnung_position":
+      case "lieferschein_position":
+      case "gutschrift_position":
+      case "bestellung_position":
 
         $tmp = explode('_',$ziel);
 
@@ -1048,6 +1081,17 @@ ean;';
             }
           }
         }
+        break;
+        case "dateien":
+            if ($row['objekt']) {
+                $allowed = $this->app->erp->getAllowedDateiObjekte($row['objekt'])[0];
+                $suchfeld = $allowed['suchfelder'][0];
+                $sql = "SELECT ".$allowed['suchfelder'][0]." FROM ".$allowed['tabelle']." WHERE id = ".$row['parameter'];
+                $nummer = $this->app->DB->Select($sql);
+                $row['objektsuchfeld'] = $suchfeld;
+                $row['objektnummer'] = $nummer;
+                $row['stichwort'] = strtolower($row['stichwort']);
+            }
         break;
     }
 
@@ -1098,7 +1142,7 @@ ean;';
     $number_of_rows = count($tmp['cmd']);
     for($i=1;$i<=$number_of_rows;$i++)
     {
-      $lieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$tmp['lieferantennummer'][$i]."' 
+      $lieferantid = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$tmp['lieferantennummer'][$i]."'
           AND lieferantennummer!='' LIMIT 1");
 
       $artikelid = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='".$tmp['nummer'][$i]."' AND nummer!='' LIMIT 1");
@@ -1181,7 +1225,7 @@ ean;';
             if($tmp['lager'][$i]!=''){
               if(empty($lager_id)) {
                 $this->app->DB->Insert(
-                  "INSERT INTO lager (bezeichnung,firma,manuell,logdatei,projekt,geloescht,beschreibung) 
+                  "INSERT INTO lager (bezeichnung,firma,manuell,logdatei,projekt,geloescht,beschreibung)
                   VALUES ('Hauptlager',1,0,NOW(),0,0,'')"
                 );
                 $lager_id = $this->app->DB->GetInsertID();
@@ -1199,7 +1243,7 @@ ean;';
             if($artikelid > 0)
             {
               foreach($fields as $key=>$value)
-              {                       
+              {   
                 switch($value)
                 {
                   case "name_de":
@@ -1218,13 +1262,13 @@ ean;';
                     $this->app->DB->Update("UPDATE artikel SET ".$value."='".$tmp[$value][$i]."' WHERE id='".$artikelid."' LIMIT 1");
                     break;
                   case  "lieferanteinkaufnetto":
-                    $alterek = $this->app->DB->Select("SELECT preis FROM einkaufspreise WHERE ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."' 
+                    $alterek = $this->app->DB->Select("SELECT preis FROM einkaufspreise WHERE ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."'
                         AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW()) AND adresse='".$lieferantid."' LIMIT 1");
                     if($alterek != str_replace(',','.',$tmp['lieferanteinkaufnetto'][$i]))
                     {
                       $ekpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
-                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."' 
+                      $this->app->DB->Update("UPDATE einkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
+                          WHERE adresse='".$lieferantid."' AND artikel='".$artikelid."'
                           AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW())
                           AND ab_menge='".$tmp['lieferanteinkaufmenge'][$i]."' LIMIT 1");
 
@@ -1247,55 +1291,55 @@ ean;';
                       $this->app->erp->AddEinkaufspreis($artikelid,$tmp['lieferanteinkaufmenge'][$i],
                           $lieferantid,$nr,$nr,
                           str_replace(',','.',$tmp['lieferanteinkaufnetto'][$i]),$tmp['lieferanteinkaufwaehrung'][$i],$tmp['lieferanteinkaufvpemenge'][$i]);
-                    } 
+                    }
                     break;
                   case  "verkaufspreis1netto":
-                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreis WHERE ab_menge='".$tmp['verkaufspreis1menge'][$i]."' 
+                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreis WHERE ab_menge='".$tmp['verkaufspreis1menge'][$i]."'
                         AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) WHERE adresse <='$kundenid' LIMIT 1");
                     if($altervk != str_replace(',','.',$tmp['verkaufspreis1netto'][$i]))
                     {
                       $vkpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
+                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
                           WHERE artikel='".$artikelid."' AND adresse='$kundenid'
                           AND ab_menge='".$tmp['verkaufspreis1menge'][$i]."' LIMIT 1");
 
                       $this->app->erp->AddVerkaufspreis($artikelid,$tmp['verkaufspreis1menge'][$i],
                           $kundenid,str_replace(',','.',$tmp['verkaufspreis1netto'][$i]),$tmp['verkaufspreis1waehrung'][$i]);
-                    } 
+                    }
                     break;
                   case  "verkaufspreis2netto":
-                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreis WHERE ab_menge='".$tmp['verkaufspreis2menge'][$i]."' 
+                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreis WHERE ab_menge='".$tmp['verkaufspreis2menge'][$i]."'
                         AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) WHERE adresse <='$kundenid' LIMIT 1");
                     if($altervk != str_replace(',','.',$tmp['verkaufspreis2netto'][$i]))
                     {
                       $vkpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
+                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
                           WHERE artikel='".$artikelid."' AND adresse='$kundenid'
                           AND ab_menge='".$tmp['verkaufspreis2menge'][$i]."' LIMIT 1");
 
                       $this->app->erp->AddVerkaufspreis($artikelid,$tmp['verkaufspreis2menge'][$i],
                           $kundenid,str_replace(',','.',$tmp['verkaufspreis2netto'][$i]),$tmp['verkaufspreis2waehrung'][$i]);
-                    } 
+                    }
                     break;
                   case  "verkaufspreis3netto":
-                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreis WHERE ab_menge='".$tmp['verkaufspreis3menge'][$i]."' 
+                    $altervk = $this->app->DB->Select("SELECT preis FROM verkaufspreis WHERE ab_menge='".$tmp['verkaufspreis3menge'][$i]."'
                         AND (gueltig_bis='0000-00-00' OR gueltig_bis >=NOW() ) WHERE adresse <='$kundenid' LIMIT 1");
                     if($altervk != str_replace(',','.',$tmp['verkaufspreis3netto'][$i]))
                     {
                       $vkpreisaenderungen++;
-                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY) 
+                      $this->app->DB->Update("UPDATE verkaufspreise SET gueltig_bis=DATE_SUB(NOW(),INTERVAL 1 DAY)
                           WHERE artikel='".$artikelid."' AND adresse='$kundenid'
                           AND ab_menge='".$tmp['verkaufspreis3menge'][$i]."' LIMIT 1");
 
                       $this->app->erp->AddVerkaufspreis($artikelid,$tmp['verkaufspreis3menge'][$i],
                           $kundenid,str_replace(',','.',$tmp['verkaufspreis3netto'][$i]),$tmp['verkaufspreis3waehrung'][$i]);
-                    } 
+                    }
                     break;
 
                 }
               }
             }
-          }   
+          }
           break;
         case "zeiterfassung":
           if($tmp['cmd'][$i]=="create" && $tmp['checked'][$i]=="1")
@@ -1331,7 +1375,7 @@ ean;';
                 $adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$tmp['lieferantennummer'][$i]."' AND lieferantennummer!='' LIMIT 1");
             }
             if($adresse <=0 && $felder['name']!="")
-            { 
+            {
               //adresse anlegen
               $adresse =$this->app->erp->ExportCreateAdresse($felder);
               if($tmp['lieferantennummer'][$i]!="")
@@ -1381,12 +1425,12 @@ ean;';
       $msg=$this->app->erp->base64_url_encode("<div class=\"info\">Export durchgef&uuml;hrt.</div>");
       header("Location: index.php?module=exportvorlage&action=export&id=$id&msg=$msg");
       exit;
-    } else {  
+    } else {
       $msg=$this->app->erp->base64_url_encode("<div class=\"info\">Export durchgef&uuml;hrt.</div>");
       header("Location: index.php?module=exportvorlage&action=export&id=$id&msg=$msg");
       exit;
     }
-  }   
+  }
 
 
   function ExportPrepareHeader($ziel,$csv_fields_keys,$csv_fields)
@@ -1431,7 +1475,7 @@ ean;';
       {
         case "herstellernummer":
           $fields['herstellernummer'] = $value;
-          $fields['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer 
+          $fields['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer
               FROM artikel WHERE herstellernummer='".$fields['herstellernummer']."' LIMIT 1");
           //                                                  if($fields[herstellernummer]<=0) $fields[herstellernummer]="";
           break;
@@ -1501,7 +1545,7 @@ ean;';
 
 
         default:
-          $fields[$fieldname] = $value;       
+          $fields[$fieldname] = $value;
           //$value = $data[($csv_fields_keys[$j]-1)];
           //  $value = $data[($csv_fields_keys[$j]-1)];
       }
@@ -1531,7 +1575,7 @@ ean;';
           $nummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE herstellernummer='".$fields['herstellernummer']."' LIMIT 1");
           $action_anzeige = "Update (Herstellernr. gefunden)";
           $action="update";
-        } 
+        }
         else if($fields['lieferantennummer']!="" && $fields['bestellnummer']!="")
         {
           $artikelid = $this->app->DB->Select("SELECT artikel FROM einkaufspreise WHERE bestellnummer='".$fields['bestellnummer']."'
@@ -1539,7 +1583,7 @@ ean;';
           $nummer = $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='".$artikelid."' LIMIT 1");
           $action_anzeige = "Update (Bestellnr. gefunden)";
           $action="update";
-        } 
+        }
 
 
         else {
