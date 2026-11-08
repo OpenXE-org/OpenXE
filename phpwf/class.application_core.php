@@ -27,7 +27,6 @@ use Xentral\Core\LegacyConfig\ConfigLoader;
  * @property phpWFAPI $WF
  * @property WFMonitor $WFM
  * @property Secure $Secure
- * @property PHPMailer $mail
  * @property Help $help
  * @property StringCleaner $stringcleaner
  * @property Acl $acl
@@ -74,7 +73,6 @@ class ApplicationCore
       'WF'=>array('class'=>'phpWFAPI','app'=>true),
       'WFM'=>array('class'=>'WFMonitor','app'=>true),
       'Secure'=>array('class'=>'Secure','app'=>true),
-      'mail'=>array('class'=>'PHPMailer','app'=>true),
       'help'=>array('class'=>'Help','app'=>true),
       'stringcleaner'=>array('class'=>'StringCleaner','app'=>true),
       'acl'=>array('class'=>'Acl','app'=>true),

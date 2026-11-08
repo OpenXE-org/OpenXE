@@ -888,53 +888,6 @@ if (!function_exists('getallheaders')) {
     return false;
   }
 
-  /** loads email settings from firmendaten
-   * used in few requests to send documents
-   *
-   * @return void
-   */
-  private function getEmailSettings()
-  {
-      $benutzername = $this->app->erp->Firmendaten('benutzername');
-      $passwort = $this->app->erp->Firmendaten('passwort');
-      $host = $this->app->erp->Firmendaten('host');
-      $port = $this->app->erp->Firmendaten('port');
-      $mailssl = $this->app->erp->Firmendaten('mailssl');
-      $mailanstellesmtp = $this->app->erp->Firmendaten('mailanstellesmtp');
-      $noauth = $this->app->erp->Firmendaten('noauth');
-
-      // mail
-      $this->app->mail = new PHPMailer($this->app);
-      $this->app->mail->CharSet = 'UTF-8';
-      $this->app->mail->PluginDir = 'plugins/phpmailer/';
-
-      if($mailanstellesmtp == '1'){
-          $this->app->mail->IsMail();
-      }else{
-          $this->app->mail->IsSMTP();
-
-          if($noauth == '1') {
-              $this->app->mail->SMTPAuth = false;
-          } else {
-              $this->app->mail->SMTPAuth = true;
-          }
-
-          if($mailssl == 1){
-              $this->app->mail->SMTPSecure = 'tls';                 // sets the prefix to the servier
-          }
-          else if($mailssl == 2){
-              $this->app->mail->SMTPSecure = 'ssl';                 // sets the prefix to the servier
-          }
-
-          $this->app->mail->Host = $host;
-
-          $this->app->mail->Port = $port;                   // set the SMTP port for the GMAIL server
-
-          $this->app->mail->Username = $benutzername;  // GMAIL username
-          $this->app->mail->Password = $passwort;            // GMAIL password
-      }
-  }
-
   function ApiServerTimeGet(){
     $this->XMLResponse(1,'<servertime>'.time().'</servertime>');
     $this->app->ExitXentral();
@@ -9292,7 +9245,6 @@ XML;
         return 5;
       }
     }
-    $this->getEmailSettings();
     $this->app->erp->BelegVersand($doctype, $id, $type, $printer);
 
     if(!$intern){
