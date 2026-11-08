@@ -32,12 +32,6 @@ final class PhpMailerTransport implements MailerTransportInterface
     {
         $this->config = $config;
         $this->phpMailer = $mailer;
-        //no username, no password = no SMTPAuth
-        if($config->getConfigValue('username', '') == '' && $config->getConfigValue('pasword', '') == '') {
-            $this->phpMailer->SMTPAuth = false;
-        } else {
-            $this->phpMailer->SMTPAuth = $config->getConfigValue('smtp_enabled', false);
-        }
 
         $this->phpMailer->Priority = $config->getConfigValue('priority', 3);
         $this->phpMailer->CharSet = $config->getConfigValue('charset', 'iso-8859-1');
@@ -52,7 +46,9 @@ final class PhpMailerTransport implements MailerTransportInterface
         $this->phpMailer->Port = $config->getConfigValue('port', 25);
         $this->phpMailer->Helo = $config->getConfigValue('helo', '');
         $this->phpMailer->SMTPSecure = $config->getConfigValue('smtp_security', '');
-        $this->phpMailer->SMTPAuth = $config->getConfigValue('smtp_enabled', false);
+        //no username, no password = no SMTPAuth
+        $this->phpMailer->SMTPAuth = $config->getConfigValue('smtp_enabled', false)
+            && ($config->getConfigValue('username', '') !== '' || $config->getConfigValue('password', '') !== '');
         $this->phpMailer->AuthType = $config->getConfigValue('auth_type', 'smtp');
         $this->phpMailer->SMTPAutoTLS = $config->getConfigValue('smtp_autotls_enabled', false);
         $this->phpMailer->SMTPOptions = $config->getConfigValue('smtp_options', []);
