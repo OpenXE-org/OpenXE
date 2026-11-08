@@ -45,6 +45,7 @@ class RechnungPDF extends BriefpapierCustom {
 
   public function GetRechnung($id, $titel_abw="",$doppeltmp=0, $_datum = null, $text_abw = '')
   {
+    $belegData = $this->app->erp->GetBelegData('rechnung', (int)$id);
 
     if($this->app->erp->Firmendaten("steuerspalteausblenden")=="1")
     { 
@@ -649,6 +650,16 @@ class RechnungPDF extends BriefpapierCustom {
     {
       list($summe,$gesamtsumme, $summen) = $this->app->erp->steuerAusBelegPDF($this->table, $this->id);
       $gesamtsteuern = $gesamtsumme - $summe;
+    }
+
+    // Apply canonical amounts from central DocumentDataService if available
+    if ($belegData && !empty($belegData['summen'])) {
+      $summe = (float)$belegData['summen']['line_extension_amount'];
+      $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
+      $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
+      if (!empty($belegData['summen_nach_steuersatz'])) {
+        $summen = $belegData['summen_nach_steuersatz'];
+      }
     }
     
     if($this->app->erp->RechnungMitUmsatzeuer($id))
