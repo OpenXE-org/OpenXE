@@ -87,6 +87,7 @@ class WidgetGenexportvorlage
     $field->AddOption('Gutschrift Positionen','gutschrift_position');
     $field->AddOption('Lieferschein Positionen','lieferschein_position');
     $field->AddOption('Bestellung Positionen','bestellung_position');
+    $field->AddOption('Dateien','dateien');
     $this->form->NewField($field);
 
     $field = new HTMLCheckbox("exporterstezeilenummer","","","1","0","0");

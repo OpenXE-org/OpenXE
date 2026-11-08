@@ -37643,8 +37643,9 @@ function Firmendaten($field,$projekt="")
       /*
         Case sensitive right now, should be harmonized with a migration:
       */
-        function getAllowedDateiObjekte() {
-            return array(
+        function getAllowedDateiObjekte(string $type = '') {
+            $result =
+            array(
                 'docscan'=> ['wert' => 'docscan','tabelle' => 'docscan', 'suchfelder' => ['id']],
                 'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'suchfelder' => ['id']],
                 'payment_transaction'=> ['wert' => 'payment_transaction','tabelle' => 'payment_transaction', 'suchfelder' => ['id']],
@@ -37655,7 +37656,7 @@ function Firmendaten($field,$projekt="")
                 'lieferschein'=> ['wert' => 'lieferschein','tabelle' => 'lieferschein', 'suchfelder' => ['belegnr']],
                 'rechnung'=> ['wert' => 'rechnung','tabelle' => 'rechnung', 'suchfelder' => ['belegnr']],
                 'dokument'=> ['wert' => 'dokument','tabelle' => 'dokumente', 'suchfelder' => ['id']],
-                'adressen'=> ['wert' => 'Adressen','tabelle' => 'adresse', 'suchfelder' => ['belegnr']],
+                'adressen'=> ['wert' => 'Adressen','tabelle' => 'adresse', 'suchfelder' => ['id'],['kundennummer'],['lieferantennummer']],
                 'angebot'=> ['wert' => 'angebot','tabelle' => 'angebot', 'suchfelder' => ['belegnr']],
                 'bestellung'=> ['wert' => 'bestellung','tabelle' => 'bestellung', 'suchfelder' => ['belegnr']],
                 'verbindlichkeit'=> ['wert' => 'verbindlichkeit','tabelle' => 'verbindlichkeit', 'suchfelder' => ['belegnr','rechnung']],
@@ -37669,7 +37670,14 @@ function Firmendaten($field,$projekt="")
                 'ticket_header'=> ['wert' => 'ticket_header','tabelle' => 'ticket', 'suchfelder' => ['id']],
                 'ticket'=> ['wert' => 'Ticket','tabelle' => 'ticket_nachricht', 'suchfelder' => ['id']],
                 'lieferantengutschrift'=> ['wert' => 'lieferantengutschrift','tabelle' => 'lieferantengutschrift', 'suchfelder' => ['belegnr', 'rechnung']],
-                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpakete', 'suchfelder' => ['id']],            );
+                'versandpaket'=> ['wert' => 'versandpaket','tabelle' => 'versandpakete', 'suchfelder' => ['id']],
+            );
+            if (!empty($type)) {
+                return(array($result[strtolower($type)]));
+            }
+            else {
+                return($result);
+            }
         }
 
      function getDateiObjekt(string $objekt, string $objektnummer, string $suchfeld = '') {
