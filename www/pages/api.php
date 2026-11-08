@@ -10949,9 +10949,9 @@ XML;
 
     foreach ($xmldata->xml->artikel as $artikel){
       if($artikel->id > 0)
-        $id = $this->app->DB->Select("SELECT id FROM artikel WHERE id='$artikel->id' LIMIT 1");
-      else if ($artikel->nummer!="")
-        $id = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='".$artikel->nummer."' LIMIT 1");
+        $id = $this->app->DB->Select("SELECT id FROM artikel WHERE id='".(int)$artikel->id."' LIMIT 1");
+      else if ((string)$artikel->nummer!="")
+        $id = $this->app->DB->Select("SELECT id FROM artikel WHERE nummer='".(string)$artikel->nummer."' LIMIT 1");
 
       if($id<=0) continue;
       $this->app->erp->SetzteSperreAPIArtikelPreise($id);
@@ -10959,14 +10959,20 @@ XML;
       foreach ($artikel->verkaufspreise as $vk) {
         foreach ($vk->staffelpreis as $staffelpreis) {
 
-          if($staffelpreis->kundennummer!="")
-            $staffelpreis->adresse = $this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='".$staffelpreis->kundennummer."' LIMIT 1");
-          if($staffelpreis->gruppe > 0)
-            $this->app->erp->AddVerkaufspreisGruppe($id,$staffelpreis->ab_menge,$staffelpreis->gruppe,$staffelpreis->preis);
-          else if($staffelpreis->adresse > 0)
-            $this->app->erp->AddVerkaufspreis($id,$staffelpreis->ab_menge,$staffelpreis->adresse,$staffelpreis->preis);
-          else if($staffelpreis->kundennummer=="" && $staffelpreis->adresse <= 0)
-            $this->app->erp->AddVerkaufspreis($id,$staffelpreis->ab_menge,0,$staffelpreis->preis);
+          // SimpleXML-Werte typisieren (PHP 8: round() u. a. akzeptieren kein SimpleXMLElement)
+          $kundennummer = (string)$staffelpreis->kundennummer;
+          $gruppe = (int)$staffelpreis->gruppe;
+          $abmenge = (float)str_replace(',','.',(string)$staffelpreis->ab_menge);
+          $preis = (float)str_replace(',','.',(string)$staffelpreis->preis);
+          $adresse = (int)$staffelpreis->adresse;
+          if($kundennummer!="")
+            $adresse = (int)$this->app->DB->Select("SELECT id FROM adresse WHERE kundennummer='".$kundennummer."' LIMIT 1");
+          if($gruppe > 0)
+            $this->app->erp->AddVerkaufspreisGruppe($id,$abmenge,$gruppe,$preis);
+          else if($adresse > 0)
+            $this->app->erp->AddVerkaufspreis($id,$abmenge,$adresse,$preis);
+          else if($kundennummer=="" && $adresse <= 0)
+            $this->app->erp->AddVerkaufspreis($id,$abmenge,0,$preis);
         }
       }
 
@@ -10974,11 +10980,11 @@ XML;
       foreach ($artikel->einkaufspreise as $ek) {
         foreach ($ek->staffelpreis as $staffelpreis) {
 
-    $lieferantadresse = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".$staffelpreis->lieferantennummer."' AND lieferantennummer!='' LIMIT 1");
+    $lieferantadresse = $this->app->DB->Select("SELECT id FROM adresse WHERE lieferantennummer='".(string)$staffelpreis->lieferantennummer."' AND lieferantennummer!='' LIMIT 1");
     if($lieferantadresse > 0)
     {
-            $this->app->erp->AddEinkaufspreis($id,$staffelpreis->ab_menge,$lieferantadresse,$staffelpreis->bestellnummer,$staffelpreis->bezeichnunglieferant,
-    $staffelpreis->preis,$staffelpreis->waehrung);
+            $this->app->erp->AddEinkaufspreis($id,(float)str_replace(',','.',(string)$staffelpreis->ab_menge),$lieferantadresse,(string)$staffelpreis->bestellnummer,(string)$staffelpreis->bezeichnunglieferant,
+    (float)str_replace(',','.',(string)$staffelpreis->preis),(string)$staffelpreis->waehrung);
     }
         }
       }
