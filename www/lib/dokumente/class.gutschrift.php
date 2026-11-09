@@ -37,6 +37,8 @@ class GutschriftPDF extends BriefpapierCustom {
 
   function GetGutschrift($id)
   {
+    $belegData = $this->app->erp->GetBelegData('gutschrift', (int)$id);
+
     $this->doctypeid = $id;
 
     if($this->app->erp->Firmendaten("steuerspalteausblenden")=="1")
@@ -402,57 +404,21 @@ class GutschriftPDF extends BriefpapierCustom {
               "keinrabatterlaubt"=>$value['keinrabatterlaubt'],
               "rabatt"=>$value['rabatt']));
       }
-      if($positionenkaufmaenischrunden == 3){
-        $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
-      }else{
-        $netto_gesamt = $value['menge'] * ($value['preis'] - ($value['preis'] / 100 * $value['rabatt']));
-      }
-      if($positionenkaufmaenischrunden)
-      {
-        $netto_gesamt = round($netto_gesamt, 2);
-      }
-      $summe = $summe + $netto_gesamt;
-      if(!isset($summen[$value['steuersatz']]))$summen[$value['steuersatz']] = 0;
-      $summen[$value['steuersatz']] += ($netto_gesamt/100)*$value['steuersatz'];
-      $gesamtsteuern +=($netto_gesamt/100)*$value['steuersatz'];
-      /*
-      if($value['umsatzsteuer']=="" || $value['umsatzsteuer']=="normal")
-      {
-        $summeV = $summeV + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzNormal(false,$id,"gutschrift"));
-      }
-      else {
-        $summeR = $summeR + (($netto_gesamt/100)*$this->app->erp->GetSteuersatzErmaessigt(false,$id,"gutschrift"));
-      }*/
+    }
 
+    // Apply canonical amounts from central DocumentDataService
+    $summe = (float)$belegData['summen']['line_extension_amount'];
+    $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
+    $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
+    if (!empty($belegData['summen_nach_steuersatz'])) {
+        $summen = $belegData['summen_nach_steuersatz'];
     }
-    
-    if($positionenkaufmaenischrunden && isset($summen) && is_array($summen))
-    {
-      $gesamtsteuern = 0;
-      foreach($summen as $k => $v)
-      {
-        $summen[$k] = round($v, 2);
-        $gesamtsteuern += round($v, 2);
-      }
-    }
-    if($positionenkaufmaenischrunden)
-    {
-      list($summe,$gesamtsumme, $summen) = $this->app->erp->steuerAusBelegPDF($this->table, $this->id);
-      $gesamtsteuern = $gesamtsumme - $summe;
-    }
-    
-    /*
-       $summe = $this->app->DB->Select("SELECT SUM(menge*preis) FROM gutschrift_position WHERE gutschrift='$id'");
 
-       $summeV = $this->app->DB->Select("SELECT SUM(menge*preis) FROM gutschrift_position WHERE gutschrift='$id' AND (umsatzsteuer='normal' or umsatzsteuer='')")/100 * 19;
-       $summeR = $this->app->DB->Select("SELECT SUM(menge*preis) FROM gutschrift_position WHERE gutschrift='$id' AND umsatzsteuer='ermaessigt'")/100 * 7;
-     */     
     if($this->app->erp->GutschriftMitUmsatzeuer($id))
     {
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0));
-      //$this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $summeV + $summeR,"totalTaxV"=>$summeV,"totalTaxR"=>$summeR));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>($gesamtsumme != 0 ? $gesamtsumme : ($summe + $gesamtsteuern)),"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0));
     } else
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>($gesamtsumme != 0 ? $gesamtsumme : $summe)));
 
     /* Dateiname */
     $tmp_name = str_replace(' ','',trim($this->recipient['enterprise']));

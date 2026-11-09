@@ -19,6 +19,87 @@ use Exception;
  */
 class DocumentDataService
 {
+    /**
+     * Supported standard document types.
+     */
+    public const SUPPORTED_DOCTYPES = [
+        'rechnung',
+        'gutschrift',
+        'auftrag',
+        'angebot',
+        'bestellung',
+        'anfrage',
+        'preisanfrage',
+        'proformarechnung',
+    ];
+
+    /**
+     * Document type configuration registry.
+     */
+    public const DOCTYPE_CONFIG = [
+        'rechnung' => [
+            'table' => 'rechnung',
+            'positions_table' => 'rechnung_position',
+            'parent_field' => 'rechnung',
+            'has_prices' => true,
+        ],
+        'gutschrift' => [
+            'table' => 'gutschrift',
+            'positions_table' => 'gutschrift_position',
+            'parent_field' => 'gutschrift',
+            'has_prices' => true,
+        ],
+        'auftrag' => [
+            'table' => 'auftrag',
+            'positions_table' => 'auftrag_position',
+            'parent_field' => 'auftrag',
+            'has_prices' => true,
+        ],
+        'angebot' => [
+            'table' => 'angebot',
+            'positions_table' => 'angebot_position',
+            'parent_field' => 'angebot',
+            'has_prices' => true,
+        ],
+        'bestellung' => [
+            'table' => 'bestellung',
+            'positions_table' => 'bestellung_position',
+            'parent_field' => 'bestellung',
+            'has_prices' => true,
+        ],
+        'anfrage' => [
+            'table' => 'anfrage',
+            'positions_table' => 'anfrage_position',
+            'parent_field' => 'anfrage',
+            'has_prices' => false,
+        ],
+        'preisanfrage' => [
+            'table' => 'preisanfrage',
+            'positions_table' => 'preisanfrage_position',
+            'parent_field' => 'preisanfrage',
+            'has_prices' => false,
+        ],
+        'proformarechnung' => [
+            'table' => 'proformarechnung',
+            'positions_table' => 'proformarechnung_position',
+            'parent_field' => 'proformarechnung',
+            'has_prices' => true,
+        ],
+    ];
+
+    /**
+     * Aliases mapped to canonical document types.
+     */
+    public const DOCTYPE_ALIASES = [
+        'proforma' => 'proformarechnung',
+        'creditnote' => 'gutschrift',
+        'invoice' => 'rechnung',
+        'order' => 'auftrag',
+        'offer' => 'angebot',
+        'quote' => 'angebot',
+        'purchaseorder' => 'bestellung',
+    ];
+
     /** @var \ApplicationCore */
     protected $app;
 
@@ -31,9 +112,32 @@ class DocumentDataService
     }
 
     /**
+     * Check if a document type is supported by the registry.
+     *
+     * @param string $doctype
+     * @return bool
+     */
+    public static function isSupportedDocType(string $doctype): bool
+    {
+        $doctype = strtolower(trim($doctype));
+        $canonical = self::DOCTYPE_ALIASES[$doctype] ?? $doctype;
+        return isset(self::DOCTYPE_CONFIG[$canonical]);
+    }
+
+    /**
+     * Get list of all supported canonical document types.
+     *
+     * @return array
+     */
+    public static function getSupportedDocTypes(): array
+    {
+        return self::SUPPORTED_DOCTYPES;
+    }
+
+    /**
      * Retrieve complete, standardized document data including canonical calculations.
      *
-     * @param string $doctype Document type ('rechnung', 'auftrag', 'angebot', 'gutschrift')
+     * @param string $doctype Document type ('rechnung', 'gutschrift', 'auftrag', 'angebot', 'bestellung', etc.)
      * @param int $id Document ID
      * @param array $options Optional calculation flags
      * @return array Standardized document array
@@ -42,12 +146,19 @@ class DocumentDataService
     public function getBelegData(string $doctype, int $id, array $options = []): array
     {
         $doctype = strtolower(trim($doctype));
-        if ($id <= 0 || !preg_match('/^[a-z0-9_]+$/', $doctype)) {
-            throw new Exception("Invalid document type or ID: {$doctype} #{$id}");
+        $doctype = self::DOCTYPE_ALIASES[$doctype] ?? $doctype;
+
+        if ($id <= 0 || !isset(self::DOCTYPE_CONFIG[$doctype])) {
+            throw new Exception("Unsupported or invalid document type: {$doctype} #{$id}");
         }
 
+        $config = self::DOCTYPE_CONFIG[$doctype];
+        $table = $config['table'];
+        $positionsTable = $config['positions_table'];
+        $parentField = $config['parent_field'];
+
         // 1. Fetch document header
-        $kopf = $this->app->DB->SelectRow("SELECT * FROM `{$doctype}` WHERE `id` = " . (int)$id . " LIMIT 1");
+        $kopf = $this->app->DB->SelectRow("SELECT * FROM `{$table}` WHERE `id` = " . (int)$id . " LIMIT 1");
         if (empty($kopf)) {
             throw new Exception("Document {$doctype} #{$id} not found.");
         }
@@ -62,15 +173,29 @@ class DocumentDataService
             $adresse = $this->app->DB->SelectRow("SELECT * FROM `adresse` WHERE `id` = {$adresseId} LIMIT 1") ?: [];
         }
 
-        // 4. Fetch linked order / delivery note if available
+        // 4. Fetch linked documents if available
         $auftrag = [];
-        if (!empty($kopf['auftragid'])) {
-            $auftrag = $this->app->DB->SelectRow("SELECT * FROM `auftrag` WHERE `id` = " . (int)$kopf['auftragid'] . " LIMIT 1") ?: [];
+        $auftragId = (int)($kopf['auftragid'] ?? ($kopf['auftrag'] ?? 0));
+        if ($auftragId > 0) {
+            $auftrag = $this->app->DB->SelectRow("SELECT * FROM `auftrag` WHERE `id` = {$auftragId} LIMIT 1") ?: [];
         }
 
         $lieferschein = [];
-        if (!empty($kopf['lieferschein'])) {
-            $lieferschein = $this->app->DB->SelectRow("SELECT * FROM `lieferschein` WHERE `id` = " . (int)$kopf['lieferschein'] . " LIMIT 1") ?: [];
+        $lieferscheinId = (int)($kopf['lieferschein'] ?? 0);
+        if ($lieferscheinId > 0) {
+            $lieferschein = $this->app->DB->SelectRow("SELECT * FROM `lieferschein` WHERE `id` = {$lieferscheinId} LIMIT 1") ?: [];
+        }
+
+        $rechnung = [];
+        $rechnungId = (int)($kopf['rechnungid'] ?? ($kopf['rechnung'] ?? 0));
+        if ($rechnungId > 0) {
+            $rechnung = $this->app->DB->SelectRow("SELECT * FROM `rechnung` WHERE `id` = {$rechnungId} LIMIT 1") ?: [];
+        }
+
+        $angebot = [];
+        $angebotId = (int)($kopf['angebotid'] ?? ($kopf['angebot'] ?? 0));
+        if ($angebotId > 0) {
+            $angebot = $this->app->DB->SelectRow("SELECT * FROM `angebot` WHERE `id` = {$angebotId} LIMIT 1") ?: [];
         }
 
         // 4b. Fetch linked clerk / contact person (Bearbeiter)
@@ -109,18 +234,13 @@ class DocumentDataService
             $kopf['faelligkeitsdatum'] = date('Y-m-d', strtotime($kopf['datum'] . " + {$days} days"));
         }
 
-        // 5. Fetch positions
-        $positionsTable = "{$doctype}_position";
-        $positions = [];
-        if ($doctype === 'rechnung' || $doctype === 'gutschrift' || $doctype === 'auftrag') {
-            $positions = $this->app->DB->SelectArr(
-//                "SELECT p.*, IFNULL(p.ean, a.ean) AS ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$doctype}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC" -- Possible bug by importing from tsgoff? _position does not have ean field
-                "SELECT p.*, a.ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$doctype}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC" 
-            ) ?: [];
-        }
+        // 5. Fetch positions via standardized query across all document types
+        $positions = $this->app->DB->SelectArr(
+            "SELECT p.*, a.ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$parentField}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC"
+        ) ?: [];
         if (empty($positions)) {
             $positions = $this->app->DB->SelectArr(
-                "SELECT * FROM `{$positionsTable}` WHERE `{$doctype}` = " . (int)$id . " ORDER BY sort ASC, id ASC"
+                "SELECT * FROM `{$positionsTable}` WHERE `{$parentField}` = " . (int)$id . " ORDER BY sort ASC, id ASC"
             ) ?: [];
         }
 
@@ -137,6 +257,8 @@ class DocumentDataService
             'bearbeiter' => $bearbeiter,
             'auftrag' => $auftrag,
             'lieferschein' => $lieferschein,
+            'rechnung' => $rechnung,
+            'angebot' => $angebot,
             'positionen' => $calculated['positionen'],
             'steuern' => $calculated['steuern'],
             'summen' => $calculated['summen'],
@@ -177,12 +299,16 @@ class DocumentDataService
         $processedPositions = [];
         $taxGroups = [];
         $lineExtensionAmount = 0.0;
+        $optionalNetto = 0.0;
+        $optionalSteuer = 0.0;
 
         foreach ($positions as $index => $pos) {
             $posId = (int)($pos['id'] ?? 0);
             $menge = (float)($pos['menge'] ?? 1);
             $rawPrice = (float)($pos['preis'] ?? 0);
             $rabatt = (float)($pos['rabatt'] ?? 0);
+            $isOptional = !empty($pos['optional']);
+            $isExcluded = !empty($pos['nicht_einrechnen']);
 
             // Determine tax rate and text
             $steuersatz = null;
@@ -218,7 +344,6 @@ class DocumentDataService
                 // Line net amount (BT-131): round(quantity * netUnitPrice, 2)
                 $lineNetAmount = round($menge * $netPriceUnitRounded, 2);
             }
-            $lineExtensionAmount += $lineNetAmount;
 
             // Line gross amount (informative)
             $lineTaxAmount = round($lineNetAmount * ($steuersatz / 100.0), 2);
@@ -235,6 +360,18 @@ class DocumentDataService
             $pos['steuerbetrag'] = $lineTaxAmount;
 
             $processedPositions[$index] = $pos;
+
+            if ($isOptional) {
+                $optionalNetto += $lineNetAmount;
+                $optionalSteuer += $lineTaxAmount;
+                continue;
+            }
+
+            if ($isExcluded) {
+                continue;
+            }
+
+            $lineExtensionAmount += $lineNetAmount;
 
             // Group net amounts by tax rate & category for EN 16931 category-level tax computation
             $taxGroupKey = sprintf('%s_%.2f', $taxCategory, $steuersatz);
@@ -292,6 +429,10 @@ class DocumentDataService
             'payable_rounding_amount' => $payableRoundingAmount,
             'prepaid_amount' => $prepaidAmount,
             'payable_amount' => $payableAmount,
+
+            'optional_netto' => round($optionalNetto, 2),
+            'optional_steuer' => round($optionalSteuer, 2),
+            'optional' => round($optionalNetto + $optionalSteuer, 2),
 
             // German labels
             'netto_gesamt' => $taxExclusiveAmount,
