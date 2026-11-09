@@ -37,6 +37,8 @@ class BestellungPDF extends BriefpapierCustom {
 
   function GetBestellung($id)
   {
+    $belegData = $this->app->erp->GetBelegData('bestellung', (int)$id);
+
     $this->doctypeid = $id;
     $briefpapier_bearbeiter_ausblenden = $this->app->erp->Firmendaten('briefpapier_bearbeiter_ausblenden');
     $this->setRecipientLieferadresse($id,"bestellung");
@@ -370,30 +372,25 @@ class BestellungPDF extends BriefpapierCustom {
           "name"=>$value['bezeichnunglieferant']
         )
       );
-            
-      $netto_gesamt = $value['menge']*$value['preis'];
-      $summe += $netto_gesamt;
-      if(!isset($summen[$value['steuersatz']])) {
-        $summen[$value['steuersatz']] = 0;
-      }
-      $summen[$value['steuersatz']] += ($netto_gesamt/100)*$value['steuersatz'];
-      $gesamtsteuern +=($netto_gesamt/100)*$value['steuersatz'];
     }
-/*
-    $summe = $this->app->DB->Select("SELECT SUM(menge*preis) FROM bestellung_position WHERE bestellung='$id'");
-    $summeV = $this->app->DB->Select("SELECT SUM(menge*preis) FROM bestellung_position WHERE bestellung='$id' AND (umsatzsteuer='normal' || umsatzsteuer='') ")/100 * $this->app->erp->GetSteuersatzNormal(false,$id,"bestellung");
-    $summeR = $this->app->DB->Select("SELECT SUM(menge*preis) FROM bestellung_position WHERE bestellung='$id' AND umsatzsteuer='ermaessigt'")/100 * $this->app->erp->GetSteuersatzErmaessigt(false,$id,"bestellung");
-*/
+
     if($this->bestellungohnepreis!=1)
     {
+      // Apply canonical amounts from central DocumentDataService
+      $summe = (float)$belegData['summen']['line_extension_amount'];
+      $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
+      $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
+      if (!empty($belegData['summen_nach_steuersatz'])) {
+          $summen = $belegData['summen_nach_steuersatz'];
+      }
+
       if($this->app->erp->BestellungMitUmsatzeuer($id))
       {
         $this->setTotals(
-          array('totalArticles'=>$summe,'total'=>$summe + $gesamtsteuern,'summen'=>$summen,'totalTaxV'=>0,'totalTaxR'=>0)
+          array('totalArticles'=>$summe,'total'=>($gesamtsumme != 0 ? $gesamtsumme : ($summe + $gesamtsteuern)),'summen'=>$summen,'totalTaxV'=>0,'totalTaxR'=>0)
         );
-        //$this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $summeV + $summeR,"totalTaxV"=>$summeV,"totalTaxR"=>$summeR));
       } else{
-        $this->setTotals(array('totalArticles' => $summe, 'total' => $summe));
+        $this->setTotals(array('totalArticles' => $summe, 'total' => ($gesamtsumme != 0 ? $gesamtsumme : $summe)));
       }
     }
 

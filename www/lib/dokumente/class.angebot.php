@@ -35,6 +35,8 @@ class AngebotPDF extends BriefpapierCustom {
 
   function GetAngebot($id)
   {
+    $belegData = $this->app->erp->GetBelegData('angebot', (int)$id);
+
     $this->doctypeid = $id;
 
     if($this->app->erp->Firmendaten("steuerspalteausblenden")=="1")
@@ -475,55 +477,24 @@ class AngebotPDF extends BriefpapierCustom {
             "keinrabatterlaubt"=>$value['keinrabatterlaubt'],
             "rabatt"=>$value['rabatt'],
             "steuertext"=>$value['steuertext']));
-      if($positionenkaufmaenischrunden == 3){
-        if (!$value['nicht_einrechnen']) {        
-            $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
-        }
-      }else if (!$value['nicht_einrechnen']) {
-        $netto_gesamt = $value['menge'] * ($value['preis'] - ($value['preis'] / 100 * $value['rabatt']));
-      }
-      if($positionenkaufmaenischrunden)
-      {
-        $netto_gesamt = round($netto_gesamt, 2);
-      }
-      if(!isset($summen[$value['steuersatz']])) {            
-        $summen[$value['steuersatz']] = 0;
-      }
-      if($value['optional']!="1"){        
-        if($value['explodiert_parent'] == 0 || !$berechnen_aus_teile)
-        {
-          $summen[$value['steuersatz']] += ($netto_gesamt/100)*$value['steuersatz'];
-          $summe = $summe + $netto_gesamt;         
-          $gesamtsteuern +=($netto_gesamt/100)*$value['steuersatz'];
-        }      
-      } else {
-        $summe_netto_optional += $netto_gesamt;
-        $steuern_optional +=($netto_gesamt/100)*$value['steuersatz'];
-      }
     }
-    
-    if($positionenkaufmaenischrunden && isset($summen) && is_array($summen))
-    {
-      $gesamtsteuern = 0;
-      foreach($summen as $k => $v)
-      {
-        $summen[$k] = round($v, 2);
-        $gesamtsteuern += round($v, 2);
-      }
-    }
-    
-    if($positionenkaufmaenischrunden)
-    {
-      list($summe,$gesamtsumme, $summen) = $this->app->erp->steuerAusBelegPDF($this->table, $this->id);
-      $gesamtsteuern = $gesamtsumme - $summe;
+
+    // Apply canonical amounts from central DocumentDataService
+    $summe = (float)$belegData['summen']['line_extension_amount'];
+    $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
+    $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
+    $summe_netto_optional = (float)($belegData['summen']['optional_netto'] ?? 0.0);
+    $optional_gesamt = (float)($belegData['summen']['optional'] ?? 0.0);
+    $steuern_optional = $optional_gesamt - $summe_netto_optional;
+    if (!empty($belegData['summen_nach_steuersatz'])) {
+        $summen = $belegData['summen_nach_steuersatz'];
     }
 
     if($this->app->erp->AngebotMitUmsatzeuer($id))
     {
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe + $gesamtsteuern,"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0,"optional"=>$summe_netto_optional+$steuern_optional,"optional_netto"=>$summe_netto_optional));
-      //$this->setTotals(array("totalArticles"=>$summe,"totalTaxV"=>$summeV,"totalTaxR"=>$summeR,"total"=>$summe+$summeV+$summeR));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>($gesamtsumme != 0 ? $gesamtsumme : ($summe + $gesamtsteuern)),"summen"=>$summen,"totalTaxV"=>0,"totalTaxR"=>0,"optional"=>$optional_gesamt,"optional_netto"=>$summe_netto_optional));
     } else {
-      $this->setTotals(array("totalArticles"=>$summe,"total"=>$summe,"optional"=>$summe_netto_optional));
+      $this->setTotals(array("totalArticles"=>$summe,"total"=>($gesamtsumme != 0 ? $gesamtsumme : $summe),"optional"=>$summe_netto_optional));
     }
 
     /* Dateiname */

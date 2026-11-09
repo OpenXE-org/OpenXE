@@ -37,6 +37,8 @@ class AuftragPDF extends BriefpapierCustom {
 
   function GetAuftrag($id)
   {
+    $belegData = $this->app->erp->GetBelegData('auftrag', (int)$id);
+
     $this->doctypeid = $id;
     $lvl = null;
     if($this->app->erp->Firmendaten("steuerspalteausblenden")=="1")
@@ -504,51 +506,27 @@ class AuftragPDF extends BriefpapierCustom {
               "keineeinzelartikelanzeigen"=>$value['keineeinzelartikelanzeigen'],
               "anzahlunterartikel"=>$value['anzahlunterartikel']));
       }
-
-	if (!is_numeric($value['preis'])) {
-		$value['preis'] = 0;
-	}
-
-      if($positionenkaufmaenischrunden == 3) {
-        $netto_gesamt = $value['menge'] * round($value['preis'] - ($value['preis'] / 100 * $value['rabatt']),2);
-      }
-      else {
-        $netto_gesamt = $value['menge'] * ($value['preis'] - ($value['preis'] / 100 * $value['rabatt']));
-      }
-      if($positionenkaufmaenischrunden) {
-        $netto_gesamt = round($netto_gesamt, 2);
-      }
-      $summe = $summe + $netto_gesamt;
-      if(!isset($summen[$value['steuersatz']])) {
-        $summen[$value['steuersatz']] = 0;
-      }
-      $summen[$value['steuersatz']] += ($netto_gesamt/100)*$value['steuersatz'];
-      $gesamtsteuern +=($netto_gesamt/100)*$value['steuersatz'];
     }
 
-    if($positionenkaufmaenischrunden && isset($summen) && is_array($summen)) {
-      $gesamtsteuern = 0;
-      foreach($summen as $k => $v) {
-        $summen[$k] = round($v, 2);
-        $gesamtsteuern += round($v, 2);
-      }
+    // Apply canonical amounts from central DocumentDataService
+    $summe = (float)$belegData['summen']['line_extension_amount'];
+    $gesamtsumme = (float)$belegData['summen']['tax_inclusive_amount'];
+    $gesamtsteuern = (float)$belegData['summen']['tax_total_amount'];
+    if (!empty($belegData['summen_nach_steuersatz'])) {
+        $summen = $belegData['summen_nach_steuersatz'];
     }
-    if($positionenkaufmaenischrunden) {
-      list($summe,$gesamtsumme, $summen) = $this->app->erp->steuerAusBelegPDF($this->table, $this->id);
-      $gesamtsteuern = $gesamtsumme - $summe;
-    }
+
     if($this->app->erp->AuftragMitUmsatzeuer($id)) {
       $this->setTotals(
         [
           'totalArticles' => $summe,
-          'total'         => ($gesamtsumme != 0?$gesamtsumme:( $summe + $gesamtsteuern)),
-          'summen'        =>$summen,
-          'totalTaxV'     =>0,
-          'totalTaxR'     =>0
+          'total'         => ($gesamtsumme != 0 ? $gesamtsumme : ($summe + $gesamtsteuern)),
+          'summen'        => $summen,
+          'totalTaxV'     => 0,
+          'totalTaxR'     => 0
         ]
       );
-    }
-    else {
+    } else {
       $this->setTotals(
         [
           'totalArticles' => ($gesamtsumme != 0 ? $gesamtsumme : $summe),
