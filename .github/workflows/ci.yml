@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, feature/abschlagsrechnung, erechnungpdf ]
+  pull_request:
+    branches: [ master, feature/abschlagsrechnung, erechnungpdf ]
+  workflow_dispatch:
+
+jobs:
+  lint-and-unit-tests:
+    name: PHP ${{ matrix.php }} Lint & Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, simplexml, dom, mysqli
+
+      - name: PHP Syntax Lint
+        run: |
+          php -l www/pages/abschlagsrechnung.php
+          php -l www/pages/auftrag.php
+          php -l www/pages/rechnung.php
+          php -l www/lib/class.erpapi.php
+
+      - name: Run Abschlagsrechnung Unit Tests
+        run: php tests/Unit/AbschlagsrechnungUnitTest.php
+
+      - name: Run DocumentDataService Unit Tests (if present)
+        run: |
+          if [ -f tests/Unit/DocumentDataServiceTest.php ]; then
+            php tests/Unit/DocumentDataServiceTest.php
+          fi
+
+  integration-tests:
+    name: MariaDB Integration Tests (PHP 8.3)
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: openxe
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, simplexml, dom, mysqli
+
+      - name: Initialize Database Schema
+        run: |
+          mysql -h 127.0.0.1 -u root -proot openxe < database/struktur.sql
+
+      - name: Configure OpenXE
+        run: |
+          cat << 'EOF' > conf/user.inc.php
+          <?php
+          $this->WFdbhost = '127.0.0.1';
+          $this->WFdbname = 'openxe';
+          $this->WFdbuser = 'root';
+          $this->WFdbpass = 'root';
+          $this->WFuserdata = dirname(__DIR__) . '/userdata';
+          EOF
+
+      - name: Run Abschlagsrechnung Integration Test
+        working-directory: www
+        run: php ../tests/test_abschlagsrechnung.php
