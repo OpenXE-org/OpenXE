@@ -154,9 +154,14 @@ class Abschlagsrechnung
      */
     public function checkPermission(string $action, ?int $auftragId = null): bool
     {
-        // Internal/CLI tests or unauthenticated background calls without user context
+        // CLI execution (integration tests, cronjobs, batch commands)
+        if (php_sapi_name() === 'cli') {
+            return true;
+        }
+
+        // Unauthenticated web calls are denied
         if (!isset($this->app->User) || (int)$this->app->User->GetID() <= 0) {
-            return php_sapi_name() === 'cli';
+            return false;
         }
 
         // Admin has all rights

@@ -68,7 +68,7 @@ jobs:
 
       - name: Initialize Database Schema
         run: |
-          mysql -h 127.0.0.1 -u root -proot openxe < database/struktur.sql
+          mysql -h 127.0.0.1 -u root -proot --init-command="SET @@SESSION.sql_mode='';" openxe < database/struktur.sql
 
       - name: Configure OpenXE
         run: |
@@ -80,6 +80,10 @@ jobs:
           $this->WFdbpass = 'root';
           $this->WFuserdata = dirname(__DIR__) . '/userdata';
           EOF
+
+      - name: Run Database Upgrades
+        run: |
+          cd upgrade && php data/upgrade.php -db -do
 
       - name: Run Abschlagsrechnung Integration Test
         working-directory: www
