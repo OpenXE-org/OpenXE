@@ -263,6 +263,7 @@ class DocumentDataService
             'steuern' => $calculated['steuern'],
             'summen' => $calculated['summen'],
             'summen_nach_steuersatz' => $calculated['summen_nach_steuersatz'],
+            'rabatt_vorhanden' => $calculated['rabatt_vorhanden'],
 
             // Backwards-compatible aliases for legacy Smarty templates and reports
             'umsatz_brutto_gesamt' => $calculated['summen']['tax_inclusive_amount'],
@@ -301,6 +302,7 @@ class DocumentDataService
         $lineExtensionAmount = 0.0;
         $optionalNetto = 0.0;
         $optionalSteuer = 0.0;
+        $rabattused = false;
 
         foreach ($positions as $index => $pos) {
             $posId = (int)($pos['id'] ?? 0);
@@ -332,6 +334,7 @@ class DocumentDataService
             // Calculate unit net price after line discount (BT-146)
             $netPriceUnit = $rawPrice;
             if ($rabatt > 0) {
+                $rabattused = true;
                 $netPriceUnit = $rawPrice * (1.0 - ($rabatt / 100.0));
             }
             // Retain precision for unit price (up to 4 decimals allowed by EN 16931)
@@ -449,6 +452,7 @@ class DocumentDataService
             'umsatz_brutto_gesamt' => $taxInclusiveAmount,
             'steuer_gesamt' => $taxTotalAmount,
             'umsatz_netto_gesamt' => $taxExclusiveAmount,
+            'rabatt_vorhanden' => $rabattused
         ];
     }
 

@@ -35,6 +35,7 @@ class GutschriftPDF extends BriefpapierCustom {
   function GetGutschrift($id)
   {
     $belegData = $this->app->erp->GetBelegData('gutschrift', (int)$id);
+    $this->rabatt=$belegData['rabatt_vorhanden'];
 
     $this->doctypeid = $id;
 

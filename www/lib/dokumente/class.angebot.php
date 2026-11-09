@@ -36,6 +36,7 @@ class AngebotPDF extends BriefpapierCustom {
   function GetAngebot($id)
   {
     $belegData = $this->app->erp->GetBelegData('angebot', (int)$id);
+    $this->rabatt=$belegData['rabatt_vorhanden'];
 
     $this->doctypeid = $id;
 
@@ -207,7 +208,6 @@ class AngebotPDF extends BriefpapierCustom {
     } else {
       $footer = "$freitext\r\n".$this->app->erp->ParseUserVars("angebot",$id,$this->app->erp->Beschriftung("angebot_footer")."\r\n$steuer\r\n$zahlungstext");
     }
-
 
     $body = $this->app->erp->ParseUserVars("angebot",$id,$body);
     $this->setTextDetails(array(

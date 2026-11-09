@@ -38,6 +38,7 @@ class BestellungPDF extends BriefpapierCustom {
   function GetBestellung($id)
   {
     $belegData = $this->app->erp->GetBelegData('bestellung', (int)$id);
+    $this->rabatt=$belegData['rabatt_vorhanden'];
 
     $this->doctypeid = $id;
     $briefpapier_bearbeiter_ausblenden = $this->app->erp->Firmendaten('briefpapier_bearbeiter_ausblenden');
