@@ -35534,125 +35534,24 @@ function Firmendaten($field,$projekt="")
           }
           return;
         }
-        $projekt = $docArr['projekt'];
-        $positionenkaufmaenischrunden = $this->app->erp->Projektdaten($projekt,"preisberechnung");
-        if(!$positionenkaufmaenischrunden)
-        {
-          $viernachkommastellen_belege = $this->app->erp->Firmendaten('viernachkommastellen_belege');
 
-          $sqlvor = '';
-          $sqlnach = '';
-          $sqlvor2 = '';
-          $sqlnach2 = '';
-          if($positionenkaufmaenischrunden)
-          {
-            $sqlvor = 'round(';
-            $sqlnach = ',2)';
-          }
-          if($positionenkaufmaenischrunden == 3)
-          {
-            $sqlvor2 = 'round(';
-            $sqlnach2 = ',2)';
-          }
-          if($art==='angebot')
-          {
-            $summeV = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position ap WHERE umsatzsteuer!='ermaessigt' AND umsatzsteuer!='befreit' AND ".$art."='$id' AND optional!=1 AND (isnull(steuersatz) OR steuersatz < 0)  AND (explodiert_parent = 0 OR 0 = ifnull((SELECT id FROM angebot_position WHERE id = ap.explodiert_parent AND berechnen_aus_teile = 1 LIMIT 1),0))");
-            if($this->app->DB->error())
-              $summeV = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position ap WHERE umsatzsteuer!='ermaessigt' AND umsatzsteuer!='befreit' AND ".$art."='$id' AND optional!=1  AND (explodiert_parent = 0 OR 0 = ifnull((SELECT id FROM angebot_position WHERE id = ap.explodiert_parent AND berechnen_aus_teile = 1 LIMIT 1),0))");
-            $summeR = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position ap WHERE umsatzsteuer='ermaessigt' AND ".$art."='$id' AND optional!=1 AND (isnull(steuersatz) OR steuersatz < 0)  AND (explodiert_parent = 0 OR 0 = ifnull((SELECT id FROM angebot_position WHERE id = ap.explodiert_parent AND berechnen_aus_teile = 1 LIMIT 1),0))");
-            if($this->app->DB->error())
-              $summeR = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position ap WHERE umsatzsteuer='ermaessigt' AND ".$art."='$id' AND optional!=1  AND (explodiert_parent = 0 OR 0 = ifnull((SELECT id FROM angebot_position WHERE id = ap.explodiert_parent AND berechnen_aus_teile = 1 LIMIT 1),0))");
-            if($positionenkaufmaenischrunden != 1 && $positionenkaufmaenischrunden != 3)
-            {
-              $summeS = (float)$this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach." * if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100)   FROM ".$art."_position ap WHERE  ".$art."='$id' AND optional!=1 AND ((steuersatz >= 0) and not isnull(steuersatz) OR umsatzsteuer='befreit')  AND (explodiert_parent = 0 OR 0 = ifnull((SELECT id FROM angebot_position WHERE id = ap.explodiert_parent AND berechnen_aus_teile = 1 LIMIT 1),0))");
-            }else{
-              $summeS = (float)$this->app->DB->Select("SELECT ifnull(SUM(".$sqlvor." s.pos * s.steuer".$sqlnach."),0)
-
-               FROM (
-              SELECT SUM(menge*(preis-(preis/100*rabatt))) as pos,  if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100 as steuer  
-              FROM ".$art."_position 
-              WHERE $art = '$id' AND steuersatz >= 0   AND optional!=1
-              GROUP BY if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100
-
-              ) s");
-            }
-            $summeNetto = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position ap WHERE ".$art."='$id' AND optional!=1  AND (explodiert_parent = 0 OR 0 = ifnull((SELECT id FROM angebot_position WHERE id = ap.explodiert_parent AND berechnen_aus_teile = 1 LIMIT 1),0))");
-          } elseif($art === 'bestellung') {
-            $summeV = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis)".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer!='ermaessigt' AND umsatzsteuer!='befreit' AND ".$art."='$id' AND (isnull(steuersatz) OR steuersatz < 0)");
-            if($this->app->DB->error())$summeV = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis)".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer!='ermaessigt' AND ".$art."='$id'");
-            $summeR = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis)".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer='ermaessigt' AND ".$art."='$id' AND (isnull(steuersatz) OR steuersatz < 0)");
-            if($this->app->DB->error())$summeR = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis)".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer='ermaessigt' AND ".$art."='$id'");
-            if($positionenkaufmaenischrunden != 1 && $positionenkaufmaenischrunden != 3)
-            {
-              $summeS = (float)$this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis)".$sqlnach2.$sqlnach." * if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100)  FROM ".$art."_position WHERE  ".$art."='$id' AND ((steuersatz >= 0) and not isnull(steuersatz) OR umsatzsteuer='befreit')");
-            }else{
-              $summeS = (float)$this->app->DB->Select("SELECT ifnull(SUM(".$sqlvor." s.pos * s.steuer".$sqlnach."),0)
-
-               FROM (
-              SELECT SUM(menge*(preis)) as pos,  if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100 as steuer  
-              FROM ".$art."_position 
-              WHERE $art = '$id' AND steuersatz >= 0   
-              GROUP BY if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100
-
-              ) s");
-            }
-            $summeNetto = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis)".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE ".$art."='$id'");
-          } else {
-            $summeV = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer!='ermaessigt' AND umsatzsteuer!='befreit' AND ".$art."='$id' AND (isnull(steuersatz) OR steuersatz < 0)");
-            if($this->app->DB->error())$summeV = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer!='ermaessigt' AND ".$art."='$id'");
-            $summeR = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer='ermaessigt' AND ".$art."='$id' AND (isnull(steuersatz) OR steuersatz < 0)");
-            if($this->app->DB->error())$summeR = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE umsatzsteuer='ermaessigt' AND ".$art."='$id'");
-            if($positionenkaufmaenischrunden != 1 && $positionenkaufmaenischrunden != 3)
-            {
-              $summeS = (float)$this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach." * if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100)  FROM ".$art."_position WHERE  ".$art."='$id' AND ((steuersatz >= 0) and not isnull(steuersatz) OR umsatzsteuer='befreit')");
-            }else{
-              $summeS = (float)$this->app->DB->Select("SELECT ifnull(SUM(".$sqlvor." s.pos * s.steuer".$sqlnach."),0)
-
-               FROM (
-              SELECT SUM(menge*(preis-(preis/100*rabatt))) as pos,  if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100 as steuer  
-              FROM ".$art."_position 
-              WHERE $art = '$id' AND steuersatz >= 0   
-              GROUP BY if(umsatzsteuer != 'befreit',steuersatz,if(steuersatz < 0 OR isnull(steuersatz),0,steuersatz))/100
-
-              ) s");
-            }
-            $summeNetto = $this->app->DB->Select("SELECT SUM(".$sqlvor."menge*".$sqlvor2."(preis-(preis/100*rabatt))".$sqlnach2.$sqlnach.") FROM ".$art."_position WHERE ".$art."='$id'");
-          }
-
-
-          $ust_befreit = $docArr['ust_befreit'];// $this->app->DB->Select("SELECT ust_befreit FROM $art WHERE id='$id' LIMIT 1");
-          $ustid = $docArr['ustid'];// $this->app->DB->Select("SELECT ustid FROM $art WHERE id='$id' LIMIT 1");
-
-          //UST ID CHECK
-          if($ust_befreit==0 || ($ust_befreit==1 && $ustid==""))
-          {
-            if($positionenkaufmaenischrunden == 1 || $positionenkaufmaenischrunden == 3)
-            {
-              $betrag = $summeNetto + round($summeV*$this->GetSteuersatzNormal(true,$id,$art)-$summeV,2)+ round($summeR*$this->GetSteuersatzErmaessigt(true,$id,$art)-$summeR,2)+$summeS;
-            }else{
-              $betrag = $summeNetto + ($summeV*$this->GetSteuersatzNormal(true,$id,$art)-$summeV)+ ($summeR*$this->GetSteuersatzErmaessigt(true,$id,$art)-$summeR)+$summeS;
-            }
-          } else {
-            $betrag = $summeNetto;
-          }
-        }else{
-          $betrag = $this->app->erp->calcBelegBrutto($art, $id);
-        }
+        $belegData = $this->GetBelegData($art, (int)$id);
+        $betrag = (float)$belegData['summen']['tax_inclusive_amount'];
 
         if($return_netto) return $betrag;
         $extsoll = 0;
         if($art !== 'bestellung' && $art !== 'proformarechnung'){
-          $extsoll = (float)$docArr['extsoll'];//$this->app->DB->Select("SELECT extsoll FROM $art WHERE id = '$id' LIMIT 1");
+          $extsoll = (float)$docArr['extsoll'];
         }
         if($extsoll == 0)
         {
           if($art==='rechnung' || $art==='gutschrift' || $art==='proformarechnung'){
-            if($betrag != $docArr['soll']){
+            if($betrag != (float)$docArr['soll']){
               $this->app->DB->Update("UPDATE $art SET soll='$betrag' WHERE id='$id' LIMIT 1");
             }
           }
           else{
-            if($betrag != $docArr['gesamtsumme']){
+            if($betrag != (float)$docArr['gesamtsumme']){
               $this->app->DB->Update("UPDATE $art SET gesamtsumme='$betrag' WHERE id='$id' LIMIT 1");
             }
           }
