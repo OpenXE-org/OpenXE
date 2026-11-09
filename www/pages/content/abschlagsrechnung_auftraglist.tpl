@@ -123,6 +123,7 @@ $(document).ready(function() {
                 text: "ERSTELLEN",
                 class: "btnGreenNew",
                 click: function() {
+                    $(this).closest(".ui-dialog").find(".ui-dialog-buttonpane button").prop("disabled", true).addClass("ui-state-disabled");
                     $("#formTeilrechnung").submit();
                 }
             }
@@ -161,6 +162,7 @@ function openTeilrechnungModal() {
 
 function createSchlussrechnung() {
     if(confirm("Möchten Sie wirklich die Schlussrechnung für diesen Auftrag erzeugen? Alle vorherigen Abschlagsrechnungen werden automatisch in Abzug gebracht.")) {
+        $("#btnSchlussrechnung").prop("disabled", true).css("opacity", "0.6");
         $("#formSchlussrechnung").submit();
     }
 }

@@ -156,7 +156,7 @@ class Abschlagsrechnung
     {
         // Internal/CLI tests or unauthenticated background calls without user context
         if (!isset($this->app->User) || (int)$this->app->User->GetID() <= 0) {
-            return true;
+            return php_sapi_name() === 'cli';
         }
 
         // Admin has all rights
