@@ -236,7 +236,7 @@ class DocumentDataService
 
         // 5. Fetch positions via standardized query across all document types
         $positions = $this->app->DB->SelectArr(
-            "SELECT p.*, a.ean FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$parentField}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC"
+            "SELECT p.*, a.ean, a.herstellernummer, a.hersteller, IFNULL(NULLIF(p.einheit, ''), a.einheit) AS einheit FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$parentField}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC"
         ) ?: [];
         if (empty($positions)) {
             $positions = $this->app->DB->SelectArr(
