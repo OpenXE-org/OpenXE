@@ -207,17 +207,17 @@ class BestellungPDF extends BriefpapierCustom {
         $value['beschreibung']='';
       }
 
-      $value['artikelnummer']= $value['artnummer'];
+      $value['artikelnummer'] = !empty($value['artikelnummer']) ? $value['artikelnummer'] : (!empty($value['artnummer']) ? $value['artnummer'] : (!empty($value['nummer']) ? $value['nummer'] : ''));
       if($artikelnummerninfotext) {
-        if($value['bestellnummer']!=''){
+        if(!empty($value['bestellnummer'])){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_bestellnummer') . ': ' . $value['bestellnummer'];
         }
-        $value['bestellnummer']=$value['artikelnummer'];
-      } else if($keineartikelnummern==1) {
-        $value['artnummer'] = $value['bestellnummer'];
+        $value['bestellnummer'] = $value['artikelnummer'];
+      } else if($keineartikelnummern == 1) {
+        $value['artikelnummer'] = $value['bestellnummer'];
       }
       else {
-        if($value['artikelnummer']!=''){
+        if(!empty($value['artikelnummer'])){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_unsereartikelnummer') . ': ' . $value['artikelnummer'];
         }
       }
@@ -230,10 +230,7 @@ class BestellungPDF extends BriefpapierCustom {
         $value['einheit'] = "VPE";
 			}
       elseif((String)$value['einheit'] === '') {
-        $value['einheit'] = $value['arteinheit'];
-        if((String)$value['einheit'] === '') {
-          $value['einheit'] = $this->app->erp->Firmendaten('artikeleinheit_standard');
-        }
+        $value['einheit'] = !empty($value['arteinheit']) ? $value['arteinheit'] : $this->app->erp->Firmendaten('artikeleinheit_standard');
       }
 
       if($value['beschreibung']!='') {
@@ -249,8 +246,8 @@ class BestellungPDF extends BriefpapierCustom {
       }
 
       $value['menge'] = (float)$value['menge'];
-      $value['herstellernummer'] = $value['artherstellernummer'];
-      $value['hersteller'] = $value['arthersteller'];
+      $value['herstellernummer'] = !empty($value['herstellernummer']) ? $value['herstellernummer'] : (!empty($value['artherstellernummer']) ? $value['artherstellernummer'] : '');
+      $value['hersteller'] = !empty($value['hersteller']) ? $value['hersteller'] : (!empty($value['arthersteller']) ? $value['arthersteller'] : '');
 
       $this->addItem(
         array(

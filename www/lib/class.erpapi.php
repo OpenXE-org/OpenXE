@@ -35538,7 +35538,7 @@ function Firmendaten($field,$projekt="")
         $belegData = $this->GetBelegData($art, (int)$id);
         $betrag = (float)$belegData['summen']['tax_inclusive_amount'];
 
-        if($return_netto) return $betrag;
+        if($return_netto) return (float)$belegData['summen']['tax_exclusive_amount'];
         $extsoll = 0;
         if($art !== 'bestellung' && $art !== 'proformarechnung'){
           $extsoll = (float)$docArr['extsoll'];
