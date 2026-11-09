@@ -53,25 +53,6 @@ class BestellungPDF extends BriefpapierCustom {
             LIMIT 1"
     );
     extract($data,EXTR_OVERWRITE);
-    $adresse = $data['adresse'];
-    $sprache = $data['sprache'];
-    $angebot = $data['angebot'];
-    $ustid = $data['ustid'];
-    $projekt = $data['projekt'];
-    $keineartikelnummern = $data['keineartikelnummern'];
-    $bestellbestaetigung = $data['bestellbestaetigung'];
-    $artikelnummerninfotext = $data['artikelnummerninfotext'];
-    $einkaeufer = $data['einkaeufer'];
-    $belegnr = $data['belegnr'];
-    $freitext = $data['freitext'];
-    $bodyzusatz = $data['bodyzusatz'];
-    $ohne_briefpapier = $data['ohne_briefpapier'];
-    $abweichendebezeichnung = $data['abweichendebezeichnung'];
-    $bestellungohnepreis = $data['bestellungohnepreis'];
-    $kundennummer = $data['kundennummer'];
-    $datum = $data['datum'];
-    $datum2 = $data['datum2'];
-    $lieferantennummer = $data['lieferantennummer'];
 
     $this->bestellungohnepreis=$data['bestellungohnepreis'];
 
@@ -174,7 +155,6 @@ class BestellungPDF extends BriefpapierCustom {
     }
 
     if(!$this->app->erp->BestellungMitUmsatzeuer($id) && $ustid!='' ) {
-      //$steuer = "\nSteuerfreie innergemeinschaftliche Lieferung. Ihre USt-IdNr. $ustid Land: $land";
       $this->ust_befreit=true;
       if($keinsteuersatz!='1') {
         $steuer = $this->app->erp->Beschriftung('eu_lieferung_vermerk');
@@ -213,63 +193,20 @@ class BestellungPDF extends BriefpapierCustom {
             "body"=>$body,
             "footer"=>$footer));
     }
-    $artikel = $this->app->DB->SelectArr(
-      "SELECT bp.*, art.ean AS artean, art.nummer AS artnummer, art.herstellernummer AS artherstellernummer, 
-       art.einheit as arteinheit, art.hersteller AS arthersteller
-        FROM bestellung_position AS bp 
-        LEFT JOIN artikel AS art ON bp.artikel = art.id
-        WHERE bp.bestellung='$id' 
-        ORDER By bp.sort"
-    );
-    if(empty($artikel)) {
-      $artikel = [];
-    }
-    $steuersatzV = $this->app->erp->GetSteuersatzNormal(false,$id,'bestellung');
-    $steuersatzR = $this->app->erp->GetSteuersatzErmaessigt(false,$id,'bestellung');
-    $gesamtsteuern = 0;
-    $mitumsatzsteuer = $this->app->erp->BestellungMitUmsatzeuer($id);
-    //$waehrung = $this->app->DB->Select("SELECT waehrung FROM bestellung_position WHERE bestellung='$id' LIMIT 1");
-    $summe = 0;
-    foreach($artikel as $key=>$value) {
+
+    foreach($belegData['positionen'] as $key=>$value) {
       $lieferdatum = $this->app->String->Convert($value['lieferdatum'],'%1-%2-%3','%3.%2.%1');
 
       if($lieferdatum==='00.00.0000') {
         $lieferdatum ='';
-      }//$this->app->erp->Beschriftung("dokument_lieferdatum_sofort");
-
-      if($value['umsatzsteuer'] !== 'ermaessigt' && $value['umsatzsteuer'] !== 'befreit') {
-        $value['umsatzsteuer'] = 'normal';
       }
-      $tmpsteuersatz = null;
-      $tmpsteuertext = null;
-      $this->app->erp->GetSteuerPosition('bestellung', $value['id'],$tmpsteuersatz, $tmpsteuertext);
-      if($value['steuersatz'] === null || $value['steuersatz'] < 0) {
-        if($value['umsatzsteuer'] === 'ermaessigt') {
-          $value['steuersatz'] = $steuersatzR;
-        }
-        elseif($value['umsatzsteuer'] === 'befreit') {
-          $value['steuersatz'] = 0;
-        }else{
-          $value['steuersatz'] = $steuersatzV;
-        }
-        if($tmpsteuersatz !== null) {
-          $value['steuersatz'] = $tmpsteuersatz;
-        }
-      }
-      if($tmpsteuertext && !$value['steuertext']) {
-        $value['steuertext'] = $tmpsteuertext;
-      }
-      if(!$mitumsatzsteuer) {
-        $value['steuersatz'] = 0;
-      }
-      //	if(!$this->app->erp->BestellungMitUmsatzeuer($id)) $value[umsatzsteuer] = ""; 
 
       $ohne_artikeltext = $this->app->DB->Select("SELECT ohne_artikeltext FROM ".$this->table." WHERE id='".$this->id."' LIMIT 1");
       if($ohne_artikeltext=='1') {
         $value['beschreibung']='';
       }
 
-      $value['artikelnummer']= $value['artnummer'];// $this->app->DB->Select("SELECT nummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
+      $value['artikelnummer']= $value['artnummer'];
       if($artikelnummerninfotext) {
         if($value['bestellnummer']!=''){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_bestellnummer') . ': ' . $value['bestellnummer'];
@@ -292,7 +229,7 @@ class BestellungPDF extends BriefpapierCustom {
         $value['einheit'] = "VPE";
 			}
       elseif((String)$value['einheit'] === '') {
-        $value['einheit'] = $value['arteinheit'];// $this->app->DB->Select("SELECT einheit FROM artikel WHERE id = '".$value['artikel']."' LIMIT 1");
+        $value['einheit'] = $value['arteinheit'];
         if((String)$value['einheit'] === '') {
           $value['einheit'] = $this->app->erp->Firmendaten('artikeleinheit_standard');
         }
@@ -311,8 +248,8 @@ class BestellungPDF extends BriefpapierCustom {
       }
 
       $value['menge'] = (float)$value['menge'];
-      $value['herstellernummer'] = $value['artherstellernummer'];// $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $value['arthersteller'];//$this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
+      $value['herstellernummer'] = $value['artherstellernummer'];
+      $value['hersteller'] = $value['arthersteller'];
 
       $this->addItem(
         array(
@@ -395,7 +332,6 @@ class BestellungPDF extends BriefpapierCustom {
     }
 
     /* Dateiname */
-    //$tmp_name = str_replace([' ','.'],'', trim($this->recipient['enterprise']));
     $this->filename = $datum2.'_BE'.$belegnr.'.pdf';
     $this->setBarcode($belegnr);
   }

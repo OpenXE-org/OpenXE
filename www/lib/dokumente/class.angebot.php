@@ -98,35 +98,6 @@ class AngebotPDF extends BriefpapierCustom {
     }
 
     $zahlungstext = $this->app->erp->Zahlungsweisetext("angebot", $id);
-/*
-
-    //$zahlungstext = "\nZahlungsweise: $zahlungsweise ";
-    if($zahlungsweise=="rechnung")
-    {
-      if($zahlungszieltage >0) $zahlungstext = $this->app->erp->Beschriftung("dokument_zahlung_rechnung_anab");
-      else {
-        $zahlungstext = $this->app->erp->Beschriftung("zahlung_rechnung_sofort_de");
-      }
-
-
-      if($this->app->erp->Firmendaten("eigener_skontotext")=="1" && $zahlungszielskonto>0)
-      {      
-        $skontotext = $this->app->erp->Beschriftung("eigener_skontotext_anab");
-        $skontotext = str_replace('{ZAHLUNGSZIELSKONTO}',number_format($zahlungszielskonto,2,',','.'),$skontotext);
-        $skontotext = str_replace('{ZAHLUNGSZIELTAGESKONTO}',$zahlungszieltageskonto,$skontotext);
-        $zahlungstext .= "\n".$skontotext;
-      } else {
-        if($zahlungszielskonto>0) $zahlungstext .= "\n".$this->app->erp->Beschriftung("dokument_skonto")." ".number_format($zahlungszielskonto,2,',','.')."% ".$this->app->erp->Beschriftung("dokument_innerhalb")." $zahlungszieltageskonto ".$this->app->erp->Beschriftung("dokument_tagen");
-      }
-
-    } else {
-      $zahlungstext = $this->app->DB->Select("SELECT freitext FROM zahlungsweisen WHERE type='".$zahlungsweise."' AND aktiv='1' AND type!='' LIMIT 1");
-      if($zahlungstext=="")
-        $zahlungstext = $this->app->erp->Beschriftung("zahlung_".$zahlungsweise."_de");
-      if($zahlungstext=="")
-        $zahlungstext = $this->app->erp->Beschriftung("dokument_zahlung_per")." ".ucfirst($zahlungsweise);
-    }
-*/
 
     $zahlungsweise = ucfirst($zahlungsweise);	
  
@@ -136,7 +107,6 @@ class AngebotPDF extends BriefpapierCustom {
       $this->doctypeOrig=($this->app->erp->Beschriftung("bezeichnungangebotersatz")?$this->app->erp->Beschriftung("bezeichnungangebotersatz"):$this->app->erp->Beschriftung("dokument_angebot"))." $belegnr";
     else
       $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_angebot")." $belegnr";
-    
 
     $this->zusatzfooter = " (AN$belegnr)";
 
@@ -168,41 +138,6 @@ class AngebotPDF extends BriefpapierCustom {
         $this->boxalignmentright = $block['alignment'][1];
       }
 
-      /*$elements =explode("\n", str_replace("\r",'', $this->app->erp->Firmendaten('document_settings_angebot_elements')));
-      $previewArr = [
-        'DATUM'          => 'datum',
-        'BEARBEITER'     => 'bearbeiter',
-        'VERTRIEB'       => 'vertrieb',
-        'EMAIL'          => 'email',
-        'TELEFON'        => 'telefon',
-        'ANGEBOTSNUMMER' => 'belegnr',
-        'KUNDENNUMMER'   => 'kundennummer',
-        'PROJEKT'        => 'projektabkuerzung'
-      ];
-      foreach($elements as $key => $el) {
-        $el = trim($el);
-        $elements[$key] = $el;
-        foreach($previewArr as $prevKey => $preVal) {
-          if(strpos($el, '{'.$prevKey.'}') !== false) {
-            if(empty($$preVal)) {
-
-              unset($elements[$key]);
-              break;
-            }
-            $elements[$key] = trim(str_replace('{'.$prevKey.'}', $$preVal, $el));
-
-            break;
-          }
-        }
-      }
-      $elements = explode("\n", $this->app->erp->ParseIfVars(implode("\n", $elements)));
-      foreach($elements as $key => $el) {
-        if(!empty($elements[$key])){
-          $row = explode('|', $elements[$key], 2);
-          $sCD[trim(rtrim(trim($row[0]),':'))] = !empty($row[1]) ? $row[1] : '';
-        }
-      }*/
-
       if(!empty($sCD)) {
         switch($block['fontstyle']) {
           case 'f':
@@ -229,7 +164,6 @@ class AngebotPDF extends BriefpapierCustom {
           if($vertrieb) $sCD[$this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb")] = $vertrieb;
         }
         $this->setCorrDetails($sCD);
-        //$this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_angebot_anfrage")=>$anfrage,$this->app->erp->Beschriftung("bezeichnungkundennummer")=>$kundennummer,$this->app->erp->Beschriftung("dokument_datum")=>$datum));
       }else{
         if($vertrieb == $bearbeiter){
           $this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_angebot_anfrage") => $anfrage, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer, $this->app->erp->Beschriftung("dokument_datum") => $datum, $this->app->erp->Beschriftung("auftrag_bezeichnung_bearbeiter") => $bearbeiter));
@@ -259,7 +193,6 @@ class AngebotPDF extends BriefpapierCustom {
     $body=$this->app->erp->Beschriftung("angebot_header");
     if($bodyzusatz!="") $body=$body."\r\n".$bodyzusatz;
 
-
     if($this->app->erp->Firmendaten("footer_reihenfolge_angebot_aktivieren")=="1")      
     {        
       $footervorlage = $this->app->erp->Firmendaten("footer_reihenfolge_angebot");        
@@ -281,23 +214,17 @@ class AngebotPDF extends BriefpapierCustom {
           "body"=>$body,
           "footer"=>$footer));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM angebot_position WHERE angebot='$id' ORDER By sort");
     if(!$this->app->erp->AngebotMitUmsatzeuer($id)) $this->ust_befreit=true;
-
-    $summe_rabatt = $this->app->DB->Select("SELECT SUM(rabatt) FROM angebot_position WHERE angebot='$id'");
-    if($summe_rabatt <> 0) $this->rabatt=1;
 
     if($this->app->erp->Firmendaten("modul_verband")=="1") $this->rabatt=1; 
 
-    $summe = 0;
     $steuersatzV = $this->app->erp->GetSteuersatzNormal(false,$id,"angebot");
     $steuersatzR = $this->app->erp->GetSteuersatzErmaessigt(false,$id,"angebot");
-    $gesamtsteuern = 0;
     $mitumsatzsteuer = $this->app->erp->AngebotMitUmsatzeuer($id);
-    //$waehrung = $this->app->DB->Select("SELECT waehrung FROM angebot_position WHERE angebot='$id' LIMIT 1");
+
     $berechnen_aus_teile = false;
     
-    foreach($artikel as $key=>$value)
+    foreach($belegData['positionen'] as $key=>$value)
     {
       if($value['explodiert_parent'])
       {
@@ -306,10 +233,8 @@ class AngebotPDF extends BriefpapierCustom {
     }
     $belege_subpositionenstuecklisten = $this->app->erp->Firmendaten('belege_subpositionenstuecklisten');
     $belege_stuecklisteneinrueckenmm = $this->app->erp->Firmendaten('belege_stuecklisteneinrueckenmm');
-    //$positionenkaufmaenischrunden = $this->app->erp->Firmendaten('positionenkaufmaenischrunden');
-    $positionenkaufmaenischrunden = $this->app->erp->Projektdaten($projekt,"preisberechnung");
-    $viernachkommastellen_belege = $this->app->erp->Firmendaten('viernachkommastellen_belege');
-    foreach($artikel as $key=>$value)
+
+    foreach($belegData['positionen'] as $key=>$value)
     {
       // sichtbare positionen 
       $checksichtbar = $this->app->DB->Select("SELECT COUNT(id)-SUM(ausblenden_im_pdf) FROM angebot_position WHERE explodiert_parent='".$value['id']."'");
@@ -319,7 +244,6 @@ class AngebotPDF extends BriefpapierCustom {
           $value['preis'] = "-"; $value['umsatzsteuer']="hidden"; 
         }
         if(!$belege_subpositionenstuecklisten && !$belege_stuecklisteneinrueckenmm)$value['bezeichnung'] = "-".$value['bezeichnung'];
-        //$value[beschreibung] .= $value[beschreibung]." (Bestandteil von Stückliste)"; 
       }
 
       $ohne_artikeltext = $this->app->DB->Select("SELECT ohne_artikeltext FROM ".$this->table." WHERE id='".$this->id."' LIMIT 1");
@@ -340,22 +264,6 @@ class AngebotPDF extends BriefpapierCustom {
         $lvl[$value['id']] = 0;
       }
       
-      if($value['umsatzsteuer'] != "ermaessigt") $value['umsatzsteuer'] = "normal";
-      $tmpsteuersatz = null;
-      $tmpsteuertext = null;
-      $this->app->erp->GetSteuerPosition('angebot', $value['id'],$tmpsteuersatz, $tmpsteuertext);
-      if(is_null($value['steuersatz']) || $value['steuersatz'] < 0)
-      {
-        if($value['umsatzsteuer'] == "ermaessigt")
-        {
-          $value['steuersatz'] = $steuersatzR;
-        }else{
-          $value['steuersatz'] = $steuersatzV;
-        }
-        if(!is_null($tmpsteuersatz))$value['steuersatz'] = $tmpsteuersatz;
-      }
-      if($tmpsteuertext && !$value['steuertext'])$value['steuertext'] = $tmpsteuertext;
-      if(!$mitumsatzsteuer)$value['steuersatz'] = 0;
       // Herstellernummer von Artikel
       $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
       $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
@@ -368,7 +276,6 @@ class AngebotPDF extends BriefpapierCustom {
       }
 
       if($value['optional']=="1") $value['bezeichnung'] = $this->app->erp->Beschriftung("dokument_optional").$value['bezeichnung'];
-
 
       if(!$this->app->erp->Export($land))
       {

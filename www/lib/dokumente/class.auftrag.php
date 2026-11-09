@@ -56,7 +56,7 @@ class AuftragPDF extends BriefpapierCustom {
 
     $briefpapier_bearbeiter_ausblenden = $this->app->erp->Firmendaten('briefpapier_bearbeiter_ausblenden');
     $briefpapier_vertrieb_ausblenden = $this->app->erp->Firmendaten('briefpapier_vertrieb_ausblenden');
-    //$this->setRecipientDB($adresse);
+
     $this->setRecipientLieferadresse($id,"auftrag");
 
     $data = $this->app->DB->SelectRow(
@@ -115,8 +115,6 @@ class AuftragPDF extends BriefpapierCustom {
     $auftrag = "-";
     if($kundennummer=="") $kundennummer= "-";
 
-
-
     if($ohne_briefpapier=="1")
     {
       $this->logofile = "";
@@ -126,8 +124,6 @@ class AuftragPDF extends BriefpapierCustom {
 
     $bearbeiteremail = $this->app->DB->Select("SELECT b.email FROM auftrag a LEFT JOIN adresse b ON b.id=a.bearbeiterid WHERE a.id='$id' LIMIT 1");
     $bearbeitertelefon = $this->app->DB->Select("SELECT b.telefon FROM auftrag a LEFT JOIN adresse b ON b.id=a.bearbeiterid WHERE a.id='$id' LIMIT 1");
-
-
     $zahlungstext = $this->app->erp->Zahlungsweisetext("auftrag", $id);
 
     //$zahlungsweise = ucfirst($zahlungsweise);
@@ -180,7 +176,6 @@ class AuftragPDF extends BriefpapierCustom {
             if($vertrieb) $scD[$this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb")] = $vertrieb;
           }
           $this->setCorrDetails($scD);
-          //$this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_angebot")=>$angebot,$this->app->erp->Beschriftung("bezeichnungkundennummer")=>$kundennummer,$this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer")=>$ihrebestellnummer,$this->app->erp->Beschriftung("dokument_auftragsdatum")=>$datum));
         }else{
           if($vertrieb != $bearbeiter)
             $this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_angebot") => $angebot, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer,
@@ -197,7 +192,6 @@ class AuftragPDF extends BriefpapierCustom {
             if($vertrieb) $scD[$this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb")] = $vertrieb;
           }
           $this->setCorrDetails($scD);
-          //$this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_angebot")=>$angebot,$this->app->erp->Beschriftung("bezeichnungkundennummer")=>$kundennummer,$this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer")=>$ihrebestellnummer,$this->app->erp->Beschriftung("dokument_auftragsdatum")=>$datum));
         }else{
           if($vertrieb != $bearbeiter)
             $this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_angebot") => $angebot, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer, $this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer") => $ihrebestellnummer, $this->app->erp->Beschriftung("dokument_auftragsdatum") => $datum, $this->app->erp->Beschriftung("auftrag_bezeichnung_bearbeiter") => $bearbeiter, $this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb") => $vertrieb));
@@ -234,7 +228,6 @@ class AuftragPDF extends BriefpapierCustom {
 
       if($systemfreitext!="") $systemfreitext = "\r\n\r\n".$systemfreitext;
 
-
       if($this->app->erp->Firmendaten("footer_reihenfolge_auftrag_aktivieren")=="1")
       {
         $footervorlage = $this->app->erp->Firmendaten("footer_reihenfolge_auftrag");
@@ -251,8 +244,6 @@ class AuftragPDF extends BriefpapierCustom {
         $footer = "$freitext\r\n".$this->app->erp->ParseUserVars("auftrag",$id,$this->app->erp->Beschriftung("auftrag_footer")."\r\n$steuer\r\n$zahlungstext").$systemfreitext;
       }
 
-
-
     $body=$this->app->erp->Beschriftung("auftrag_header");
     if($bodyzusatz!="") $body=$body."\r\n".$bodyzusatz;
     $body = $this->app->erp->ParseUserVars("auftrag",$id,$body);
@@ -264,83 +255,23 @@ class AuftragPDF extends BriefpapierCustom {
       $this->ust_befreit=true;
     }
 
-    $artikel = $this->app->DB->SelectArr(
-      sprintf(
-        'SELECT * FROM auftrag_position WHERE auftrag=%d ORDER BY sort',
-        $id
-      )
-    );
-    $summe_rabatt = 0.0;
     $explodiertParents = [];
-    if(!empty($artikel)) {
-      foreach($artikel as $art) {
-        $summe_rabatt += (float)$art['rabatt'];
-        if($art['explodiert_parent'] > 0) {
-          $explodiertParents[$art['explodiert_parent']][] = $art;
-        }
+    
+    foreach($belegData['positionen'] as $art) {
+      if($art['explodiert_parent'] > 0) {
+        $explodiertParents[$art['explodiert_parent']][] = $art;
       }
     }
-    $this->app->erp->RunHook('BriefpapierGetAuftragArtikel',3,$id, $artikel, $this);
-    //$summe_rabatt = $this->app->DB->Select("SELECT SUM(rabatt) FROM auftrag_position WHERE auftrag='$id'");
-    if($summe_rabatt <> 0) {
-      $this->rabatt=1;
-    }
 
-    if($this->app->erp->Firmendaten("modul_verband")=="1") {
-      $this->rabatt=1;
-    }
-    
-    
-    $steuersatzV = $this->app->erp->GetSteuersatzNormal(false,$id,"auftrag");
-    
-    $steuersatzR = $this->app->erp->GetSteuersatzErmaessigt(false,$id,"auftrag");
-    
-    $gesamtsteuern = 0;
-    $mitumsatzsteuer = $this->app->erp->AuftragMitUmsatzeuer($id);
+    $this->app->erp->RunHook('BriefpapierGetAuftragArtikel',3,$id, $artikel, $this);  
+       
     $belege_subpositionenstuecklisten = $this->app->erp->Firmendaten('belege_subpositionenstuecklisten');
     $belege_stuecklisteneinrueckenmm = $this->app->erp->Firmendaten('belege_stuecklisteneinrueckenmm');
-    if(!$schreibschutz) {
-      $gesamtsumme = 0;
-    }
-    //$waehrung = $this->app->DB->Select("SELECT waehrung FROM auftrag_position WHERE auftrag='$id' LIMIT 1");
-    //$positionenkaufmaenischrunden = $this->app->erp->Firmendaten('positionenkaufmaenischrunden');
     $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id = '$id' LIMIT 1");
-    $positionenkaufmaenischrunden = $this->app->erp->Projektdaten($projekt,"preisberechnung");
-    $viernachkommastellen_belege = $this->app->erp->Firmendaten('viernachkommastellen_belege');
 
     $ohne_artikeltext = $this->app->DB->Select("SELECT ohne_artikeltext FROM ".$this->table." WHERE id='".$this->id."' LIMIT 1");
     $beschriftungStueckliste = $this->app->erp->Beschriftung('dokument_stueckliste');
-    foreach($artikel as $key=>$value)  {
-      if($value['umsatzsteuer'] !== 'ermaessigt' && $value['umsatzsteuer'] !== 'befreit') {
-        $value['umsatzsteuer'] = 'normal';
-      }
-      $tmpsteuersatz = null;
-      $tmpsteuertext = null;
-      $this->app->erp->GetSteuerPosition('auftrag', $value['id'],$tmpsteuersatz, $tmpsteuertext);
-      if($value['steuersatz'] === null || $value['steuersatz'] < 0) {
-        if($value['umsatzsteuer'] === 'ermaessigt') {
-          $value['steuersatz'] = $steuersatzR;
-        }
-        elseif($value['umsatzsteuer'] === 'befreit') {
-          $value['steuersatz'] = 0;
-        }
-        else {
-          $value['steuersatz'] = $steuersatzV;
-        }
-        if($tmpsteuersatz !== null) {
-          $value['steuersatz'] = $tmpsteuersatz;
-        }
-      }
-      if($tmpsteuertext && !$value['steuertext']) {
-        $value['steuertext'] = $tmpsteuertext;
-      }
-      if(!$mitumsatzsteuer) {
-        $value['steuersatz'] = 0;
-      }
-      
-      //if(!$this->app->erp->AuftragMitUmsatzeuer($id)) $value[umsatzsteuer] = ""; 
-      $time1 = microtime(true);
-
+    foreach($belegData['positionen'] as $key=>$value)  {
       $checksichtbar = 0;
       if(!empty($explodiertParents[$value['id']])) {
 
@@ -349,15 +280,6 @@ class AuftragPDF extends BriefpapierCustom {
             $checksichtbar++;
           }
         }
-
-        /*$checksichtbar = $this->app->DB->Select(
-          sprintf(
-            "SELECT COUNT(id)-SUM(ausblenden_im_pdf)
-          FROM auftrag_position 
-          WHERE explodiert_parent=%d",
-            $value['id']
-          )
-        );*/
       }
 
       if($value['explodiert'] > 0 && $checksichtbar > 0) {
@@ -370,9 +292,7 @@ class AuftragPDF extends BriefpapierCustom {
         if(!$belege_subpositionenstuecklisten && !$belege_stuecklisteneinrueckenmm) {
           $value['bezeichnung'] = "-".$value['bezeichnung'];
         }
-        //$value[beschreibung] .= $value[beschreibung]." (Bestandteil von Stückliste)"; 
       }
-
 
       if($ohne_artikeltext=="1") {
         $value['beschreibung']="";
@@ -418,12 +338,10 @@ class AuftragPDF extends BriefpapierCustom {
         $check_ausblenden=0;
         $lvl[$value['id']] = 0;
       }
-      $time3 += microtime(true) - $time1;
 
       if($value['ausblenden_im_pdf']) {
         $check_ausblenden=1;
       }
-
 
       if(!$this->app->erp->Export($land)) {
         $value['zolltarifnummer']='';
@@ -452,7 +370,7 @@ class AuftragPDF extends BriefpapierCustom {
               'lieferdatum'=>$value['lieferdatum'],
               'lieferdatumkw'=>$value['lieferdatumkw'],
               'artikelnummerkunde'=>$value['artikelnummerkunde'],
-            'ohnepreis'=>$value['ohnepreis'],
+              'ohnepreis'=>$value['ohnepreis'],
               'keinrabatterlaubt'=>$value['keinrabatterlaubt'],
               'grundrabatt'=>$value['grundrabatt'],
               'rabatt1'=>$value['rabatt1'],

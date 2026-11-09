@@ -21,19 +21,16 @@ if(!class_exists('BriefpapierCustom'))
   }
 }
 
-
 class GutschriftPDF extends BriefpapierCustom {
   public $doctype;
 
   function __construct($app,$projekt="")
   {
     $this->app=$app;
-    //parent::Briefpapier();
     $this->doctype="gutschrift";
     $this->doctypeOrig="Gutschrift";
     parent::__construct($this->app,$projekt);
   } 
-
 
   function GetGutschrift($id)
   {
@@ -56,7 +53,6 @@ class GutschriftPDF extends BriefpapierCustom {
 
     $briefpapier_bearbeiter_ausblenden = $this->app->erp->Firmendaten('briefpapier_bearbeiter_ausblenden');
     $briefpapier_vertrieb_ausblenden = $this->app->erp->Firmendaten('briefpapier_vertrieb_ausblenden');
-    //$this->setRecipientDB($adresse);
     $this->setRecipientLieferadresse($id,"gutschrift");
 
     $data = $this->app->DB->SelectRow(
@@ -101,14 +97,10 @@ class GutschriftPDF extends BriefpapierCustom {
       $this->briefpapier2="";
     }
 
-    //      $zahlungsweise = strtolower($zahlungsweise);
-
     if($zahlungsweise=="lastschrift" || $zahlungsweise=="einzugsermaechtigung")
     {
       $zahlungsweisetext = "\n".$this->app->erp->Beschriftung("dokument_offene_lastschriften");
     }
-
-    //if($zahlungszielskonto>0) $zahlungsweisetext .= "\n".$this->app->erp->Beschriftung("dokument_skonto")." $zahlungszielskonto% ".$this->app->erp->Beschriftung("dokument_auszahlungskonditionen");
 
     if($zahlungszielskonto!=0)
        $zahlungsweisetext .="\r\n".$this->app->erp->Beschriftung("dokument_skontoanderezahlungsweisen");
@@ -116,7 +108,6 @@ class GutschriftPDF extends BriefpapierCustom {
     $zahlungsweisetext = str_replace('{ZAHLUNGSZIELSKONTO}',number_format($zahlungszielskonto,2,',','.'),$zahlungsweisetext);
 
     if($belegnr=="" || $belegnr=="0") $belegnr = "- ".$this->app->erp->Beschriftung("dokument_entwurf");
-
 
     if($stornorechnung)
       $this->doctypeOrig=$this->app->erp->Beschriftung("bezeichnungstornorechnung")." $belegnr";
@@ -151,9 +142,6 @@ class GutschriftPDF extends BriefpapierCustom {
         'LIEFERSCHEINDATUM' => $lieferscheindatum,
         'EMAIL'             => $email,
         'TELEFON'           => $telefon
-
-
-
       ], $projekt);
       if(!empty($sCD)) {
         switch($block['fontstyle']) {
@@ -173,32 +161,25 @@ class GutschriftPDF extends BriefpapierCustom {
       }
     }
     else{
-
-      //$this->setCorrDetails(array("Auftrag"=>$auftrag,"Datum"=>$datum,"Ihre Kunden-Nr."=>$kundennummer,"Lieferschein"=>$lieferschein,"Buchhaltung"=>$buchhaltung));
       if($briefpapier_bearbeiter_ausblenden || $briefpapier_vertrieb_ausblenden){
         if($rechnung != ""){
           $sCD = array($this->app->erp->Beschriftung("dokument_rechnung") => $rechnung, $this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer") => $ihrebestellnummer, $this->app->erp->Beschriftung("dokument_datum") => $datum, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer);
         }else{
           $sCD = array($this->app->erp->Beschriftung("dokument_datum") => $datum, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer, $this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer") => $ihrebestellnummer);
-          //$this->setCorrDetails(array($this->app->erp->Beschriftung("dokument_datum")=>$datum,$this->app->erp->Beschriftung("bezeichnungkundennummer")=>$kundennummer,$this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer")=>$ihrebestellnummer));
         }
         if(!$briefpapier_bearbeiter_ausblenden){
           if($bearbeiter) $sCD[$this->app->erp->Beschriftung("auftrag_bezeichnung_bearbeiter")] = $bearbeiter;
         }elseif(!$briefpapier_vertrieb_ausblenden){
           if($vertrieb) $sCD[$this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb")] = $vertrieb;
         }
-
       }else{
         if($rechnung != "")
           $sCD = array($this->app->erp->Beschriftung("dokument_rechnung") => $rechnung, $this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer") => $ihrebestellnummer, $this->app->erp->Beschriftung("dokument_datum") => $datum, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer, $this->app->erp->Beschriftung("auftrag_bezeichnung_bearbeiter") => $bearbeiter, $this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb") => $vertrieb);
         else
           $sCD = array($this->app->erp->Beschriftung("dokument_datum") => $datum, $this->app->erp->Beschriftung("bezeichnungkundennummer") => $kundennummer, $this->app->erp->Beschriftung("auftrag_bezeichnung_bestellnummer") => $ihrebestellnummer, $this->app->erp->Beschriftung("auftrag_bezeichnung_bearbeiter") => $bearbeiter, $this->app->erp->Beschriftung("auftrag_bezeichnung_vertrieb") => $vertrieb);
       }
-
       if($lieferdatum != "00.00.0000")
         $sCD[$this->app->erp->Beschriftung("dokument_lieferdatum")] = $lieferdatum;
-
-
       $this->setCorrDetails($sCD);
     }
 
@@ -230,12 +211,11 @@ class GutschriftPDF extends BriefpapierCustom {
     } 
 
     $gutschrift_header = $this->app->erp->ParseUserVars("gutschrift",$id,$gutschrift_header);
-
-
-      if($this->app->erp->Firmendaten("footer_reihenfolge_gutschrift_aktivieren")=="1")      {        
+    
+    if($this->app->erp->Firmendaten("footer_reihenfolge_gutschrift_aktivieren")=="1")      {        
         $footervorlage = $this->app->erp->Firmendaten("footer_reihenfolge_gutschrift");        
-        if($footervorlage=="")          
-          $footervorlage = "{FOOTERFREITEXT}\r\n{FOOTERTEXTVORLAGEGUTSCHRIFT}\r\n{FOOTERSTEUER}\r\n{FOOTERZAHLUNGSWEISETEXT}";
+    if($footervorlage=="")          
+      $footervorlage = "{FOOTERFREITEXT}\r\n{FOOTERTEXTVORLAGEGUTSCHRIFT}\r\n{FOOTERSTEUER}\r\n{FOOTERZAHLUNGSWEISETEXT}";
 
         $footervorlage = str_replace('{FOOTERFREITEXT}',$freitext,$footervorlage);
         $footervorlage = str_replace('{FOOTERTEXTVORLAGEGUTSCHRIFT}',$this->app->erp->Beschriftung("gutschrift_footer"),$footervorlage);        
@@ -243,55 +223,20 @@ class GutschriftPDF extends BriefpapierCustom {
         $footervorlage = str_replace('{FOOTERZAHLUNGSWEISETEXT}',$zahlungsweisetext,$footervorlage);        
         $footervorlage  = $this->app->erp->ParseUserVars("gutschrift",$id,$footervorlage);        
         $footer = $footervorlage;
-      } else {
+    } else {
         $footer = "$freitext"."\r\n".$this->app->erp->ParseUserVars("gutschrift",$id,$this->app->erp->Beschriftung("gutschrift_footer"))."\r\n$zahlungsweisetext\r\n$steuer";
-      }
-
+    }
 
     $this->setTextDetails(array(
           "body"=>$gutschrift_header,
           "footer"=>$footer));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM gutschrift_position WHERE gutschrift='$id' ORDER By sort");
-
     if(!$this->app->erp->GutschriftMitUmsatzeuer($id)) $this->ust_befreit=true;
 
-    $summe_rabatt = $this->app->DB->Select("SELECT SUM(rabatt) FROM gutschrift_position WHERE gutschrift='$id'");
-    if($summe_rabatt <> 0) $this->rabatt=1;
-
-    if($this->app->erp->Firmendaten("modul_verband")=="1") $this->rabatt=1; 
-
-    //$waehrung = $this->app->DB->Select("SELECT waehrung FROM gutschrift_position WHERE gutschrift='$id' LIMIT 1");
-    $steuersatzV = $this->app->erp->GetSteuersatzNormal(false,$id,"gutschrift");
-    $steuersatzR = $this->app->erp->GetSteuersatzErmaessigt(false,$id,"gutschrift");
-    $gesamtsteuern = 0;
-    $mitumsatzsteuer = $this->app->erp->GutschriftMitUmsatzeuer($id);
     $belege_subpositionenstuecklisten = $this->app->erp->Firmendaten('belege_subpositionenstuecklisten');
     $belege_stuecklisteneinrueckenmm = $this->app->erp->Firmendaten('belege_stuecklisteneinrueckenmm');
-    //$positionenkaufmaenischrunden = $this->app->erp->Firmendaten('positionenkaufmaenischrunden');
-    $positionenkaufmaenischrunden = $this->app->erp->Projektdaten($projekt,"preisberechnung");
-    $viernachkommastellen_belege = $this->app->erp->Firmendaten('viernachkommastellen_belege');
-    foreach($artikel as $key=>$value)
+    foreach($belegData['positionen'] as $key=>$value)
     {
-      if($value['umsatzsteuer'] != "ermaessigt" && $value['umsatzsteuer'] != "befreit") $value['umsatzsteuer'] = "normal";
-      $tmpsteuersatz = null;
-      $tmpsteuertext = null;
-      $this->app->erp->GetSteuerPosition('gutschrift', $value['id'],$tmpsteuersatz, $tmpsteuertext);
-      if(is_null($value['steuersatz']) || $value['steuersatz'] < 0)
-      {
-        if($value['umsatzsteuer'] == "ermaessigt")
-        {
-          $value['steuersatz'] = $steuersatzR;
-        }elseif($value['umsatzsteuer'] == "befreit")
-        {
-          $value['steuersatz'] = $steuersatzR;
-        }else{
-          $value['steuersatz'] = $steuersatzV;
-        }
-        if(!is_null($tmpsteuersatz))$value['steuersatz'] = $tmpsteuersatz;
-      }
-      if($tmpsteuertext && !$value['steuertext'])$value['steuertext'] = $tmpsteuertext;
-      if(!$mitumsatzsteuer)$value['steuersatz'] = 0;
       // negative Darstellung bei Stornorechnung
       if($stornorechnung) $value['preis'] = $value['preis'] *-1;
 
@@ -352,8 +297,8 @@ class GutschriftPDF extends BriefpapierCustom {
             'artikelnummerkunde'=>$value['artikelnummerkunde'],
             'lieferdatum'=>$value['lieferdatum'],
             'lieferdatumkw'=>$value['lieferdatumkw'],
-              'zolltarifnummer'=>$value['zolltarifnummer'],
-              'herkunftsland'=>$value['herkunftsland'],
+            'zolltarifnummer'=>$value['zolltarifnummer'],
+            'herkunftsland'=>$value['herkunftsland'],
             'ohnepreis'=>$value['ohnepreis'],
             'grundrabatt'=>$value['grundrabatt'],
             'rabatt1'=>$value['rabatt1'],
@@ -361,48 +306,48 @@ class GutschriftPDF extends BriefpapierCustom {
             'rabatt3'=>$value['rabatt3'],
             'rabatt4'=>$value['rabatt4'],
             'rabatt5'=>$value['rabatt5'],
-              'freifeld1'=>$value['freifeld1'],
-              'freifeld2'=>$value['freifeld2'],
-              'freifeld3'=>$value['freifeld3'],
-              'freifeld4'=>$value['freifeld4'],
-              'freifeld5'=>$value['freifeld5'],
-              'freifeld6'=>$value['freifeld6'],
-              'freifeld7'=>$value['freifeld7'],
-              'freifeld8'=>$value['freifeld8'],
-              'freifeld9'=>$value['freifeld9'],
-              'freifeld10'=>$value['freifeld10'],
-              'freifeld11'=>$value['freifeld11'],
-              'freifeld12'=>$value['freifeld12'],
-              'freifeld13'=>$value['freifeld13'],
-              'freifeld14'=>$value['freifeld14'],
-              'freifeld15'=>$value['freifeld15'],
-              'freifeld16'=>$value['freifeld16'],
-              'freifeld17'=>$value['freifeld17'],
-              'freifeld18'=>$value['freifeld18'],
-              'freifeld19'=>$value['freifeld19'],
-              'freifeld20'=>$value['freifeld20'],
-              'freifeld21'=>$value['freifeld21'],
-              'freifeld22'=>$value['freifeld22'],
-              'freifeld23'=>$value['freifeld23'],
-              'freifeld24'=>$value['freifeld24'],
-              'freifeld25'=>$value['freifeld25'],
-              'freifeld26'=>$value['freifeld26'],
-              'freifeld27'=>$value['freifeld27'],
-              'freifeld28'=>$value['freifeld28'],
-              'freifeld29'=>$value['freifeld29'],
-              'freifeld30'=>$value['freifeld30'],
-              'freifeld31'=>$value['freifeld31'],
-              'freifeld32'=>$value['freifeld32'],
-              'freifeld33'=>$value['freifeld33'],
-              'freifeld34'=>$value['freifeld34'],
-              'freifeld35'=>$value['freifeld35'],
-              'freifeld36'=>$value['freifeld36'],
-              'freifeld37'=>$value['freifeld37'],
-              'freifeld38'=>$value['freifeld38'],
-              'freifeld39'=>$value['freifeld39'],
-              'freifeld40'=>$value['freifeld40'],
-              "keinrabatterlaubt"=>$value['keinrabatterlaubt'],
-              "rabatt"=>$value['rabatt']));
+            'freifeld1'=>$value['freifeld1'],
+            'freifeld2'=>$value['freifeld2'],
+            'freifeld3'=>$value['freifeld3'],
+            'freifeld4'=>$value['freifeld4'],
+            'freifeld5'=>$value['freifeld5'],
+            'freifeld6'=>$value['freifeld6'],
+            'freifeld7'=>$value['freifeld7'],
+            'freifeld8'=>$value['freifeld8'],
+            'freifeld9'=>$value['freifeld9'],
+            'freifeld10'=>$value['freifeld10'],
+            'freifeld11'=>$value['freifeld11'],
+            'freifeld12'=>$value['freifeld12'],
+            'freifeld13'=>$value['freifeld13'],
+            'freifeld14'=>$value['freifeld14'],
+            'freifeld15'=>$value['freifeld15'],
+            'freifeld16'=>$value['freifeld16'],
+            'freifeld17'=>$value['freifeld17'],
+            'freifeld18'=>$value['freifeld18'],
+            'freifeld19'=>$value['freifeld19'],
+            'freifeld20'=>$value['freifeld20'],
+            'freifeld21'=>$value['freifeld21'],
+            'freifeld22'=>$value['freifeld22'],
+            'freifeld23'=>$value['freifeld23'],
+            'freifeld24'=>$value['freifeld24'],
+            'freifeld25'=>$value['freifeld25'],
+            'freifeld26'=>$value['freifeld26'],
+            'freifeld27'=>$value['freifeld27'],
+            'freifeld28'=>$value['freifeld28'],
+            'freifeld29'=>$value['freifeld29'],
+            'freifeld30'=>$value['freifeld30'],
+            'freifeld31'=>$value['freifeld31'],
+            'freifeld32'=>$value['freifeld32'],
+            'freifeld33'=>$value['freifeld33'],
+            'freifeld34'=>$value['freifeld34'],
+            'freifeld35'=>$value['freifeld35'],
+            'freifeld36'=>$value['freifeld36'],
+            'freifeld37'=>$value['freifeld37'],
+            'freifeld38'=>$value['freifeld38'],
+            'freifeld39'=>$value['freifeld39'],
+            'freifeld40'=>$value['freifeld40'],
+            "keinrabatterlaubt"=>$value['keinrabatterlaubt'],
+            "rabatt"=>$value['rabatt']));
       }
     }
 

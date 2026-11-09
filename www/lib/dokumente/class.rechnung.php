@@ -336,7 +336,6 @@ class RechnungPDF extends BriefpapierCustom {
         else {
           $steuer = str_replace('{LAND}',$land,$steuer);
         }
-
         $steuer = str_replace('{USTID}',$ustid,$steuer);
       }
     }
@@ -369,7 +368,6 @@ class RechnungPDF extends BriefpapierCustom {
         $footer = $versandinfo."$freitext"."\r\n".$this->app->erp->ParseUserVars("rechnung",$id,$this->app->erp->Beschriftung("rechnung_footer").
           "\r\n$steuer\r\n$zahlungsweisetext").$systemfreitext;
       }
-
 
     if ($titel_abw != '') {
         $this->doctypeOrig = $titel_abw;
@@ -475,7 +473,7 @@ class RechnungPDF extends BriefpapierCustom {
               'artikelnummerkunde'=>$value['artikelnummerkunde'],
               'lieferdatum'=>$value['lieferdatum'],
               'lieferdatumkw'=>$value['lieferdatumkw'],
-            'ohnepreis'=>$value['ohnepreis'],
+              'ohnepreis'=>$value['ohnepreis'],
               'grundrabatt'=>$value['grundrabatt'],
               'rabatt1'=>$value['rabatt1'],
               'rabatt2'=>$value['rabatt2'],
