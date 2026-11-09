@@ -207,14 +207,19 @@ class BestellungPDF extends BriefpapierCustom {
         $value['beschreibung']='';
       }
 
-      $value['artikelnummer'] = !empty($value['artikelnummer']) ? $value['artikelnummer'] : (!empty($value['artnummer']) ? $value['artnummer'] : (!empty($value['nummer']) ? $value['nummer'] : ''));
+      $artikelnummer = !empty($value['artikelnummer']) ? $value['artikelnummer'] : (!empty($value['artnummer']) ? $value['artnummer'] : (!empty($value['nummer']) ? $value['nummer'] : ''));
+      if (empty($artikelnummer) && !empty($value['artikel'])) {
+        $artikelnummer = (string)$this->app->DB->Select(sprintf("SELECT nummer FROM `artikel` WHERE id = %d LIMIT 1", (int)$value['artikel']));
+      }
+      $value['artikelnummer'] = $artikelnummer;
+
       if($artikelnummerninfotext) {
         if(!empty($value['bestellnummer'])){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_bestellnummer') . ': ' . $value['bestellnummer'];
         }
         $value['bestellnummer'] = $value['artikelnummer'];
       } else if($keineartikelnummern == 1) {
-        $value['artikelnummer'] = $value['bestellnummer'];
+        // do not print internal article number in description
       }
       else {
         if(!empty($value['artikelnummer'])){
