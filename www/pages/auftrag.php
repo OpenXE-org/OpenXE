@@ -4664,6 +4664,10 @@ class Auftrag extends GenAuftrag
       $this->app->erp->MenuEintrag('index.php?module=auftrag&action=ean&id='.$id, 'Barcodescanner');
     }
 
+    if($this->app->erp->ModulVorhanden('abschlagsrechnung')){
+      $this->app->erp->MenuEintrag('index.php?module=abschlagsrechnung&action=auftraglist&id='.$id, 'Abschlagsrechnung');
+    }
+
     if($action==='abschicken' || $action==='zahlungsmahnungswesen'){
       $this->app->erp->MenuEintrag("index.php?module=auftrag&action=edit&id=$id", 'Zur&uuml;ck zum Auftrag');
     }
