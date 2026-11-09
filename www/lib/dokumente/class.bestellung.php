@@ -208,7 +208,7 @@ class BestellungPDF extends BriefpapierCustom {
       }
 
       $artikelnummer = !empty($value['artikelnummer']) ? $value['artikelnummer'] : (!empty($value['artnummer']) ? $value['artnummer'] : (!empty($value['nummer']) ? $value['nummer'] : ''));
-      if (empty($artikelnummer) && !empty($value['artikel'])) {
+      if (empty($artikelnummer) && !empty($value['artikel']) && ($keineartikelnummern != 1 || $artikelnummerninfotext)) {
         $artikelnummer = (string)$this->app->DB->Select(sprintf("SELECT nummer FROM `artikel` WHERE id = %d LIMIT 1", (int)$value['artikel']));
       }
       $value['artikelnummer'] = $artikelnummer;
@@ -219,7 +219,8 @@ class BestellungPDF extends BriefpapierCustom {
         }
         $value['bestellnummer'] = $value['artikelnummer'];
       } else if($keineartikelnummern == 1) {
-        // do not print internal article number in description
+        // Do not print internal article number in description; keep supplier order number in itemno
+        $value['artnummer'] = $value['bestellnummer'];
       }
       else {
         if(!empty($value['artikelnummer'])){
