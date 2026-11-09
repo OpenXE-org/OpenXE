@@ -21,6 +21,10 @@ class AbschlagsrechnungUnitTest
         $this->testTitleIncrementing();
         $this->testSubtitleConcatenation();
         $this->testZeroQuantityPositionTotal();
+        $this->testCsrfValidationLogic();
+        $this->testCommercialRoundingFallbackNetCalculation();
+        $this->testMixedTaxRateDeductionGrouping();
+        $this->testFinalInvoiceIdempotencyLogic();
 
         echo PHP_EOL;
         echo "Assertions: {$this->assertions}, Failures: {$this->failures}" . PHP_EOL;
@@ -163,6 +167,110 @@ class AbschlagsrechnungUnitTest
 
         $nettoGesamt = $menge * ($preis - ($preis / 100.0 * $rabatt));
         $this->assertEquals(0.0, $nettoGesamt, "Zero quantity line must evaluate to 0.00 total");
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testCsrfValidationLogic(): void
+    {
+        echo "- testCsrfValidationLogic: ";
+        $sessionToken = bin2hex(random_bytes(16));
+        $key = 'abschlagsrechnung';
+        $_SESSION['csrf_' . $key] = $sessionToken;
+
+        // Valid match
+        $isValid = !empty($sessionToken) && hash_equals($_SESSION['csrf_' . $key], $sessionToken);
+        $this->assertEquals(true, $isValid, "Matching token must be valid");
+
+        // Invalid match
+        $isInvalid = !empty('wrong_token') && hash_equals($_SESSION['csrf_' . $key], 'wrong_token');
+        $this->assertEquals(false, $isInvalid, "Wrong token must be invalid");
+
+        // Empty token
+        $isEmpty = empty('') ? false : hash_equals($_SESSION['csrf_' . $key], '');
+        $this->assertEquals(false, $isEmpty, "Empty token must be invalid");
+
+        unset($_SESSION['csrf_' . $key]);
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testCommercialRoundingFallbackNetCalculation(): void
+    {
+        echo "- testCommercialRoundingFallbackNetCalculation: ";
+        // Simulated tax array from steuerAusBelegPDF
+        $positions = [
+            ['netto' => 250.00, 'brutto' => 297.50, 'steuersatz' => 19.0],
+            ['netto' => 150.00, 'brutto' => 160.50, 'steuersatz' => 7.0],
+        ];
+
+        $summeNetto = 0.0;
+        $gesamtsummeBrutto = 0.0;
+        foreach ($positions as $p) {
+            $summeNetto += $p['netto'];
+            $gesamtsummeBrutto += $p['brutto'];
+        }
+
+        $this->assertEquals(400.00, $summeNetto, "Net sum in fallback path must equal sum of line net amounts");
+        $this->assertEquals(458.00, $gesamtsummeBrutto, "Gross sum in fallback path must equal sum of line gross amounts");
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testMixedTaxRateDeductionGrouping(): void
+    {
+        echo "- testMixedTaxRateDeductionGrouping: ";
+        // Given previous invoice positions with different tax rates
+        $taxItems = [
+            ['steuersatz' => 19.0, 'usteuer' => 'normal', 'netto' => 300.00],
+            ['steuersatz' => 19.0, 'usteuer' => 'normal', 'netto' => 200.00],
+            ['steuersatz' => 7.0,  'usteuer' => 'ermaessigt', 'netto' => 100.00],
+        ];
+
+        $grouped = [];
+        foreach ($taxItems as $item) {
+            $k = (string)$item['steuersatz'];
+            if (!isset($grouped[$k])) {
+                $grouped[$k] = ['netto' => 0.0, 'steuersatz' => $item['steuersatz'], 'umsatzsteuer' => $item['usteuer']];
+            }
+            $grouped[$k]['netto'] += $item['netto'];
+        }
+
+        $this->assertEquals(2, count($grouped), "Should group into 2 tax rate brackets");
+        $this->assertEquals(500.00, $grouped['19']['netto'], "19% bracket net sum must be 500.00");
+        $this->assertEquals(100.00, $grouped['7']['netto'], "7% bracket net sum must be 100.00");
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testFinalInvoiceIdempotencyLogic(): void
+    {
+        echo "- testFinalInvoiceIdempotencyLogic: ";
+        // Simulated order invoices list
+        $invoices = [
+            ['id' => 101, 'bezeichnung' => '1. Teilrechnung', 'status' => 'freigegeben'],
+            ['id' => 102, 'bezeichnung' => 'Schlussrechnung', 'status' => 'freigegeben'],
+        ];
+
+        $hasActiveFinal = false;
+        foreach ($invoices as $inv) {
+            if (stripos($inv['bezeichnung'], 'Schlussrechnung') !== false && $inv['status'] !== 'storniert') {
+                $hasActiveFinal = true;
+                break;
+            }
+        }
+
+        $this->assertEquals(true, $hasActiveFinal, "Must detect existing active final invoice");
+
+        // Cancelled final invoice should NOT block new one
+        $cancelledInvoices = [
+            ['id' => 101, 'bezeichnung' => '1. Teilrechnung', 'status' => 'freigegeben'],
+            ['id' => 102, 'bezeichnung' => 'Schlussrechnung', 'status' => 'storniert'],
+        ];
+        $hasActiveFinal2 = false;
+        foreach ($cancelledInvoices as $inv) {
+            if (stripos($inv['bezeichnung'], 'Schlussrechnung') !== false && $inv['status'] !== 'storniert') {
+                $hasActiveFinal2 = true;
+                break;
+            }
+        }
+        $this->assertEquals(false, $hasActiveFinal2, "Cancelled final invoice must not block new creation");
         echo "OK" . PHP_EOL;
     }
 

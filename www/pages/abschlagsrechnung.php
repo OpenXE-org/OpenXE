@@ -9,6 +9,9 @@ class Abschlagsrechnung
     /** @var ApplicationCore|Application */
     public $app;
 
+    /** @var bool Static cache to prevent redundant hook registrations */
+    private static bool $hooksRegistered = false;
+
     /**
      * @param ApplicationCore|Application $app
      * @param bool $intern
@@ -17,6 +20,11 @@ class Abschlagsrechnung
     {
         $this->app = $app;
         $this->registerHooks();
+
+        // Ensure database table exists
+        if (!$this->app->DB->CheckTableExistence('abschlagsrechnung_rechnung')) {
+            $this->Install();
+        }
 
         if ($intern) {
             return;
@@ -33,14 +41,166 @@ class Abschlagsrechnung
     }
 
     /**
+     * Module installation & table creation
+     */
+    public function Install(): void
+    {
+        $this->app->DB->Query(
+            "CREATE TABLE IF NOT EXISTS `abschlagsrechnung_rechnung` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `rechnung` int(11) NOT NULL DEFAULT 0,
+                `auftrag` int(11) NOT NULL DEFAULT 0,
+                `bezeichnung` varchar(255) NOT NULL,
+                PRIMARY KEY (`id`),
+                KEY `rechnung` (`rechnung`),
+                KEY `auftrag` (`auftrag`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci"
+        );
+
+        if (isset($this->app->erp)) {
+            $this->app->erp->addActionsToModule('abschlagsrechnung', [
+                'list',
+                'auftraglist',
+                'teilrechnung',
+                'schlussrechnung',
+                'delete',
+                'data'
+            ]);
+        }
+    }
+
+    /**
      * Ensures hooks are registered in the system database
      */
     public function registerHooks(): void
     {
+        if (self::$hooksRegistered) {
+            return;
+        }
+
         if (isset($this->app->erp)) {
             $this->app->erp->RegisterHook('briefpapier_render_document_hook1', 'Abschlagsrechnung', 'BriefpapierRenderDocumentHook1', 1);
             $this->app->erp->RegisterHook('briefpapier_render_footer_hook2', 'Abschlagsrechnung', 'BriefpapierRenderFooterHook2', 1);
+            self::$hooksRegistered = true;
         }
+    }
+
+    /**
+     * Generate or retrieve CSRF token
+     */
+    public function getCsrfToken(string $key = 'abschlagsrechnung'): string
+    {
+        if (!headers_sent() && isset($this->app->Container) && $this->app->Container->has('Session')) {
+            try {
+                $session = $this->app->Container->get('Session');
+                if ($session instanceof \Xentral\Components\Http\Session\Session) {
+                    return (string)$session->createCsrfToken($key);
+                }
+            } catch (\Throwable $e) {
+                // Fallback below
+            }
+        }
+
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            @session_start();
+        }
+
+        if (!isset($_SESSION) || !is_array($_SESSION)) {
+            $_SESSION = [];
+        }
+
+        if (empty($_SESSION['csrf_' . $key])) {
+            $_SESSION['csrf_' . $key] = bin2hex(random_bytes(16));
+        }
+
+        return (string)$_SESSION['csrf_' . $key];
+    }
+
+    /**
+     * Validate CSRF token against Session or session array
+     */
+    public function isCsrfTokenValid(?string $token, string $key = 'abschlagsrechnung'): bool
+    {
+        if (empty($token)) {
+            return false;
+        }
+
+        if (!headers_sent() && isset($this->app->Container) && $this->app->Container->has('Session')) {
+            try {
+                $session = $this->app->Container->get('Session');
+                if ($session instanceof \Xentral\Components\Http\Session\Session) {
+                    if ($session->isCsrfTokenValid($key, $token, false)) {
+                        return true;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fallback below
+            }
+        }
+
+        if (!empty($_SESSION['csrf_' . $key]) && hash_equals((string)$_SESSION['csrf_' . $key], $token)) {
+            return true;
+        }
+
+        if (!empty($_SESSION['token']) && hash_equals((string)$_SESSION['token'], $token)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Authorization and permission check
+     */
+    public function checkPermission(string $action, ?int $auftragId = null): bool
+    {
+        // Internal/CLI tests or unauthenticated background calls without user context
+        if (!isset($this->app->User) || (int)$this->app->User->GetID() <= 0) {
+            return true;
+        }
+
+        // Admin has all rights
+        if ($this->app->User->GetType() === 'admin') {
+            return true;
+        }
+
+        if (isset($this->app->erp)) {
+            $hasModuleRight = $this->app->erp->RechteVorhanden('abschlagsrechnung', $action);
+            $isMutating = in_array($action, ['teilrechnung', 'schlussrechnung', 'delete'], true);
+            $hasAuftragRight = $isMutating
+                ? $this->app->erp->RechteVorhanden('auftrag', 'edit')
+                : ($this->app->erp->RechteVorhanden('auftrag', 'edit') || $this->app->erp->RechteVorhanden('auftrag', 'ansehen'));
+
+            if (!$hasModuleRight && !$hasAuftragRight) {
+                return false;
+            }
+
+            // Verify project access on order
+            if ($auftragId !== null && $auftragId > 0) {
+                $order = $this->app->DB->SelectRow(
+                    sprintf("SELECT id, projekt, vertriebid FROM `auftrag` WHERE id = %d LIMIT 1", $auftragId)
+                );
+                if (empty($order)) {
+                    return false;
+                }
+
+                $projSql = $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid');
+                if (!empty($projSql)) {
+                    $check = $this->app->DB->Select(
+                        sprintf(
+                            "SELECT a.id FROM `auftrag` AS a LEFT JOIN `projekt` AS p ON p.id = a.projekt WHERE a.id = %d AND (%s) LIMIT 1",
+                            $auftragId,
+                            $projSql
+                        )
+                    );
+                    if (empty($check)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -51,6 +211,12 @@ class Abschlagsrechnung
         $id = (int)$this->getParam('id');
         if ($id <= 0) {
             $this->app->Location->execute('index.php?module=auftrag&action=list');
+            return;
+        }
+
+        if (!$this->checkPermission('auftraglist', $id)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung f&uuml;r diesen Auftrag!</div>');
+            $this->app->Location->execute('index.php?module=auftrag&action=list&msg=' . $msg);
             return;
         }
 
@@ -86,6 +252,7 @@ class Abschlagsrechnung
             )
         );
 
+        $csrfToken = $this->getCsrfToken();
         $teilrechnungCount = 0;
         $htmlRows = '';
 
@@ -112,7 +279,7 @@ class Abschlagsrechnung
                 $menu = '<table class="nopadding" cellpadding="0" cellspacing="0"><tr>';
                 $menu .= '<td><a href="index.php?module=rechnung&action=edit&id=' . $recId . '" title="Rechnung bearbeiten"><img src="themes/' . $theme . '/images/edit.svg" border="0" width="16"></a></td>';
                 $menu .= '<td><a href="index.php?module=rechnung&action=pdf&id=' . $recId . '" title="PDF anzeigen" target="_blank"><img src="themes/' . $theme . '/images/pdf.svg" border="0" width="16"></a></td>';
-                $menu .= '<td><a href="#" onclick="if(confirm(\'Verknüpfung wirklich entfernen?\')) window.location.href=\'index.php?module=abschlagsrechnung&action=delete&id=' . $arId . '&auftrag=' . $id . '\';" title="Verknüpfung löschen"><img src="themes/' . $theme . '/images/delete.svg" border="0" width="16"></a></td>';
+                $menu .= '<td><a href="#" onclick="deleteAbschlag(' . $arId . ', ' . $id . ');" title="Verknüpfung löschen"><img src="themes/' . $theme . '/images/delete.svg" border="0" width="16"></a></td>';
                 $menu .= '</tr></table>';
 
                 $htmlRows .= '<tr>';
@@ -133,12 +300,15 @@ class Abschlagsrechnung
         $defaultBezeichnung = ($teilrechnungCount + 1) . '. Teilrechnung';
 
         $this->app->Tpl->Set('AUFTRAG_ID', (string)$id);
-        $this->app->Tpl->Set('DEFAULT_BEZEICHNUNG', $defaultBezeichnung);
+        $this->app->Tpl->Set('DEFAULT_BEZEICHNUNG', htmlspecialchars($defaultBezeichnung));
+        $this->app->Tpl->Set('CSRF_TOKEN', htmlspecialchars($csrfToken));
         $this->app->Tpl->Set('RECHNUNGSLISTE', $htmlRows);
 
-        $msg = $this->app->Secure->GetGET('msg');
+        $msg = $this->getParam('msg');
         if (!empty($msg)) {
-            $this->app->Tpl->Set('MESSAGE', $this->app->erp->base64_url_decode($msg));
+            $decoded = $this->app->erp->base64_url_decode($msg);
+            $cleanMsg = strip_tags($decoded, '<div><span><b><strong><i><br>');
+            $this->app->Tpl->Set('MESSAGE', $cleanMsg);
         } else {
             $this->app->Tpl->Set('MESSAGE', '');
         }
@@ -154,6 +324,21 @@ class Abschlagsrechnung
         $id = (int)$this->getParam('id');
         if ($id <= 0) {
             $this->app->Location->execute('index.php?module=auftrag&action=list');
+            return;
+        }
+
+        // Authorization check
+        if (!$this->checkPermission('teilrechnung', $id)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung f&uuml;r diesen Auftrag!</div>');
+            $this->app->Location->execute('index.php?module=auftrag&action=list&msg=' . $msg);
+            return;
+        }
+
+        // CSRF Token check
+        $token = $this->getPostParam('token') ?: $this->getParam('token');
+        if (!$this->isCsrfTokenValid($token)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Ung&uuml;ltiges Sicherheitstoken (CSRF). Bitte versuchen Sie es erneut.</div>');
+            $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $id . '&msg=' . $msg);
             return;
         }
 
@@ -197,7 +382,8 @@ class Abschlagsrechnung
 
         // Resolve down payment article details
         $artId = 0;
-        $steuersatz = 19;
+        $steuersatz = (float)$this->app->erp->GetSteuersatzNormal(false, $newRechnungId, 'rechnung');
+
         if ($artNummer !== '') {
             $artRow = $this->app->DB->SelectRow(
                 sprintf(
@@ -232,20 +418,24 @@ class Abschlagsrechnung
             )
         );
 
+        $mengeStr = number_format($menge, 4, '.', '');
+        $preisStr = number_format($preis, 4, '.', '');
+        $steuersatzStr = number_format($steuersatz, 2, '.', '');
+
         // Insert down payment line item
         $this->app->DB->Insert(
             sprintf(
                 "INSERT INTO `rechnung_position` 
                  (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
-                 VALUES (%d, %d, '%s', '%s', %F, %F, '%s', %F, %d)",
+                 VALUES (%d, %d, '%s', '%s', %s, %s, '%s', %s, %d)",
                 $newRechnungId,
                 $artId,
                 $this->app->DB->real_escape_string($artBezeichnung),
                 $this->app->DB->real_escape_string($artBeschreibung),
-                $menge,
-                $preis,
-                (string)$steuersatz,
-                $steuersatz,
+                $mengeStr,
+                $preisStr,
+                $this->app->DB->real_escape_string((string)$steuersatz),
+                $steuersatzStr,
                 $nextSort
             )
         );
@@ -284,6 +474,38 @@ class Abschlagsrechnung
         $id = (int)$this->getParam('id');
         if ($id <= 0) {
             $this->app->Location->execute('index.php?module=auftrag&action=list');
+            return;
+        }
+
+        // Authorization check
+        if (!$this->checkPermission('schlussrechnung', $id)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung f&uuml;r diesen Auftrag!</div>');
+            $this->app->Location->execute('index.php?module=auftrag&action=list&msg=' . $msg);
+            return;
+        }
+
+        // CSRF Token check
+        $token = $this->getPostParam('token') ?: $this->getParam('token');
+        if (!$this->isCsrfTokenValid($token)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Ung&uuml;ltiges Sicherheitstoken (CSRF). Bitte versuchen Sie es erneut.</div>');
+            $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $id . '&msg=' . $msg);
+            return;
+        }
+
+        // Idempotency check: prevent multiple active final invoices for the same order
+        $existingSchluss = (int)$this->app->DB->Select(
+            sprintf(
+                "SELECT ar.rechnung 
+                 FROM `abschlagsrechnung_rechnung` AS ar 
+                 INNER JOIN `rechnung` AS r ON r.id = ar.rechnung 
+                 WHERE ar.auftrag = %d AND ar.bezeichnung LIKE '%%Schlussrechnung%%' AND r.status != 'storniert' 
+                 LIMIT 1",
+                $id
+            )
+        );
+        if ($existingSchluss > 0) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Es existiert bereits eine aktive Schlussrechnung f&uuml;r diesen Auftrag!</div>');
+            $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $id . '&msg=' . $msg);
             return;
         }
 
@@ -330,42 +552,76 @@ class Abschlagsrechnung
                         $deductionAmount = abs((float)$pos['preis'] * (float)$pos['menge']);
                         $deductionTitle = !empty($pos['bezeichnung']) ? $pos['bezeichnung'] : $prev['bezeichnung'];
                         $deductionDesc = !empty($pos['beschreibung']) ? $pos['beschreibung'] : ('Abzug ' . $prev['bezeichnung']);
+                        $posTaxRate = (float)($pos['steuersatz'] ?: $pos['umsatzsteuer']);
 
                         $this->app->DB->Insert(
                             sprintf(
                                 "INSERT INTO `rechnung_position` 
                                  (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
-                                 VALUES (%d, %d, '%s', '%s', 1, %F, '%s', %F, %d)",
+                                 VALUES (%d, %d, '%s', '%s', 1, %s, '%s', %s, %d)",
                                 $newRechnungId,
                                 (int)$pos['artikel'],
                                 $this->app->DB->real_escape_string($deductionTitle),
                                 $this->app->DB->real_escape_string($deductionDesc),
-                                -1.0 * $deductionAmount,
-                                (string)$pos['umsatzsteuer'],
-                                (float)($pos['steuersatz'] ?: $pos['umsatzsteuer']),
+                                number_format(-1.0 * $deductionAmount, 4, '.', ''),
+                                $this->app->DB->real_escape_string((string)$pos['umsatzsteuer']),
+                                number_format($posTaxRate, 2, '.', ''),
                                 $nextSort++
                             )
                         );
                     }
                 } else {
-                    // Fallback if no specific positions found: deduce previous invoice net sum
-                    $prevNetto = (float)$this->app->erp->ANABREGSNeuberechnenGesamtsumme($prevRecId, 'rechnung', true);
-                    if ($prevNetto > 0) {
-                        $steuersatz = (float)$this->app->erp->GetSteuersatzNormal(false, $newRechnungId, 'rechnung');
-                        $this->app->DB->Insert(
-                            sprintf(
-                                "INSERT INTO `rechnung_position` 
-                                 (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
-                                 VALUES (%d, 0, '%s', '%s', 1, %F, '%s', %F, %d)",
-                                $newRechnungId,
-                                $this->app->DB->real_escape_string('Abzug ' . $prev['bezeichnung']),
-                                $this->app->DB->real_escape_string('Rechnung ' . ($prev['belegnr'] ?: $prevRecId)),
-                                -1.0 * $prevNetto,
-                                (string)$steuersatz,
-                                $steuersatz,
-                                $nextSort++
-                            )
-                        );
+                    // Fallback: group by tax rate via steuerAusBelegArray to correctly reflect mixed tax rates
+                    $taxArr = $this->app->erp->steuerAusBelegArray('rechnung', $prevRecId);
+                    if (!empty($taxArr)) {
+                        $nettoByTax = [];
+                        foreach ($taxArr as $t) {
+                            $rate = (float)$t['steuersatz'];
+                            $uSteuer = $t['usteuer'] ?? 'normal';
+                            $k = (string)$rate;
+                            if (!isset($nettoByTax[$k])) {
+                                $nettoByTax[$k] = ['netto' => 0.0, 'steuersatz' => $rate, 'umsatzsteuer' => $uSteuer];
+                            }
+                            $nettoByTax[$k]['netto'] += (float)$t['netto'];
+                        }
+                        foreach ($nettoByTax as $taxGroup) {
+                            if ($taxGroup['netto'] > 0) {
+                                $this->app->DB->Insert(
+                                    sprintf(
+                                        "INSERT INTO `rechnung_position` 
+                                         (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
+                                         VALUES (%d, 0, '%s', '%s', 1, %s, '%s', %s, %d)",
+                                        $newRechnungId,
+                                        $this->app->DB->real_escape_string('Abzug ' . $prev['bezeichnung']),
+                                        $this->app->DB->real_escape_string('Rechnung ' . ($prev['belegnr'] ?: $prevRecId)),
+                                        number_format(-1.0 * $taxGroup['netto'], 4, '.', ''),
+                                        $this->app->DB->real_escape_string((string)$taxGroup['umsatzsteuer']),
+                                        number_format($taxGroup['steuersatz'], 2, '.', ''),
+                                        $nextSort++
+                                    )
+                                );
+                            }
+                        }
+                    } else {
+                        // General fallback
+                        $prevNetto = (float)$this->app->erp->ANABREGSNeuberechnenGesamtsumme($prevRecId, 'rechnung', true);
+                        if ($prevNetto > 0) {
+                            $steuersatz = (float)$this->app->erp->GetSteuersatzNormal(false, $newRechnungId, 'rechnung');
+                            $this->app->DB->Insert(
+                                sprintf(
+                                    "INSERT INTO `rechnung_position` 
+                                     (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
+                                     VALUES (%d, 0, '%s', '%s', 1, %s, '%s', %s, %d)",
+                                    $newRechnungId,
+                                    $this->app->DB->real_escape_string('Abzug ' . $prev['bezeichnung']),
+                                    $this->app->DB->real_escape_string('Rechnung ' . ($prev['belegnr'] ?: $prevRecId)),
+                                    number_format(-1.0 * $prevNetto, 4, '.', ''),
+                                    $this->app->DB->real_escape_string((string)$steuersatz),
+                                    number_format($steuersatz, 2, '.', ''),
+                                    $nextSort++
+                                )
+                            );
+                        }
                     }
                 }
             }
@@ -396,15 +652,41 @@ class Abschlagsrechnung
     }
 
     /**
-     * Delete link in abschlagsrechnung_rechnung
+     * Delete link in abschlagsrechnung_rechnung (order-scoped and CSRF-protected)
      */
     public function AbschlagsrechnungDelete(): void
     {
         $id = (int)$this->getParam('id');
         $auftragId = (int)$this->getParam('auftrag');
 
+        if ($auftragId <= 0) {
+            $this->app->Location->execute('index.php?module=auftrag&action=list');
+            return;
+        }
+
+        // Authorization check
+        if (!$this->checkPermission('delete', $auftragId)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung zum L&ouml;schen!</div>');
+            $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $auftragId . '&msg=' . $msg);
+            return;
+        }
+
+        // CSRF Token check
+        $token = $this->getPostParam('token') ?: $this->getParam('token');
+        if (!$this->isCsrfTokenValid($token)) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Ung&uuml;ltiges Sicherheitstoken (CSRF). Bitte versuchen Sie es erneut.</div>');
+            $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $auftragId . '&msg=' . $msg);
+            return;
+        }
+
         if ($id > 0) {
-            $this->app->DB->Delete(sprintf("DELETE FROM `abschlagsrechnung_rechnung` WHERE `id` = %d LIMIT 1", $id));
+            $this->app->DB->Delete(
+                sprintf(
+                    "DELETE FROM `abschlagsrechnung_rechnung` WHERE `id` = %d AND `auftrag` = %d LIMIT 1",
+                    $id,
+                    $auftragId
+                )
+            );
         }
 
         $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $auftragId);
@@ -415,6 +697,14 @@ class Abschlagsrechnung
      */
     public function AbschlagsrechnungData(): void
     {
+        if (!$this->checkPermission('data')) {
+            header('HTTP/1.1 403 Forbidden');
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => false, 'error' => 'Keine Berechtigung']);
+            $this->app->ExitXentral();
+            return;
+        }
+
         $cmd = $this->getParam('cmd');
         if ($cmd === 'getarticle') {
             $nummer = trim($this->getParam('nummer'));
@@ -441,11 +731,13 @@ class Abschlagsrechnung
                         'preis' => number_format((float)$row['verkaufspreis'], 2, '.', '')
                     ]);
                     $this->app->ExitXentral();
+                    return;
                 }
             }
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['success' => false]);
             $this->app->ExitXentral();
+            return;
         }
     }
 
@@ -454,6 +746,12 @@ class Abschlagsrechnung
      */
     public function AbschlagsrechnungList(): void
     {
+        if (!$this->checkPermission('list')) {
+            $msg = $this->app->erp->base64_url_encode('<div class="error">Keine Berechtigung f&uuml;r Abschlagsrechnungen!</div>');
+            $this->app->Location->execute('index.php?module=auftrag&action=list&msg=' . $msg);
+            return;
+        }
+
         $this->app->Tpl->Set('KURZUEBERSCHRIFT2', 'Abschlagsrechnungen');
         $this->app->erp->MenuEintrag('index.php?module=abschlagsrechnung&action=list', '&Uuml;bersicht');
 
@@ -597,7 +895,6 @@ class Abschlagsrechnung
         $pdf->Cell(180, 5, $pdf->app->erp->ReadyForPDF('Tabelle für Abschlagsrechnung'), 0, 1, 'L');
         $pdf->Ln(1);
 
-        // Column widths matching screenshot 4 & 5
         $wBeleg = 45;
         $wNetto = 22;
         $wMwst = 22;
@@ -676,7 +973,7 @@ class Abschlagsrechnung
     }
 
     /**
-     * Setup order navigation tabs matching screenshot 3496
+     * Setup order navigation tabs
      */
     private function setupAuftragMenu(int $id, string $status, string $belegnr, string $kundenname): void
     {

@@ -1540,7 +1540,8 @@ class Rechnung extends GenRechnung
     $this->app->erp->MenuEintrag("index.php?module=rechnung&action=dateien&id=$id",'Dateien'.$anzahldateien);
 
     if($this->app->erp->ModulVorhanden('abschlagsrechnung')){
-      $arAuftragId = (int)$this->app->DB->Select("SELECT auftrag FROM `abschlagsrechnung_rechnung` WHERE `rechnung` = '$id' LIMIT 1");
+      $this->app->loadModule('abschlagsrechnung', true);
+      $arAuftragId = (int)$this->app->DB->Select(sprintf("SELECT auftrag FROM `abschlagsrechnung_rechnung` WHERE `rechnung` = %d LIMIT 1", (int)$id));
       if($arAuftragId > 0) {
         $this->app->erp->MenuEintrag("index.php?module=abschlagsrechnung&action=auftraglist&id=$arAuftragId", 'Abschlagsrechnung');
       }

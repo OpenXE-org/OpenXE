@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-$_SERVER['SCRIPT_FILENAME'] = '/data/OpenXE/www/index.php';
+$_SERVER['SCRIPT_FILENAME'] = dirname(__DIR__) . '/www/index.php';
 require_once __DIR__ . '/../xentral_autoloader.php';
 require_once __DIR__ . '/../www/eproosystem.php';
 require_once __DIR__ . '/../conf/main.conf.php';
@@ -20,10 +20,14 @@ $modulVorhanden = $app->erp->ModulVorhanden('abschlagsrechnung');
 echo "1. ModulVorhanden('abschlagsrechnung'): " . ($modulVorhanden ? "PASS" : "FAIL") . PHP_EOL;
 assert($modulVorhanden === true, "ModulVorhanden must return true");
 
-// 2. Instantiate Abschlagsrechnung
+// 2. Instantiate Abschlagsrechnung & verify auto-install
 require_once __DIR__ . '/../www/pages/abschlagsrechnung.php';
 $abschlag = new Abschlagsrechnung($app, true);
 echo "2. Instantiate Abschlagsrechnung: PASS" . PHP_EOL;
+
+$tableExists = $app->DB->CheckTableExistence('abschlagsrechnung_rechnung');
+assert($tableExists === true, "Table abschlagsrechnung_rechnung must exist");
+echo "   Database table existence verified: PASS" . PHP_EOL;
 
 // 3. Verify hook registration in DB
 $hook1 = (int)$app->DB->Select("SELECT COUNT(*) FROM `hook_register` WHERE `module` = 'Abschlagsrechnung' AND `function` = 'BriefpapierRenderDocumentHook1' AND `aktiv` = 1");
@@ -45,9 +49,22 @@ $app->DB->Insert("INSERT INTO `auftrag_position` (`auftrag`, `bezeichnung`, `men
 $app->erp->ANABREGSNeuberechnen($auftragId, 'auftrag');
 echo "4. Created Test Order ID $auftragId: PASS" . PHP_EOL;
 
-// 5. Test AbschlagsrechnungTeilrechnung
+// Mock Location execute to prevent redirect exit
+$savedLocation = $app->Location;
+class TestLocationMock { public $target = ''; public function execute($url) { $this->target = $url; } }
+$app->Location = new TestLocationMock();
+
+// 5. CSRF Protection Test: Attempt mutating action without token
 $_GET['id'] = $auftragId;
 $_POST['bezeichnung'] = '1. Teilrechnung';
+$_POST['token'] = 'invalid_csrf_token';
+$abschlag->AbschlagsrechnungTeilrechnung();
+assert(strpos($app->Location->target, 'msg=') !== false, "Teilrechnung without valid token must be rejected");
+echo "5. CSRF rejection on invalid token: PASS" . PHP_EOL;
+
+// 6. Test AbschlagsrechnungTeilrechnung with valid CSRF token
+$validToken = $abschlag->getCsrfToken();
+$_POST['token'] = $validToken;
 $_POST['posnull'] = '1';
 $_POST['artikel_teilzahlung'] = '';
 $_POST['artikel_teilzahlung_bezeichnung'] = 'Abschlagszahlung 50%';
@@ -55,13 +72,8 @@ $_POST['artikel_teilzahlung_beschreibung'] = '50% Anzahlung';
 $_POST['artikel_teilzahlung_menge'] = '1';
 $_POST['artikel_teilzahlung_preis'] = '500.00';
 
-// Mock Location execute to prevent redirect exit
-$savedLocation = $app->Location;
-class TestLocationMock { public $target = ''; public function execute($url) { $this->target = $url; } }
-$app->Location = new TestLocationMock();
-
 $abschlag->AbschlagsrechnungTeilrechnung();
-echo "5. Teilrechnung executed, redirected to: " . $app->Location->target . PHP_EOL;
+echo "6. Teilrechnung executed, redirected to: " . $app->Location->target . PHP_EOL;
 
 // Check Teilrechnung in DB
 $teilrechnungLink = $app->DB->SelectRow("SELECT * FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId LIMIT 1");
@@ -72,7 +84,6 @@ echo "   Teilrechnung created with ID $rechnungId1, Bezeichnung: " . $teilrechnu
 // Check positions of Teilrechnung: original order positions should have menge = 0, down payment line menge = 1
 $positions1 = $app->DB->SelectArr("SELECT * FROM `rechnung_position` WHERE `rechnung` = $rechnungId1 ORDER BY `sort` ASC");
 assert(count($positions1) === 3, "Teilrechnung should have 2 zero-qty order items + 1 down payment item");
-echo "   Positions count: " . count($positions1) . PHP_EOL;
 assert((float)$positions1[0]['menge'] === 0.0, "Original item 1 must have menge = 0");
 assert((float)$positions1[1]['menge'] === 0.0, "Original item 2 must have menge = 0");
 assert((float)$positions1[2]['menge'] === 1.0, "Down payment item must have menge = 1");
@@ -86,9 +97,10 @@ echo "   Teilrechnung Netto: $netto1, Brutto: $brutto1 -> " . ($netto1 == 500.00
 assert($netto1 == 500.00, "Teilrechnung Netto must be 500.00");
 assert($brutto1 == 595.00, "Teilrechnung Brutto must be 595.00");
 
-// 6. Test AbschlagsrechnungSchlussrechnung
+// 7. Test AbschlagsrechnungSchlussrechnung
+$_POST['token'] = $validToken;
 $abschlag->AbschlagsrechnungSchlussrechnung();
-echo "6. Schlussrechnung executed, redirected to: " . $app->Location->target . PHP_EOL;
+echo "7. Schlussrechnung executed, redirected to: " . $app->Location->target . PHP_EOL;
 
 $schlussLink = $app->DB->SelectRow("SELECT * FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId AND `bezeichnung` = 'Schlussrechnung' LIMIT 1");
 assert(!empty($schlussLink), "Schlussrechnung mapping must exist");
@@ -97,7 +109,6 @@ echo "   Schlussrechnung created with ID $rechnungId2" . PHP_EOL;
 
 // Check positions of Schlussrechnung: 2 original full order positions + 1 negative deduction position
 $positions2 = $app->DB->SelectArr("SELECT * FROM `rechnung_position` WHERE `rechnung` = $rechnungId2 ORDER BY `sort` ASC");
-echo "   Schlussrechnung positions count: " . count($positions2) . PHP_EOL;
 assert(count($positions2) === 3, "Schlussrechnung should have 2 full order lines + 1 deduction line");
 
 // Pos 1 & 2: menge = 10, preis = 50.00 -> total 1000.00
@@ -115,7 +126,14 @@ echo "   Schlussrechnung Netto: $netto2, Brutto: $brutto2 -> " . ($netto2 == 500
 assert($netto2 == 500.00, "Schlussrechnung Netto must be 500.00");
 assert($brutto2 == 595.00, "Schlussrechnung Brutto must be 595.00");
 
-// 7. Test PDF Hook Logic: Title subtitle and Table generation
+// 8. Test Idempotency: Attempt creating second Schlussrechnung for the same order
+$abschlag->AbschlagsrechnungSchlussrechnung();
+assert(strpos($app->Location->target, 'msg=') !== false, "Duplicate Schlussrechnung creation must be blocked");
+$schlussCount = (int)$app->DB->Select("SELECT COUNT(*) FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId AND `bezeichnung` = 'Schlussrechnung'");
+assert($schlussCount === 1, "There must be exactly one active Schlussrechnung");
+echo "8. Schlussrechnung Idempotency: PASS (duplicate blocked)" . PHP_EOL;
+
+// 9. Test PDF Hook Logic: Title subtitle and Table generation
 class MockPdf {
     public $doctype = 'rechnung';
     public $doctypeid;
@@ -141,21 +159,31 @@ class MockPdf {
 
 $mockPdf = new MockPdf($app, $rechnungId1);
 $abschlag->BriefpapierRenderDocumentHook1($mockPdf);
-echo "7. PDF Subtitle Hook: " . json_encode($mockPdf->doctypeOrig) . " -> " . (strpos($mockPdf->doctypeOrig, "1. Teilrechnung") !== false ? "PASS" : "FAIL") . PHP_EOL;
+echo "9. PDF Subtitle Hook: " . json_encode($mockPdf->doctypeOrig) . " -> " . (strpos($mockPdf->doctypeOrig, "1. Teilrechnung") !== false ? "PASS" : "FAIL") . PHP_EOL;
 assert(strpos($mockPdf->doctypeOrig, "1. Teilrechnung") !== false, "Document title must include 1. Teilrechnung");
 
 $mockPdf2 = new MockPdf($app, $rechnungId2);
 $abschlag->BriefpapierRenderFooterHook2($mockPdf2);
-echo "8. PDF Table Hook: generated " . count($mockPdf2->cells) . " cells -> " . (count($mockPdf2->cells) >= 15 ? "PASS" : "FAIL") . PHP_EOL;
+echo "10. PDF Table Hook: generated " . count($mockPdf2->cells) . " cells -> " . (count($mockPdf2->cells) >= 15 ? "PASS" : "FAIL") . PHP_EOL;
 assert(count($mockPdf2->cells) >= 15, "Table should have generated headers, rows, and total cells");
 
-// 8. Clean up test records
+// 11. Test Scoped Delete with CSRF Token
+$arIdToDelete = (int)$teilrechnungLink['id'];
+$_GET['id'] = $arIdToDelete;
+$_GET['auftrag'] = $auftragId;
+$_POST['token'] = $validToken;
+$abschlag->AbschlagsrechnungDelete();
+$checkDeleted = $app->DB->Select("SELECT COUNT(*) FROM `abschlagsrechnung_rechnung` WHERE `id` = $arIdToDelete");
+assert((int)$checkDeleted === 0, "Mapping must be deleted");
+echo "11. Scoped Delete with CSRF: PASS" . PHP_EOL;
+
+// 12. Clean up test records
 $app->DB->Delete("DELETE FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId");
 $app->DB->Delete("DELETE FROM `rechnung_position` WHERE `rechnung` IN ($rechnungId1, $rechnungId2)");
 $app->DB->Delete("DELETE FROM `rechnung` WHERE `id` IN ($rechnungId1, $rechnungId2)");
 $app->DB->Delete("DELETE FROM `auftrag_position` WHERE `auftrag` = $auftragId");
 $app->DB->Delete("DELETE FROM `auftrag` WHERE `id` = $auftragId");
 $app->DB->Delete("DELETE FROM `adresse` WHERE `id` = $adresseId");
-echo "9. Test cleanup: PASS" . PHP_EOL;
+echo "12. Test cleanup: PASS" . PHP_EOL;
 
 echo "=== All Tests Passed Successfully! ===" . PHP_EOL;

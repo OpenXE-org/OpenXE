@@ -35648,7 +35648,7 @@ function Firmendaten($field,$projekt="")
             $betrag = $summeNetto;
           }
         }else{
-          $betrag = $this->app->erp->calcBelegBrutto($art, $id);
+          list($summeNetto, $betrag) = $this->app->erp->steuerAusBelegPDF($art, $id);
         }
 
         if($return_netto) return $summeNetto;

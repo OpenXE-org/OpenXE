@@ -45,6 +45,7 @@
 <div id="dialog_teilrechnung" title="Teilrechnung erstellen" style="display:none;">
     <p style="font-size:12px; color:#555; margin-bottom:12px;">Bitte vergeben Sie einen entsprechenden Namen.</p>
     <form id="formTeilrechnung" method="post" action="index.php?module=abschlagsrechnung&action=teilrechnung&id=[AUFTRAG_ID]">
+        <input type="hidden" name="token" value="[CSRF_TOKEN]" />
         <table width="100%" cellpadding="4" cellspacing="0" border="0">
             <tr>
                 <td colspan="2">
@@ -93,6 +94,16 @@
         </table>
     </form>
 </div>
+
+<!-- Hidden POST form for Schlussrechnung -->
+<form id="formSchlussrechnung" method="post" action="index.php?module=abschlagsrechnung&action=schlussrechnung&id=[AUFTRAG_ID]" style="display:none;">
+    <input type="hidden" name="token" value="[CSRF_TOKEN]" />
+</form>
+
+<!-- Hidden POST form for Delete -->
+<form id="formDelete" method="post" action="" style="display:none;">
+    <input type="hidden" name="token" value="[CSRF_TOKEN]" />
+</form>
 
 <script type="text/javascript">
 $(document).ready(function() {
@@ -150,7 +161,15 @@ function openTeilrechnungModal() {
 
 function createSchlussrechnung() {
     if(confirm("Möchten Sie wirklich die Schlussrechnung für diesen Auftrag erzeugen? Alle vorherigen Abschlagsrechnungen werden automatisch in Abzug gebracht.")) {
-        window.location.href = "index.php?module=abschlagsrechnung&action=schlussrechnung&id=[AUFTRAG_ID]";
+        $("#formSchlussrechnung").submit();
+    }
+}
+
+function deleteAbschlag(arId, auftragId) {
+    if(confirm("Verknüpfung wirklich entfernen?")) {
+        var form = document.getElementById("formDelete");
+        form.action = "index.php?module=abschlagsrechnung&action=delete&id=" + encodeURIComponent(arId) + "&auftrag=" + encodeURIComponent(auftragId);
+        form.submit();
     }
 }
 </script>
