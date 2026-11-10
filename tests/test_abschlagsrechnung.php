@@ -56,11 +56,25 @@ $app->Location = new TestLocationMock();
 
 // 5. CSRF Protection Test: Attempt mutating action without token
 $_GET['id'] = $auftragId;
+unset($_GET['token']);
 $_POST['bezeichnung'] = '1. Teilrechnung';
 $_POST['token'] = 'invalid_csrf_token';
 $abschlag->AbschlagsrechnungTeilrechnung();
 assert(strpos($app->Location->target, 'msg=') !== false, "Teilrechnung without valid token must be rejected");
 echo "5. CSRF rejection on invalid token: PASS" . PHP_EOL;
+
+// 5b. Strict POST: token via GET only must be rejected
+$getOnlyToken = $abschlag->getCsrfToken();
+$_GET['id'] = $auftragId;
+$_GET['token'] = $getOnlyToken;
+$_POST['token'] = '';
+$mappingBefore = (int)$app->DB->Select("SELECT COUNT(*) FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId");
+$abschlag->AbschlagsrechnungTeilrechnung();
+assert(strpos($app->Location->target, 'msg=') !== false, "Teilrechnung with GET-only token must be rejected (strict POST)");
+$mappingAfter = (int)$app->DB->Select("SELECT COUNT(*) FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId");
+assert($mappingAfter === $mappingBefore, "GET-only token must not create a mapping");
+unset($_GET['token']);
+echo "5b. Strict POST (GET-only token rejected): PASS" . PHP_EOL;
 
 // 6. Test AbschlagsrechnungTeilrechnung with valid CSRF token
 $validToken = $abschlag->getCsrfToken();
@@ -97,8 +111,14 @@ echo "   Teilrechnung Netto: $netto1, Brutto: $brutto1 -> " . ($netto1 == 500.00
 assert($netto1 == 500.00, "Teilrechnung Netto must be 500.00");
 assert($brutto1 == 595.00, "Teilrechnung Brutto must be 595.00");
 
-// 7. Test AbschlagsrechnungSchlussrechnung
-$_POST['token'] = $validToken;
+// 6b. Token rotation: old token must be invalid after successful mutation
+$oldTokenStillValid = $abschlag->isCsrfTokenValid($validToken);
+assert($oldTokenStillValid === false, "Old CSRF token must be invalid after rotation");
+echo "6b. Token rotation after Teilrechnung: PASS" . PHP_EOL;
+
+// 7. Test AbschlagsrechnungSchlussrechnung (fresh token required after rotation)
+$validToken2 = $abschlag->getCsrfToken();
+$_POST['token'] = $validToken2;
 $abschlag->AbschlagsrechnungSchlussrechnung();
 echo "7. Schlussrechnung executed, redirected to: " . $app->Location->target . PHP_EOL;
 
@@ -117,6 +137,7 @@ assert((float)$positions2[1]['menge'] === 10.0, "Pos 2 full quantity");
 
 // Pos 3: deduction of 500.00
 assert((float)$positions2[2]['preis'] === -500.0, "Pos 3 deduction price must be -500.00");
+assert((float)$positions2[2]['rabatt'] === 0.0, "Deduction line rabatt column must be 0 (amount already netted)");
 
 // Check Schlussrechnung totals: Netto = 1000 - 500 = 500.00, Brutto = 1190 - 595 = 595.00
 $rechnung2 = $app->DB->SelectRow("SELECT * FROM `rechnung` WHERE `id` = $rechnungId2");
@@ -127,6 +148,10 @@ assert($netto2 == 500.00, "Schlussrechnung Netto must be 500.00");
 assert($brutto2 == 595.00, "Schlussrechnung Brutto must be 595.00");
 
 // 8. Test Idempotency: Attempt creating second Schlussrechnung for the same order
+// Fresh token required: previous Schlussrechnung rotated the token, so fetch a new one
+// to reach the idempotency guard (not just the CSRF guard).
+$validToken3 = $abschlag->getCsrfToken();
+$_POST['token'] = $validToken3;
 $abschlag->AbschlagsrechnungSchlussrechnung();
 assert(strpos($app->Location->target, 'msg=') !== false, "Duplicate Schlussrechnung creation must be blocked");
 $schlussCount = (int)$app->DB->Select("SELECT COUNT(*) FROM `abschlagsrechnung_rechnung` WHERE `auftrag` = $auftragId AND `bezeichnung` = 'Schlussrechnung'");
@@ -167,11 +192,12 @@ $abschlag->BriefpapierRenderFooterHook2($mockPdf2);
 echo "10. PDF Table Hook: generated " . count($mockPdf2->cells) . " cells -> " . (count($mockPdf2->cells) >= 15 ? "PASS" : "FAIL") . PHP_EOL;
 assert(count($mockPdf2->cells) >= 15, "Table should have generated headers, rows, and total cells");
 
-// 11. Test Scoped Delete with CSRF Token
+// 11. Test Scoped Delete with CSRF Token (fresh token after rotations)
 $arIdToDelete = (int)$teilrechnungLink['id'];
 $_GET['id'] = $arIdToDelete;
 $_GET['auftrag'] = $auftragId;
-$_POST['token'] = $validToken;
+$validToken4 = $abschlag->getCsrfToken();
+$_POST['token'] = $validToken4;
 $abschlag->AbschlagsrechnungDelete();
 $checkDeleted = $app->DB->Select("SELECT COUNT(*) FROM `abschlagsrechnung_rechnung` WHERE `id` = $arIdToDelete");
 assert((int)$checkDeleted === 0, "Mapping must be deleted");

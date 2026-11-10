@@ -22,6 +22,10 @@ class AbschlagsrechnungUnitTest
         $this->testSubtitleConcatenation();
         $this->testZeroQuantityPositionTotal();
         $this->testCsrfValidationLogic();
+        $this->testCsrfStrictPostLogic();
+        $this->testTokenRotationLogic();
+        $this->testCheckPermissionAndLogic();
+        $this->testDeductionWithRabatt();
         $this->testCommercialRoundingFallbackNetCalculation();
         $this->testMixedTaxRateDeductionGrouping();
         $this->testFinalInvoiceIdempotencyLogic();
@@ -190,6 +194,109 @@ class AbschlagsrechnungUnitTest
         $this->assertEquals(false, $isEmpty, "Empty token must be invalid");
 
         unset($_SESSION['csrf_' . $key]);
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testCsrfStrictPostLogic(): void
+    {
+        echo "- testCsrfStrictPostLogic: ";
+        // Strict POST: only $_POST['token'] is considered, $_GET['token'] must be ignored.
+        // Simulates AbschlagsrechnungTeilrechnung/Schlussrechnung/Delete reading getPostParam('token') only.
+        $sessionToken = bin2hex(random_bytes(16));
+        $key = 'abschlagsrechnung';
+        $_SESSION['csrf_' . $key] = $sessionToken;
+
+        $postToken = ''; // empty POST
+        $getToken = $sessionToken; // valid token smuggled via GET
+        // Implementation under test: $token = getPostParam('token') (no GET fallback)
+        $effectiveToken = $postToken;
+        $isValid = !empty($effectiveToken) && hash_equals($_SESSION['csrf_' . $key], $effectiveToken);
+        $this->assertEquals(false, $isValid, "GET-only token must be rejected under strict POST");
+
+        // Valid POST token passes
+        $effectiveToken2 = $sessionToken;
+        $isValid2 = !empty($effectiveToken2) && hash_equals($_SESSION['csrf_' . $key], $effectiveToken2);
+        $this->assertEquals(true, $isValid2, "POST token must be accepted");
+
+        unset($_SESSION['csrf_' . $key]);
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testTokenRotationLogic(): void
+    {
+        echo "- testTokenRotationLogic: ";
+        // Simulates rotateCsrfToken(): after successful mutation old token must be invalid.
+        $key = 'abschlagsrechnung';
+        $_SESSION['csrf_' . $key] = bin2hex(random_bytes(16));
+        $oldToken = $_SESSION['csrf_' . $key];
+
+        // rotate: unset old token (as rotateCsrfToken does)
+        unset($_SESSION['csrf_' . $key]);
+        $stillValid = !empty($_SESSION['csrf_' . $key]) && hash_equals((string)($_SESSION['csrf_' . $key] ?? ''), $oldToken);
+        $this->assertEquals(false, $stillValid, "Old token must be invalid after rotation");
+
+        // new token issued via getCsrfToken()
+        $_SESSION['csrf_' . $key] = bin2hex(random_bytes(16));
+        $newToken = $_SESSION['csrf_' . $key];
+        $isNewValid = !empty($newToken) && hash_equals($_SESSION['csrf_' . $key], $newToken);
+        $this->assertEquals(true, $isNewValid, "New token after rotation must be valid");
+        $this->assertEquals(false, $oldToken === $newToken, "Rotated token must differ from old token");
+
+        unset($_SESSION['csrf_' . $key]);
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testCheckPermissionAndLogic(): void
+    {
+        echo "- testCheckPermissionAndLogic: ";
+        // Mutating actions require AND (module right + order right).
+        $cases = [
+            // [hasModule, hasAuftrag, isMutating, expected]
+            [true, true, true, true],
+            [true, false, true, false],
+            [false, true, true, false],
+            [false, false, true, false],
+            // Read actions keep OR semantics
+            [true, false, false, true],
+            [false, true, false, true],
+            [false, false, false, false],
+        ];
+        foreach ($cases as $i => [$hasModule, $hasAuftrag, $isMutating, $expected]) {
+            if ($isMutating) {
+                $allowed = !(!$hasModule || !$hasAuftrag);
+            } else {
+                $allowed = !(!$hasModule && !$hasAuftrag);
+            }
+            $this->assertEquals($expected, $allowed, "Permission case $i (module=" . (int)$hasModule . " auftrag=" . (int)$hasAuftrag . " mutating=" . (int)$isMutating . ")");
+        }
+        echo "OK" . PHP_EOL;
+    }
+
+    private function testDeductionWithRabatt(): void
+    {
+        echo "- testDeductionWithRabatt: ";
+        // Mirrors AbschlagsrechnungSchlussrechnung normal path:
+        // nettoEinzel = preis * (1 - rabatt/100), deduction = abs(nettoEinzel * menge)
+        $cases = [
+            // [preis, rabatt, menge, expectedDeduction]
+            [500.00, 0.0, 1.0, 500.00],
+            [50.00, 10.0, 10.0, 450.00],
+            [100.00, 20.0, 2.0, 160.00],
+            [129.99, 10.0, 1.0, 116.991],
+        ];
+        foreach ($cases as $i => [$preis, $rabatt, $menge, $expected]) {
+            $nettoEinzel = (float)$preis * (1.0 - ((float)$rabatt / 100.0));
+            $deduction = abs($nettoEinzel * (float)$menge);
+            $this->assertEquals(round($expected, 3), round($deduction, 3), "Rabatt deduction case $i (preis=$preis rabatt=$rabatt menge=$menge)");
+        }
+
+        // Full scenario: order 1000 netto, previous down payment 500 with 10% rabatt already netted
+        // down payment line stored netto: preis=450 (after rabatt), deduction must be 450
+        $orderNetto = 1000.00;
+        $deductionAmount = abs(50.00 * (1.0 - 10.0 / 100.0) * 10.0);
+        $this->assertEquals(450.00, round($deductionAmount, 2), "10% rabatt on 10x50 must deduct 450.00");
+        $finalNetto = $orderNetto - $deductionAmount;
+        $this->assertEquals(550.00, round($finalNetto, 2), "Final netto after rabatt-aware deduction must be 550.00");
         echo "OK" . PHP_EOL;
     }
 

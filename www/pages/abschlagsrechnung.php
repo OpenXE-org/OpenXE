@@ -119,7 +119,7 @@ class Abschlagsrechnung
     /**
      * Validate CSRF token against Session or session array
      */
-    public function isCsrfTokenValid(?string $token, string $key = 'abschlagsrechnung'): bool
+    public function isCsrfTokenValid(?string $token, string $key = 'abschlagsrechnung', bool $remove = false): bool
     {
         if (empty($token)) {
             return false;
@@ -129,7 +129,7 @@ class Abschlagsrechnung
             try {
                 $session = $this->app->Container->get('Session');
                 if ($session instanceof \Xentral\Components\Http\Session\Session) {
-                    if ($session->isCsrfTokenValid($key, $token, false)) {
+                    if ($session->isCsrfTokenValid($key, $token, $remove)) {
                         return true;
                     }
                 }
@@ -139,14 +139,45 @@ class Abschlagsrechnung
         }
 
         if (!empty($_SESSION['csrf_' . $key]) && hash_equals((string)$_SESSION['csrf_' . $key], $token)) {
+            if ($remove) {
+                unset($_SESSION['csrf_' . $key]);
+            }
             return true;
         }
 
         if (!empty($_SESSION['token']) && hash_equals((string)$_SESSION['token'], $token)) {
+            if ($remove) {
+                unset($_SESSION['token']);
+            }
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Rotate / Invalidate CSRF token after successful mutating action
+     */
+    public function rotateCsrfToken(string $key = 'abschlagsrechnung'): void
+    {
+        if (!headers_sent() && isset($this->app->Container) && $this->app->Container->has('Session')) {
+            try {
+                $session = $this->app->Container->get('Session');
+                if ($session instanceof \Xentral\Components\Http\Session\Session) {
+                    $session->createCsrfToken($key);
+                }
+            } catch (\Throwable $e) {
+                // Ignore
+            }
+        }
+
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            @session_start();
+        }
+
+        if (isset($_SESSION['csrf_' . $key])) {
+            unset($_SESSION['csrf_' . $key]);
+        }
     }
 
     /**
@@ -176,8 +207,14 @@ class Abschlagsrechnung
                 ? $this->app->erp->RechteVorhanden('auftrag', 'edit')
                 : ($this->app->erp->RechteVorhanden('auftrag', 'edit') || $this->app->erp->RechteVorhanden('auftrag', 'ansehen'));
 
-            if (!$hasModuleRight && !$hasAuftragRight) {
-                return false;
+            if ($isMutating) {
+                if (!$hasModuleRight || !$hasAuftragRight) {
+                    return false;
+                }
+            } else {
+                if (!$hasModuleRight && !$hasAuftragRight) {
+                    return false;
+                }
             }
 
             // Verify project access on order
@@ -339,8 +376,8 @@ class Abschlagsrechnung
             return;
         }
 
-        // CSRF Token check
-        $token = $this->getPostParam('token') ?: $this->getParam('token');
+        // CSRF Token check (POST only)
+        $token = $this->getPostParam('token');
         if (!$this->isCsrfTokenValid($token)) {
             $msg = $this->app->erp->base64_url_encode('<div class="error">Ung&uuml;ltiges Sicherheitstoken (CSRF). Bitte versuchen Sie es erneut.</div>');
             $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $id . '&msg=' . $msg);
@@ -467,6 +504,7 @@ class Abschlagsrechnung
 
         $this->app->erp->RechnungNeuberechnen($newRechnungId);
         $this->app->erp->AuftragProtokoll($id, "Teilrechnung '{$bezeichnung}' angelegt");
+        $this->rotateCsrfToken();
 
         $this->app->Location->execute('index.php?module=rechnung&action=edit&id=' . $newRechnungId);
     }
@@ -489,8 +527,8 @@ class Abschlagsrechnung
             return;
         }
 
-        // CSRF Token check
-        $token = $this->getPostParam('token') ?: $this->getParam('token');
+        // CSRF Token check (POST only)
+        $token = $this->getPostParam('token');
         if (!$this->isCsrfTokenValid($token)) {
             $msg = $this->app->erp->base64_url_encode('<div class="error">Ung&uuml;ltiges Sicherheitstoken (CSRF). Bitte versuchen Sie es erneut.</div>');
             $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $id . '&msg=' . $msg);
@@ -554,7 +592,9 @@ class Abschlagsrechnung
 
                 if (!empty($positions)) {
                     foreach ($positions as $pos) {
-                        $deductionAmount = abs((float)$pos['preis'] * (float)$pos['menge']);
+                        $rabattProzent = isset($pos['rabatt']) ? (float)$pos['rabatt'] : 0.0;
+                        $nettoEinzel = (float)$pos['preis'] * (1.0 - ($rabattProzent / 100.0));
+                        $deductionAmount = abs($nettoEinzel * (float)$pos['menge']);
                         $deductionTitle = !empty($pos['bezeichnung']) ? $pos['bezeichnung'] : $prev['bezeichnung'];
                         $deductionDesc = !empty($pos['beschreibung']) ? $pos['beschreibung'] : ('Abzug ' . $prev['bezeichnung']);
                         $posTaxRate = (float)($pos['steuersatz'] ?: $pos['umsatzsteuer']);
@@ -562,8 +602,8 @@ class Abschlagsrechnung
                         $this->app->DB->Insert(
                             sprintf(
                                 "INSERT INTO `rechnung_position` 
-                                 (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
-                                 VALUES (%d, %d, '%s', '%s', 1, %s, '%s', %s, %d)",
+                                 (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`, `rabatt`) 
+                                 VALUES (%d, %d, '%s', '%s', 1, %s, '%s', %s, %d, 0)",
                                 $newRechnungId,
                                 (int)$pos['artikel'],
                                 $this->app->DB->real_escape_string($deductionTitle),
@@ -594,8 +634,8 @@ class Abschlagsrechnung
                                 $this->app->DB->Insert(
                                     sprintf(
                                         "INSERT INTO `rechnung_position` 
-                                         (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
-                                         VALUES (%d, 0, '%s', '%s', 1, %s, '%s', %s, %d)",
+                                         (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`, `rabatt`) 
+                                         VALUES (%d, 0, '%s', '%s', 1, %s, '%s', %s, %d, 0)",
                                         $newRechnungId,
                                         $this->app->DB->real_escape_string('Abzug ' . $prev['bezeichnung']),
                                         $this->app->DB->real_escape_string('Rechnung ' . ($prev['belegnr'] ?: $prevRecId)),
@@ -615,8 +655,8 @@ class Abschlagsrechnung
                             $this->app->DB->Insert(
                                 sprintf(
                                     "INSERT INTO `rechnung_position` 
-                                     (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`) 
-                                     VALUES (%d, 0, '%s', '%s', 1, %s, '%s', %s, %d)",
+                                     (`rechnung`, `artikel`, `bezeichnung`, `beschreibung`, `menge`, `preis`, `umsatzsteuer`, `steuersatz`, `sort`, `rabatt`) 
+                                     VALUES (%d, 0, '%s', '%s', 1, %s, '%s', %s, %d, 0)",
                                     $newRechnungId,
                                     $this->app->DB->real_escape_string('Abzug ' . $prev['bezeichnung']),
                                     $this->app->DB->real_escape_string('Rechnung ' . ($prev['belegnr'] ?: $prevRecId)),
@@ -652,6 +692,7 @@ class Abschlagsrechnung
 
         $this->app->erp->RechnungNeuberechnen($newRechnungId);
         $this->app->erp->AuftragProtokoll($id, "Schlussrechnung angelegt");
+        $this->rotateCsrfToken();
 
         $this->app->Location->execute('index.php?module=rechnung&action=edit&id=' . $newRechnungId);
     }
@@ -676,8 +717,8 @@ class Abschlagsrechnung
             return;
         }
 
-        // CSRF Token check
-        $token = $this->getPostParam('token') ?: $this->getParam('token');
+        // CSRF Token check (POST only)
+        $token = $this->getPostParam('token');
         if (!$this->isCsrfTokenValid($token)) {
             $msg = $this->app->erp->base64_url_encode('<div class="error">Ung&uuml;ltiges Sicherheitstoken (CSRF). Bitte versuchen Sie es erneut.</div>');
             $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $auftragId . '&msg=' . $msg);
@@ -692,6 +733,7 @@ class Abschlagsrechnung
                     $auftragId
                 )
             );
+            $this->rotateCsrfToken();
         }
 
         $this->app->Location->execute('index.php?module=abschlagsrechnung&action=auftraglist&id=' . $auftragId);
@@ -757,8 +799,16 @@ class Abschlagsrechnung
             return;
         }
 
-        $this->app->Tpl->Set('KURZUEBERSCHRIFT2', 'Abschlagsrechnungen');
+        $this->app->Tpl->Set('KURZUEBERSCHRIFT2', 'Abschlagsrechnung');
         $this->app->erp->MenuEintrag('index.php?module=abschlagsrechnung&action=list', '&Uuml;bersicht');
+
+        $whereClause = '1=1';
+        if (isset($this->app->erp)) {
+            $projSql = $this->app->erp->ProjektRechte('p.id', true, 'a.vertriebid');
+            if (!empty($projSql)) {
+                $whereClause .= ' AND (' . $projSql . ')';
+            }
+        }
 
         $rechnungen = $this->app->DB->SelectArr(
             "SELECT ar.id AS ar_id, ar.bezeichnung, ar.rechnung AS rechnung_id, ar.auftrag AS auftrag_id,
@@ -767,6 +817,8 @@ class Abschlagsrechnung
              FROM `abschlagsrechnung_rechnung` AS ar
              LEFT JOIN `rechnung` AS r ON r.id = ar.rechnung
              LEFT JOIN `auftrag` AS a ON a.id = ar.auftrag
+             LEFT JOIN `projekt` AS p ON p.id = a.projekt
+             WHERE {$whereClause}
              ORDER BY ar.id DESC"
         );
 
