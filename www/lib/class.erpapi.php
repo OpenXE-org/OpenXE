@@ -32584,6 +32584,9 @@ function Firmendaten($field,$projekt="")
           $articles[] = (int)$row['artikel'];
         }
       }
+      if(empty($articles)) {
+        return;
+      }
       $freifelderLangs = [];
       $freifelderLangQuery = $this->app->DB->Query('SELECT artikel, nummer, wert FROM artikel_freifelder WHERE artikel IN ('.implode(', ', $articles).") AND sprache='$language'");
       if(!empty($freifelderLangQuery)) {
@@ -35645,10 +35648,10 @@ function Firmendaten($field,$projekt="")
             $betrag = $summeNetto;
           }
         }else{
-          $betrag = $this->app->erp->calcBelegBrutto($art, $id);
+          list($summeNetto, $betrag) = $this->app->erp->steuerAusBelegPDF($art, $id);
         }
 
-        if($return_netto) return $betrag;
+        if($return_netto) return $summeNetto;
         $extsoll = 0;
         if($art !== 'bestellung' && $art !== 'proformarechnung'){
           $extsoll = (float)$docArr['extsoll'];//$this->app->DB->Select("SELECT extsoll FROM $art WHERE id = '$id' LIMIT 1");

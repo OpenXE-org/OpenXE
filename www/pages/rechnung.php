@@ -1539,6 +1539,14 @@ class Rechnung extends GenRechnung
 
     $this->app->erp->MenuEintrag("index.php?module=rechnung&action=dateien&id=$id",'Dateien'.$anzahldateien);
 
+    if($this->app->erp->ModulVorhanden('abschlagsrechnung')){
+      $this->app->loadModule('abschlagsrechnung', true);
+      $arAuftragId = (int)$this->app->DB->Select(sprintf("SELECT auftrag FROM `abschlagsrechnung_rechnung` WHERE `rechnung` = %d LIMIT 1", (int)$id));
+      if($arAuftragId > 0) {
+        $this->app->erp->MenuEintrag("index.php?module=abschlagsrechnung&action=auftraglist&id=$arAuftragId", 'Abschlagsrechnung');
+      }
+    }
+
 
     
     $this->app->erp->MenuEintrag('index.php?module=rechnung&action=list','Zur&uuml;ck zur &Uuml;bersicht');
@@ -2652,11 +2660,17 @@ class Rechnung extends GenRechnung
   }
   
   public function GetXMLSmartyTemplate($id) {
+    if (!$this->app->DB->ColumnExists('adresse', 'rechnung_smarty_template')) {
+      return null;
+    }
     $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."'");
     $rechnung_smarty_template = $this->app->DB->Select("SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'");
     if (!empty($rechnung_smarty_template)) {
        return($rechnung_smarty_template);
     } else {
+        if (!$this->app->DB->ColumnExists('gruppen', 'rechnung_smarty_template')) {
+          return null;
+        }
         $sql = "SELECT id, rechnung_smarty_template FROM gruppen WHERE rechnung_smarty_template <> '' and aktiv";
         $gruppen = $this->app->DB->SelectArr($sql);
         foreach ($gruppen as $gruppe) {
