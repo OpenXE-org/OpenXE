@@ -28,7 +28,7 @@ final class HubspotClientService
         'getAllContactProperties'  => '/properties/v1/contacts/properties',
         'getContactProperty'       => '/properties/v1/contacts/properties/named/:property_name',
         'getCompanyProperty'       => '/properties/v1/companies/properties/named/:property_name',
-        'getPipelineProperties'    => '/crm-pipelines/v1/pipelines/:object_type',
+        'getPipelineProperties'    => '/crm/pipelines/2026-09/:object_type',
         'getDealById'              => '/deals/v1/deal/:dealId',
         'getCompanyById'           => '/companies/v2/companies/:companyId',
         'getRecentCompanies'       => '/companies/v2/companies/recent/modified',
