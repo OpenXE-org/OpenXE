@@ -105,7 +105,7 @@ final class HubspotDealPropertyService
                 if ($this->db->fetchValue(
                     'SELECT hm.id FROM hs_mapping_leads `hm` WHERE hm.value=:value AND hm.type=:type',
                     [
-                        'value' => $hDealStage['stageId'],
+                        'value' => $hDealStage['id'],
                         'type'  => 'deals',
                     ]
                 )) {
@@ -131,7 +131,7 @@ final class HubspotDealPropertyService
                             VALUES(:label, :value,:type, :wstage_id, :is_system, :view_id)',
                         [
                             'label'     => $hDealStage['label'],
-                            'value'     => $hDealStage['stageId'],
+                            'value'     => $hDealStage['id'],
                             'type'      => 'deals',
                             'wstage_id' => $stageId,
                             'is_system' => 1,
