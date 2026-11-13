@@ -10346,6 +10346,7 @@ XML;
 
     foreach($xmldata as $key=>$value)
     {
+      if(in_array($key, array('einkaufspreise', 'verkaufspreise', 'stueckliste_artikel'), true)) continue;
       if(is_array($value))$value="";
       if(is_array($value))$value="";
       if($key=="beschreibung_de") $value = html_entity_decode($value);
@@ -10619,6 +10620,8 @@ XML;
 
     foreach($xmldata as $key=>$value)
     {
+      // Nested sections are not columns of table artikel; they are processed below.
+      if(in_array($key, array('einkaufspreise', 'verkaufspreise', 'stueckliste_artikel'), true)) continue;
       if(is_array($value))$value="";
       if($key=="beschreibung_de") $value = html_entity_decode($value);
       if($key=="beschreibung_en") $value = html_entity_decode($value);
