@@ -21,7 +21,6 @@ if(!class_exists('BriefpapierCustom'))
   }
 }
 
-
 class AnfragePDF extends BriefpapierCustom {
   public $doctype;
 
@@ -34,11 +33,8 @@ class AnfragePDF extends BriefpapierCustom {
     parent::__construct($this->app,$projekt);
   } 
 
-
   function GetAnfrage($id,$info="",$extrafreitext="")
   {
-
-    // das muss vom anfrage sein!!!!
     $this->setRecipientLieferadresse($id,"anfrage");
 
     $data = $this->app->DB->SelectArr("SELECT adresse, auftragid, bearbeiter, DATE_FORMAT(datum,'%d.%m.%Y') AS datum, belegnr, freitext, projekt, bodyzusatz FROM anfrage WHERE id='$id' LIMIT 1");
@@ -52,7 +48,6 @@ class AnfragePDF extends BriefpapierCustom {
 
     $this->projekt = $projekt;
 
-
     if($ohne_briefpapier=="1")
     {
       $this->logofile = "";
@@ -60,9 +55,6 @@ class AnfragePDF extends BriefpapierCustom {
     }
 
     $this->doctype="deliveryreceipt";
-
-    //if($belegnr<=0) $belegnr = "- Entwurf";
-
 
     if($info=="")
       $this->doctypeOrig="Anfrage $belegnr";
@@ -72,10 +64,7 @@ class AnfragePDF extends BriefpapierCustom {
     if($anfrage=="") $anfrage = "-";
     if($kundennummer=="") $kundennummer= "-";
 
-    //$this->setCorrDetails(array("Auftrag"=>$auftrag,"Ihre Kunden-Nr."=>$kundennummer,"Versand"=>$datum,"Versand"=>$bearbeiter));
     $this->setCorrDetails(array("Auftrag"=>$auftrag,$this->app->erp->Firmendaten("bezeichnungkundennummer")=>$kundennummer,"Ihre Bestellnummer"=>$ihrebestellnummer,"Datum"=>$datum));
-
-
 
     $body=$this->app->erp->Firmendaten("anfrage_header");
     if($bodyzusatz!="") $body=$body."\r\n".$bodyzusatz;
@@ -85,9 +74,8 @@ class AnfragePDF extends BriefpapierCustom {
           "body"=>$body,
           "footer"=>"$freitext\r\n$extrafreitext\r\n".$this->app->erp->ParseUserVars("anfrage",$id,$this->app->erp->Firmendaten("anfrage_footer"))));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM anfrage_position WHERE anfrage='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT anfrage_position.*, a.hersteller, a.herstellernummer FROM anfrage_position LEFT JOIN artikel a ON a.id = anfrage_position.artikel WHERE anfrage='$id' ORDER By sort");
 
-    //$waehrung = $this->app->DB->Select("SELECT waehrung FROM anfrage_position WHERE anfrage='$id' LIMIT 1");
     foreach($artikel as $key=>$value)
     {
 
@@ -96,9 +84,6 @@ class AnfragePDF extends BriefpapierCustom {
         if( $value[beschreibung]!="")  $value[beschreibung] =  $value[beschreibung]."\n";
         $value[beschreibung] = "SN: ".$value[seriennummer]."\n\n";
       }
-
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value[artikel]."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value[artikel]."' LIMIT 1");
 
       $this->addItem(array('amount'=>$value[menge],
             'itemno'=>$value[nummer],
@@ -110,7 +95,6 @@ class AnfragePDF extends BriefpapierCustom {
             "name"=>$value[bezeichnung]));
     }
 
-
     /* Dateiname */
     $tmp_name = str_replace(' ','',trim($this->recipient['enterprise']));
     $tmp_name = str_replace('.','',$tmp_name);
@@ -118,6 +102,4 @@ class AnfragePDF extends BriefpapierCustom {
     $this->filename = $datum."_AF".$belegnr.".pdf";
     $this->setBarcode($belegnr);
   }
-
-
 }

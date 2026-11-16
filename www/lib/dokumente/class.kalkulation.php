@@ -133,7 +133,7 @@ class KalkulationPDF extends Briefpapier {
           "body"=>$body,
           "footer"=>"$freitext\r\n".$this->app->erp->ParseUserVars("kalkulation",$id,$this->app->erp->Beschriftung("kalkulation_footer")."\r\n$steuer\r\n$zahlungstext")));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM kalkulation_position WHERE kalkulation='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT kalkulation_position.*, a.hersteller, a.herstellernummer FROM kalkulation_position LEFT JOIN artikel a ON a.id = kalkulation_position.artikel WHERE kalkulation='$id' ORDER By sort");
 
     $summe_rabatt = $this->app->DB->Select("SELECT SUM(rabatt) FROM kalkulation_position WHERE kalkulation='$id'");
     if($summe_rabatt > 0) $this->rabatt=1;
@@ -145,9 +145,6 @@ class KalkulationPDF extends Briefpapier {
     foreach($artikel as $key=>$value)
     {
       if($value[umsatzsteuer] != "ermaessigt") $value[umsatzsteuer] = "normal";
-      // Herstellernummer von Artikel
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value[artikel]."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value[artikel]."' LIMIT 1");
 
       $is_kalkulation_mit_bild=0;
       if($is_kalkulation_mit_bild) {

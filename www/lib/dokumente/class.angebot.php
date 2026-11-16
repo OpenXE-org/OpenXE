@@ -263,11 +263,7 @@ class AngebotPDF extends BriefpapierCustom {
       {
         $lvl[$value['id']] = 0;
       }
-      
-      // Herstellernummer von Artikel
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-
+            
       $is_angebot_mit_bild=0;
       if($is_angebot_mit_bild) {
           $image_tmp = $this->app->erp->GetArtikelStandardbild($value['artikel'], return_file_contents: true);

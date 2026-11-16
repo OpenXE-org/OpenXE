@@ -62,7 +62,6 @@ class PreisanfragePDF extends BriefpapierCustom {
 
     if($belegnr =="") $belegnr = "- ".$this->app->erp->Beschriftung("dokument_entwurf");
 
-
     if($info=="")
       $this->doctypeOrig=$this->app->erp->Beschriftung("dokument_preisanfrage")." $belegnr";
     else
@@ -78,9 +77,6 @@ class PreisanfragePDF extends BriefpapierCustom {
       $this->app->erp->Beschriftung("dokument_bestellung_unserekundennummer")=>$kundennummer,
       $this->app->erp->Beschriftung("dokument_datum")=>$datum));
 
-
-
-
     $body=$this->app->erp->Firmendaten("preisanfrage_header");
     if($bodyzusatz!="") $body=$body."\r\n".$bodyzusatz;
     $body = $this->app->erp->ParseUserVars("preisanfrage",$id,$body);
@@ -88,7 +84,7 @@ class PreisanfragePDF extends BriefpapierCustom {
     $this->setTextDetails(array(
           "body"=>$body,
           "footer"=>"$freitext\r\n$extrafreitext\r\n".$this->app->erp->ParseUserVars("preisanfrage",$id,$this->app->erp->Firmendaten("preisanfrage_footer"))));
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM preisanfrage_position WHERE preisanfrage='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT *.preisanfrage_position, a.hersteller, a.herstellernummer FROM preisanfrage_position LEFT JOIN artikel a ON a.id = preisanfrage_position.artikel WHERE preisanfrage='$id' ORDER By sort");
     if($data['zusammenfassen']){
       $artikeltmp = array();
 
@@ -117,9 +113,6 @@ class PreisanfragePDF extends BriefpapierCustom {
         if( $value['beschreibung']!="")  $value['beschreibung'] =  $value['beschreibung']."\n";
         $value['beschreibung'] = "SN: ".$value['seriennummer']."\n\n";
       }
-
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
 
       $value['menge'] = floatval($value['menge']);
       $this->addItem(array('amount'=>$value['menge'],

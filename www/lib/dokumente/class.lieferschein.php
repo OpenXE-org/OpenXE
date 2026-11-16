@@ -275,10 +275,11 @@ class LieferscheinPDF extends BriefpapierCustom {
 
     if($isKommsionierschein && in_array($orderpicking_sort, ['storagelocationrow','storagelocationrowpartlist'])) {
       $artikel = $this->app->DB->SelectArr(
-        sprintf("SELECT lp.*, storage.rownumber 
+        sprintf("SELECT lp.*, storage.rownumber, a.hersteller, a.herstellernummer
           FROM lieferschein_position AS lp
           LEFT JOIN objekt_lager_platz AS olp ON lp.id = olp.parameter AND olp.objekt = 'lieferschein'
           LEFT JOIN lager_platz AS storage ON olp.lager_platz = storage.id
+          LEFT JOIN artikel a ON a.id = lp.artikel
           WHERE lp.lieferschein=%d 
           GROUP BY lp.id
           ORDER BY IFNULL(storage.rownumber, 0), lp.sort",
@@ -292,7 +293,7 @@ class LieferscheinPDF extends BriefpapierCustom {
     else{
       $artikel = $this->app->DB->SelectArr(
         sprintf(
-          'SELECT lp.* FROM lieferschein_position AS lp WHERE lp.lieferschein=%d ORDER By lp.sort',
+          'SELECT lp.*, a.hersteller, a.herstellernummer FROM lieferschein_position AS lp LEFT JOIN artikel a ON a.id = lp.artikel WHERE lp.lieferschein=%d ORDER By lp.sort',
           $id
         )
       );
@@ -309,9 +310,6 @@ class LieferscheinPDF extends BriefpapierCustom {
 
       $snummer = '';
       $seriennummernliste="";
-
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
 
       if($value['explodiert_parent_artikel'] > 0)
       {

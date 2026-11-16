@@ -201,16 +201,14 @@ class RetourePDF extends BriefpapierCustom {
           "body"=>$body,
           "footer"=>$footer));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM retoure_position WHERE retoure='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT retoure_position.*, a.hersteller, a.herstellernummer FROM retoure_position LEFT JOIN artikel a ON a.id = retoure_position.artikel WHERE retoure='$id' ORDER By sort");
     $belege_subpositionenstuecklisten = $this->app->erp->Firmendaten('belege_subpositionenstuecklisten');
     $belege_stuecklisteneinrueckenmm = $this->app->erp->Firmendaten('belege_stuecklisteneinrueckenmm');
-    //$waehrung = $this->app->DB->Select("SELECT waehrung FROM retoure_position WHERE retoure='$id' LIMIT 1");
+
     foreach($artikel as $key=>$value)
     {
       $snummer = '';
       $seriennummernliste="";
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
 
       if($value['explodiert_parent_artikel'] > 0)
       {

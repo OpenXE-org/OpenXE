@@ -178,6 +178,7 @@ class KommissionierungPDF extends BriefpapierCustom {
                 ".$lagerplatztext." as `desc`,
                 ".$this->app->erp->FormatMengeFuerFormular("ksp.menge")." as amount,
                 a.name_de AS name,
+                a.hersteller,
                 a.herstellernummer,
                 ksp.artikelnummerkunde,
                 a.gewicht,

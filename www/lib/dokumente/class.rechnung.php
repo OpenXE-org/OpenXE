@@ -412,9 +412,6 @@ class RechnungPDF extends BriefpapierCustom {
 
     foreach($belegData['positionen'] as $key=>$value)
     {
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-
       $ohne_artikeltext = $this->app->DB->Select("SELECT ohne_artikeltext FROM ".$this->table." WHERE id='".$this->id."' LIMIT 1");
       if($ohne_artikeltext=="1") $value['beschreibung']="";
 

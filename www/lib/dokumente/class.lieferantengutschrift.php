@@ -177,6 +177,7 @@ class LieferantengutschriftPDF extends BriefpapierCustom {
                 preis as preis,
                 preis as price,
                 a.name_de AS name,
+                a.hersteller,
                 a.herstellernummer,
                 ksp.steuersatz,
                 datum

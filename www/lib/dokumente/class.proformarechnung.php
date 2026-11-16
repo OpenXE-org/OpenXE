@@ -356,7 +356,7 @@ class ProformarechnungPDF extends BriefpapierCustom {
           "body"=>$body,
           "footer"=>$footer));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM proformarechnung_position WHERE proformarechnung='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT proformarechnung_position.*, a.hersteller, a.herstellernummer FROM proformarechnung_position LEFT JOIN artikel a ON a.id = proformarechnung_position.artikel WHERE proformarechnung='$id' ORDER By sort");
     $summe_rabatt = $this->app->DB->Select("SELECT SUM(rabatt) FROM proformarechnung_position WHERE proformarechnung='$id'");
     if($summe_rabatt <> 0) $this->rabatt=1;
 
@@ -386,18 +386,6 @@ class ProformarechnungPDF extends BriefpapierCustom {
       }
       if($tmpsteuertext && !$value['steuertext'])$value['steuertext'] = $tmpsteuertext;
       if(!$mitumsatzsteuer)$value['steuersatz'] = 0;
-      /*
-      $limit = 60;	
-      $summary= $value['bezeichnung'];
-      if (strlen($summary) > $limit)
-      {
-        $value['desc']= $value['bezeichnung'];
-        $value['bezeichnung'] = substr($summary, 0, strrpos(substr($summary, 0, $limit), ' ')) . '...';
-      }
-*/
-
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
 
       if($zollinformation)
       {

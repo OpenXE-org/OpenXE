@@ -299,19 +299,8 @@ class AuftragPDF extends BriefpapierCustom {
         $value['beschreibung']="";
       }
 
-      $artArr = $this->app->DB->SelectRow(
-        sprintf(
-          'SELECT herstellernummer, hersteller, keineeinzelartikelanzeigen FROM artikel WHERE id = %d',
-          $value['artikel']
-        )
-      );
-
-      // Herstellernummer von Artikel
-      $value['herstellernummer'] = $artArr['herstellernummer'];// $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $artArr['hersteller'];//$this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-
-      $value['keineeinzelartikelanzeigen'] = $artArr['keineeinzelartikelanzeigen'];//$this->app->DB->Select("SELECT keineeinzelartikelanzeigen FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['anzahlunterartikel'] =  !empty($explodiertParents[$value['id']])?count($explodiertParents[$value['id']]):null;  //$this->app->DB->Select("SELECT COUNT(id) FROM auftrag_position WHERE explodiert_parent = '".$value['id']."'");
+      $value['keineeinzelartikelanzeigen'] = $this->app->DB->Select("SELECT keineeinzelartikelanzeigen FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
+      $value['anzahlunterartikel'] =  !empty($explodiertParents[$value['id']])?count($explodiertParents[$value['id']]):null;
 
       if($value['explodiert_parent'] > 0) {
         if(isset($lvl[$value['explodiert_parent']]))

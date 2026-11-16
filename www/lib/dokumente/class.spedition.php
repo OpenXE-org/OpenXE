@@ -230,7 +230,7 @@ class SpeditionPDF extends BriefpapierCustom {
       $this->ust_befreit=true;
     }
 
-    $artikel = $this->app->DB->SelectArr("SELECT sa.* FROM spedition_packstuecke sa 
+    $artikel = $this->app->DB->SelectArr("SELECT sa.*, a.hersteller, a.herstellnummer FROM spedition_packstuecke sa LEFT JOIN artikel a ON sa.artikel = a.id
     
     WHERE sa.avi='$id'");
 
@@ -266,10 +266,6 @@ class SpeditionPDF extends BriefpapierCustom {
       if($value['explodiert_parent'] > 0) { $value['preis'] = '-'; $value['umsatzsteuer']='hidden';
         $value['bezeichnung'] = '-'.$value['bezeichnung'];
       }
-
-      // Herstellernummer von Artikel
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
 
       $check_ausblenden=0;
 

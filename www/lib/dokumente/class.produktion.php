@@ -190,6 +190,7 @@ class ProduktionPDF extends BriefpapierCustom {
                 p.id,
                 a.nummer as itemno,
                 a.name_de as name,
+                a.hersteller,
                 a.herstellernummer,
                 TRIM(pp.menge)+0 as amount,
                 '' as steuersatz_ermaessigt,
@@ -204,19 +205,6 @@ class ProduktionPDF extends BriefpapierCustom {
             $id
         )
     );
-
-    /*
-          $item['name'] = ($langeartikelnummern?"\r\n\r\n":'').$this->app->erp->ReadyForPDF($item['name']);
-      $item['desc'] = $this->app->erp->ReadyForPDF($item['desc']);
-      $item['itemno'] = $this->app->erp->ReadyForPDF($item['itemno']);
-      $item['herstellernummer'] = $this->app->erp->ReadyForPDF($item['herstellernummer']);
-      $item['artikelnummerkunde'] = $this->app->erp->ReadyForPDF($item['artikelnummerkunde']);
-      $item['lieferdatum'] = $this->app->erp->ReadyForPDF($item['lieferdatum']);
-      $item['hersteller'] = $this->app->erp->ReadyForPDF($item['hersteller']);
-
-     if($this->getStyleElement('herstellernummerimdokument')=='1' && $item['herstellernummer']!='')
-
-    */
 
    foreach($artikel as $key=>$value)  {
         $this->addItem($value);

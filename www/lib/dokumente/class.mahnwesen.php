@@ -457,7 +457,7 @@ class MahnwesenPDF extends Briefpapier {
           'body'=>$body,
           'footer'=>$footer));
 
-    $artikel = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT rechnung_position.*, a.hersteller, a.herstellernummer FROM rechnung_position LEFT JOIN artikel a ON a.id = rechnung_position.artikel WHERE rechnung='$id' ORDER By sort");
     if($this->app->erp->Firmendaten('modul_verband')=='1') {
       $this->rabatt=1;
     }
@@ -510,19 +510,6 @@ class MahnwesenPDF extends Briefpapier {
         $value['desc']= $value['bezeichnung'];
         $value['bezeichnung'] = substr($summary, 0, strrpos(substr($summary, 0, $limit), ' ')) . '...';
       }
-
-      $value['herstellernummer'] = $this->app->DB->Select("SELECT herstellernummer FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-      $value['hersteller'] = $this->app->DB->Select("SELECT hersteller FROM artikel WHERE id='".$value['artikel']."' LIMIT 1");
-
-/*
-      $value['zolltarifnummer'] = $this->app->DB->Select("SELECT zolltarifnummer FROM artikel WHERE id='".$value[artikel]."' LIMIT 1");
-      $value['herkunftsland'] = $this->app->DB->Select("SELECT herkunftsland FROM artikel WHERE id='".$value[artikel]."' LIMIT 1");
-
-      if($ust_befreit==2 && $value['zolltarifnummer']!="")
-      {
-        $value[beschreibung] = $value[beschreibung]."\r\nCustoms tariff number: ".$value['zolltarifnummer']." Country of origin: ".$value['herkunftsland'];
-      }
-*/
 
       if($value['explodiert_parent_artikel'] > 0) {
         $check_ausblenden = $this->app->DB->Select(

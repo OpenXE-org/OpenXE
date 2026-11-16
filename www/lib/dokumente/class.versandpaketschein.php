@@ -97,27 +97,6 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
       $footer = $versandinfo."$freitext\r\n$extrafreitext\r\n".$this->app->erp->ParseUserVars("Versandpaketschein",$id,$this->app->erp->Beschriftung("Versandpaketschein_footer"));
     }
    
-/*    $artikel = $this->app->DB->SelectArr(
-        sprintf(
-            "SELECT 
-                ks.id,
-                a.nummer as itemno,
-                lp.kurzbezeichnung as `desc`,
-                ".$this->app->erp->FormatMengeFuerFormular("ksp.menge")." as amount,
-                a.gewicht,
-                a.herstellernummer as `name`,
-                '' as steuersatz_ermaessigt,
-                DATE_FORMAT(zeitstempel,'%%Y%%m%%d') as datum               
-            FROM 
-                kommissionierung ks
-            INNER JOIN kommissionierung_position ksp ON ks.id = ksp.kommissionierung
-            INNER JOIN artikel a ON a.id = ksp.artikel
-            INNER JOIN lager_platz lp ON lp.id = ksp.lager_platz
-            WHERE ks.id = %d", 
-            $id
-        )
-    );*/
-
     $artikel = $this->app->DB->SelectArr("
          SELECT
             l.auftrag,
@@ -125,6 +104,8 @@ class VersandpaketscheinPDF extends BriefpapierCustom {
             vp.id,
             lp.nummer,
             lp.bezeichnung bezeichnung,
+            a.hersteller,
+            a.herstellernummer,
             TRIM(vlp.menge)+0 menge,
             TRIM(lp.menge)+0 lieferscheinmenge,
             a.gewicht,
