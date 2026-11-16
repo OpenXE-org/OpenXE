@@ -207,17 +207,23 @@ class BestellungPDF extends BriefpapierCustom {
         $value['beschreibung']='';
       }
 
-      $value['artikelnummer']= $value['artnummer'];
+      $artikelnummer = !empty($value['artikelnummer']) ? $value['artikelnummer'] : (!empty($value['artnummer']) ? $value['artnummer'] : (!empty($value['nummer']) ? $value['nummer'] : ''));
+      if (empty($artikelnummer) && !empty($value['artikel']) && ($keineartikelnummern != 1 || $artikelnummerninfotext)) {
+        $artikelnummer = (string)$this->app->DB->Select(sprintf("SELECT nummer FROM `artikel` WHERE id = %d LIMIT 1", (int)$value['artikel']));
+      }
+      $value['artikelnummer'] = $artikelnummer;
+
       if($artikelnummerninfotext) {
-        if($value['bestellnummer']!=''){
+        if(!empty($value['bestellnummer'])){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_bestellnummer') . ': ' . $value['bestellnummer'];
         }
-        $value['bestellnummer']=$value['artikelnummer'];
-      } else if($keineartikelnummern==1) {
+        $value['bestellnummer'] = $value['artikelnummer'];
+      } else if($keineartikelnummern == 1) {
+        // Do not print internal article number in description; keep supplier order number in itemno
         $value['artnummer'] = $value['bestellnummer'];
       }
       else {
-        if($value['artikelnummer']!=''){
+        if(!empty($value['artikelnummer'])){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_unsereartikelnummer') . ': ' . $value['artikelnummer'];
         }
       }
@@ -230,10 +236,7 @@ class BestellungPDF extends BriefpapierCustom {
         $value['einheit'] = "VPE";
 			}
       elseif((String)$value['einheit'] === '') {
-        $value['einheit'] = $value['arteinheit'];
-        if((String)$value['einheit'] === '') {
-          $value['einheit'] = $this->app->erp->Firmendaten('artikeleinheit_standard');
-        }
+        $value['einheit'] = !empty($value['arteinheit']) ? $value['arteinheit'] : $this->app->erp->Firmendaten('artikeleinheit_standard');
       }
 
       if($value['beschreibung']!='') {
@@ -249,8 +252,8 @@ class BestellungPDF extends BriefpapierCustom {
       }
 
       $value['menge'] = (float)$value['menge'];
-      $value['herstellernummer'] = $value['artherstellernummer'];
-      $value['hersteller'] = $value['arthersteller'];
+      $value['herstellernummer'] = !empty($value['herstellernummer']) ? $value['herstellernummer'] : (!empty($value['artherstellernummer']) ? $value['artherstellernummer'] : '');
+      $value['hersteller'] = !empty($value['hersteller']) ? $value['hersteller'] : (!empty($value['arthersteller']) ? $value['arthersteller'] : '');
 
       $this->addItem(
         array(

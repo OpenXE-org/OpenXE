@@ -38,7 +38,8 @@ class AuftragPDF extends BriefpapierCustom {
   function GetAuftrag($id)
   {
     $belegData = $this->app->erp->GetBelegData('auftrag', (int)$id);
-    $this->rabatt=$belegData['rabatt_vorhanden'];
+    $this->rabatt = $belegData['rabatt_vorhanden'];
+    $artikel = $belegData['positionen'];
 
     $this->doctypeid = $id;
     $lvl = null;
