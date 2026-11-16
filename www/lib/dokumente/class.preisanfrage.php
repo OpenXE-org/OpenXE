@@ -84,7 +84,7 @@ class PreisanfragePDF extends BriefpapierCustom {
     $this->setTextDetails(array(
           "body"=>$body,
           "footer"=>"$freitext\r\n$extrafreitext\r\n".$this->app->erp->ParseUserVars("preisanfrage",$id,$this->app->erp->Firmendaten("preisanfrage_footer"))));
-    $artikel = $this->app->DB->SelectArr("SELECT *.preisanfrage_position, a.hersteller, a.herstellernummer FROM preisanfrage_position LEFT JOIN artikel a ON a.id = preisanfrage_position.artikel WHERE preisanfrage='$id' ORDER By sort");
+    $artikel = $this->app->DB->SelectArr("SELECT preisanfrage_position.*, a.hersteller, a.herstellernummer FROM preisanfrage_position LEFT JOIN artikel a ON a.id = preisanfrage_position.artikel WHERE preisanfrage='$id' ORDER By sort");
     if($data['zusammenfassen']){
       $artikeltmp = array();
 
