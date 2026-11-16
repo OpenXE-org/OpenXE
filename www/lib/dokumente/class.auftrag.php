@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -27,31 +27,30 @@ class AuftragPDF extends BriefpapierCustom {
       $this->doctype="auftrag";
     }
     else
-    { 
+    {
       $this->doctypeOrig="Proformarechnung";
       $this->doctype="proforma";
     }
     parent::__construct($this->app,$projekt);
-  } 
+  }
 
 
   function GetAuftrag($id)
   {
     $belegData = $this->app->erp->GetBelegData('auftrag', (int)$id);
     $this->rabatt = $belegData['rabatt_vorhanden'];
-    $artikel = $belegData['positionen'];
 
     $this->doctypeid = $id;
     $lvl = null;
     if($this->app->erp->Firmendaten("steuerspalteausblenden")=="1")
-    { 
+    {
       // pruefe ob es mehr als ein steuersatz gibt // wenn ja dann darf man sie nicht ausblenden
       $check = $this->app->erp->SteuerAusBeleg($this->doctype,$id);
-      $this->ust_spalteausblende=false;  
+      $this->ust_spalteausblende=false;
 
         if(!empty($check)) {
-          if (count($check) == 1) {    
-            $this->ust_spalteausblende=true;      
+          if (count($check) == 1) {
+            $this->ust_spalteausblende=true;
           }
         }
     }
@@ -63,17 +62,17 @@ class AuftragPDF extends BriefpapierCustom {
 
     $data = $this->app->DB->SelectRow(
       "SELECT adresse, kundennummer, sprache, angebotid, vertrieb, bearbeiter, projekt,
-       DATE_FORMAT(datum,'%d.%m.%Y') AS datum, DATE_FORMAT(datum,'%Y%m%d') as datum2, 
+       DATE_FORMAT(datum,'%d.%m.%Y') AS datum, DATE_FORMAT(datum,'%Y%m%d') as datum2,
        land, ustid, ust_befreit, keinsteuersatz, steuersatz_zielland, belegnr, freitext, typ, bodyzusatz,
-       systemfreitext, telefax, abweichendebezeichnung AS auftragersatz, waehrung, 
-       zahlungsweise, zahlungszieltage, zahlungszieltageskonto, zahlungszielskonto, 
+       systemfreitext, telefax, abweichendebezeichnung AS auftragersatz, waehrung,
+       zahlungsweise, zahlungszieltage, zahlungszieltageskonto, zahlungszielskonto,
        ihrebestellnummer, ohne_briefpapier, schreibschutz, gesamtsumme , email, telefon
        FROM auftrag WHERE id='$id' LIMIT 1"
     );
     extract($data,EXTR_OVERWRITE);
 
     $projektabkuerzung = $this->app->DB->Select(sprintf('SELECT abkuerzung FROM projekt WHERE id = %d', $projekt));
-    $summe = 0;      
+    $summe = 0;
 
     // OfferNo, customerId, OfferDate
 
@@ -204,7 +203,7 @@ class AuftragPDF extends BriefpapierCustom {
     }
 
     if($keinsteuersatz!="1")
-    { 
+    {
       if ($ust_befreit==2) {// Export
           $steuer = $this->app->erp->Beschriftung("export_lieferung_vermerk");
       }
@@ -219,7 +218,7 @@ class AuftragPDF extends BriefpapierCustom {
 
       $kennungustid = substr(strtoupper($ustid),0,2);
       if(($kennungustid!=strtoupper($land)) && $kennungustid!="" && $this->app->erp->IsEU($kennungustid))
-      { 
+      {
         $steuer = str_replace('{LAND}',$kennungustid,$steuer);
       } else {
         $steuer = str_replace('{LAND}',$land,$steuer);
@@ -234,7 +233,7 @@ class AuftragPDF extends BriefpapierCustom {
       {
         $footervorlage = $this->app->erp->Firmendaten("footer_reihenfolge_auftrag");
         if($footervorlage=="")
-          $footervorlage = "{FOOTERFREITEXT}\r\n{FOOTERTEXTVORLAGEAUFTRAG}\r\n{FOOTERSTEUER}\r\n{FOOTERZAHLUNGSWEISETEXT}{FOOTERSYSTEMFREITEXT}";        
+          $footervorlage = "{FOOTERFREITEXT}\r\n{FOOTERTEXTVORLAGEAUFTRAG}\r\n{FOOTERSTEUER}\r\n{FOOTERZAHLUNGSWEISETEXT}{FOOTERSYSTEMFREITEXT}";
         $footervorlage = str_replace('{FOOTERFREITEXT}',$freitext,$footervorlage);
         $footervorlage = str_replace('{FOOTERTEXTVORLAGEAUFTRAG}',$this->app->erp->Beschriftung("auftrag_footer"),$footervorlage);
         $footervorlage = str_replace('{FOOTERSTEUER}',$steuer,$footervorlage);
@@ -258,15 +257,15 @@ class AuftragPDF extends BriefpapierCustom {
     }
 
     $explodiertParents = [];
-    
+
     foreach($belegData['positionen'] as $art) {
       if($art['explodiert_parent'] > 0) {
         $explodiertParents[$art['explodiert_parent']][] = $art;
       }
     }
 
-    $this->app->erp->RunHook('BriefpapierGetAuftragArtikel',3,$id, $artikel, $this);  
-       
+    $this->app->erp->RunHook('BriefpapierGetAuftragArtikel',3,$id, $belegData['positionen'], $this);
+
     $belege_subpositionenstuecklisten = $this->app->erp->Firmendaten('belege_subpositionenstuecklisten');
     $belege_stuecklisteneinrueckenmm = $this->app->erp->Firmendaten('belege_stuecklisteneinrueckenmm');
     $projekt = $this->app->DB->Select("SELECT projekt FROM auftrag WHERE id = '$id' LIMIT 1");
@@ -287,9 +286,9 @@ class AuftragPDF extends BriefpapierCustom {
       if($value['explodiert'] > 0 && $checksichtbar > 0) {
         $value['bezeichnung'] = $value['bezeichnung']." ".$beschriftungStueckliste;
       }
-      if($value['explodiert_parent'] > 0) { 
+      if($value['explodiert_parent'] > 0) {
         if($value['preis'] == 0) {
-          $value['preis'] = "-"; $value['umsatzsteuer']="hidden"; 
+          $value['preis'] = "-"; $value['umsatzsteuer']="hidden";
         }
         if(!$belege_subpositionenstuecklisten && !$belege_stuecklisteneinrueckenmm) {
           $value['bezeichnung'] = "-".$value['bezeichnung'];
@@ -454,7 +453,7 @@ class AuftragPDF extends BriefpapierCustom {
         ]
       );
     }
-    
+
     /* Dateiname */
 
     $tmp_name = str_replace(' ','',trim($this->recipient['enterprise']));
@@ -467,7 +466,7 @@ class AuftragPDF extends BriefpapierCustom {
       $this->filename = $datum2 . '_PR' . $belegnr . '.pdf';
     }
     $this->setBarcode($belegnr);
-    $this->app->erp->RunHook('BreifpapierGetAuftragEnde',3,$id, $artikel, $this);
+    $this->app->erp->RunHook('BreifpapierGetAuftragEnde',3,$id, $belegData['positionen'], $this);
   }
 
 }
