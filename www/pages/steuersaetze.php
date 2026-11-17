@@ -152,25 +152,39 @@ class Steuersaetze {
   }
 
   /**
-   * @param string $country
+   * @param string      $country
+   * @param int         $projectId project specific rates take precedence over global rates (project_id = 0)
+   * @param string|null $date      Y-m-d, only rates valid at this date are used (default: today)
    *
    * @return array
    */
-  public function getTaxesByCountry($country)
+  public function getTaxesByCountry($country, $projectId = 0, $date = null)
   {
     $ret = [];
+    $country = $this->app->DB->real_escape_string((string)$country);
+    $projectId = (int)$projectId;
+    $dateSql = 'CURDATE()';
+    if(!empty($date) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$date) && $date !== '0000-00-00') {
+      $dateSql = "'".$date."'";
+    }
     $taxes = $this->app->DB->SelectArr(
       sprintf(
-        "SELECT DISTINCT `type`, `satz` 
-        FROM `steuersaetze` 
-        WHERE `aktiv` = 1 
-          AND (`country_code` = '%s' OR (`bezeichnung` = '%s' AND `country_code` = ''))",
-        $country, $country
+        "SELECT `type`, `satz`
+        FROM `steuersaetze`
+        WHERE `aktiv` = 1
+          AND (`country_code` = '%s' OR (`bezeichnung` = '%s' AND `country_code` = ''))
+          AND (`project_id` = 0 OR `project_id` = %d)
+          AND (`valid_from` IS NULL OR `valid_from` = '0000-00-00' OR `valid_from` <= %s)
+          AND (`valid_to` IS NULL OR `valid_to` = '0000-00-00' OR `valid_to` >= %s)
+        ORDER BY `project_id` DESC, `country_code` <> '' DESC, `valid_from` DESC, `id` DESC",
+        $country, $country, $projectId, $dateSql, $dateSql
       )
     );
     if(!empty($taxes)) {
       foreach($taxes as $rates) {
-        $ret[$rates['type']] = $rates['satz'];
+        if(!isset($ret[$rates['type']])) {
+          $ret[$rates['type']] = $rates['satz'];
+        }
       }
     }
 
