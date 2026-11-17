@@ -990,8 +990,17 @@ class Seriennummern {
                 }
                 
                 $wareneingang_position = $auswahl[0];
-                $artikel_id = $this->app->DB->Select("SELECT artikel FROM paketdistribution pd WHERE pd.id ='".$wareneingang_position."' LIMIT 1");
+                $pd = $this->app->DB->SelectRow("SELECT artikel,menge FROM paketdistribution pd WHERE pd.id ='".$wareneingang_position."' LIMIT 1");
+                $artikel_id = $pd["artikel"];
  
+                $existing_serial_count = $this->app->DB->Select("SELECT COUNT(*) from seriennummern_beleg_position WHERE beleg_typ = 'wareneingang' AND beleg_position = '".$wareneingang_position."'");
+                $serial_total = $pd["menge"];
+                $serials_remaining = abs($serial_total - $existing_serial_count);
+                if (count(array_filter($seriennummern)) > $serials_remaining) {
+                    $this->app->Tpl->addMessage('error', 'Zu viele Seriennummern! Es können auf Position '.$wareneingang_position.' nur '.$serials_remaining.' Seriennummern gebucht werden.');
+                    break;
+                }
+
                 $seriennummern_not_written = array();
                 $seriennummern_already_exist = array();
                 $seriennummern_old_not_allowed = array();
