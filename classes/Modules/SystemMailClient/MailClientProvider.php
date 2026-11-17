@@ -115,6 +115,8 @@ final class MailClientProvider implements MailClientProviderInterface
             case 3:
                 // NO BREAK
             case 5:
+                // NO BREAK
+            case 6:
                 $config = $this->configProvider->createImapConfigFromAccount($account);
 
                 return $this->factory->createImapClient($config);

@@ -6,3 +6,4 @@ node_modules/
 www/themes/new/css/custom.css
 docker-compose.override.yml
 .idea
+.claude/
