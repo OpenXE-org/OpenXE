@@ -1190,6 +1190,7 @@ class Wiki {
           if(empty($articleContent)) {
             continue;
           }
+          $articleContent = preg_replace('/<img[^>]+src=[\"\']https?:\/\/(?:[a-z0-9.-]*xentral\.com|[a-z0-9.-]*wawision\.de)[^\"\']*[\"\'][^>]*\/?>/i', '', $articleContent);
           $this->saveArticle($article, $articleContent, $workspaceId, $language==='default'?'':$language, true);
         }
       }
@@ -1240,6 +1241,7 @@ class Wiki {
       $answerfile = $folder.'/answer_'.substr($file, 9);
       @chmod($answerfile, 0666);
       $answer= is_file($answerfile)?file_get_contents($answerfile):'';
+      $answer = preg_replace('/<img[^>]+src=[\"\']https?:\/\/(?:[a-z0-9.-]*xentral\.com|[a-z0-9.-]*wawision\.de)[^\"\']*[\"\'][^>]*\/?>/i', '', $answer);
       if(empty($answer)) {
         $this->deleteFaq($wiki, $question);
         continue;

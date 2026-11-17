@@ -11808,6 +11808,7 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
               );
             }
           }
+          $handbook = preg_replace('/<img[^>]+src=[\"\']https?:\/\/(?:[a-z0-9.-]*xentral\.com|[a-z0-9.-]*wawision\.de)[^\"\']*[\"\'][^>]*\/?>/i', '', $handbook);
           $inlinehelplink = true;
           $this->app->Tpl->Add(
             'INLINEHELP3',
@@ -12022,7 +12023,8 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
     $html = '<div id="faqaccordion">';
     if(!empty($faqs))  {
       foreach($faqs as $faq) {
-        $html .= '<div class="group"><h2>'.$faq['question'].'</h2><div>'.$faq['answer'].'</div></div>';
+        $answer = preg_replace('/<img[^>]+src=[\"\']https?:\/\/(?:[a-z0-9.-]*xentral\.com|[a-z0-9.-]*wawision\.de)[^\"\']*[\"\'][^>]*\/?>/i', '', $faq['answer']);
+        $html .= '<div class="group"><h2>'.$faq['question'].'</h2><div>'.$answer.'</div></div>';
       }
     }
     $html .= '</div>';
