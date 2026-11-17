@@ -235,8 +235,10 @@ class DocumentDataService
         }
 
         // 5. Fetch positions via standardized query across all document types
+        // Note: bestellung_position has no 'nummer' column, so select a.nummer for bestellung
+        $numberSelect = ($doctype === 'bestellung') ? 'a.nummer,' : '';
         $positions = $this->app->DB->SelectArr(
-            "SELECT p.*, a.nummer AS artikelnummer, a.ean, a.herstellernummer, a.hersteller, IFNULL(NULLIF(p.einheit, ''), a.einheit) AS einheit FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$parentField}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC"
+            "SELECT p.*, {$numberSelect} a.ean, a.herstellernummer, a.hersteller, IFNULL(NULLIF(p.einheit, ''), a.einheit) AS einheit FROM `{$positionsTable}` p LEFT JOIN `artikel` a ON a.id = p.artikel WHERE p.`{$parentField}` = " . (int)$id . " ORDER BY p.sort ASC, p.id ASC"
         ) ?: [];
         if (empty($positions)) {
             $positions = $this->app->DB->SelectArr(
