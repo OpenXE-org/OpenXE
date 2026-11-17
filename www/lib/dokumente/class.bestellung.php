@@ -207,6 +207,8 @@ class BestellungPDF extends BriefpapierCustom {
         $value['beschreibung']='';
       }
 
+      $value['artikelnummer'] = !empty($value['artikelnummer']) ? $value['artikelnummer'] : (!empty($value['artnummer']) ? $value['artnummer'] : (!empty($value['nummer']) ? $value['nummer'] : ''));
+
       if($artikelnummerninfotext) {
         if(!empty($value['bestellnummer'])){
           $value['beschreibung'] = $value['beschreibung'] . "\n" . $this->app->erp->Beschriftung('dokument_bestellung_bestellnummer') . ': ' . $value['bestellnummer'];

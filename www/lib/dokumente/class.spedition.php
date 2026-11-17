@@ -230,7 +230,7 @@ class SpeditionPDF extends BriefpapierCustom {
       $this->ust_befreit=true;
     }
 
-    $artikel = $this->app->DB->SelectArr("SELECT sa.*, a.hersteller, a.herstellnummer FROM spedition_packstuecke sa LEFT JOIN artikel a ON sa.artikel = a.id
+    $artikel = $this->app->DB->SelectArr("SELECT sa.*, a.hersteller, a.herstellernummer FROM spedition_packstuecke sa LEFT JOIN artikel a ON sa.artikel = a.id
     
     WHERE sa.avi='$id'");
 
