@@ -18,7 +18,7 @@ final class EmailRecipient implements JsonSerializable
      * @param string      $email
      * @param string|null $name
      */
-    public function __construct(string $email, string $name = null)
+    public function __construct(string $email, ?string $name = null)
     {
         $this->email = $email;
         $this->name = $name;

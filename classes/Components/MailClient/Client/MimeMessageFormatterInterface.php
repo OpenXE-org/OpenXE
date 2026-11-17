@@ -16,5 +16,5 @@ interface MimeMessageFormatterInterface
      *
      * @return string
      */
-    public function formatMessage(EmailMessage $email, EmailRecipient $sender, string $messageId = null): string;
+    public function formatMessage(EmailMessage $email, EmailRecipient $sender, ?string $messageId = null): string;
 }

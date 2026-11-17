@@ -21,5 +21,5 @@ interface GoolgeApiClientInterface
      *
      * @return array
      */
-    public function sendRequest(string $method, string $uri, array $data = null, array $headers = []): array;
+    public function sendRequest(string $method, string $uri, ?array $data = null, array $headers = []): array;
 }

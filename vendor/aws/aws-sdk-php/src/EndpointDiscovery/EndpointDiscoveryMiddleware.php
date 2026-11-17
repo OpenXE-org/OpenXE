@@ -322,8 +322,8 @@ class EndpointDiscoveryMiddleware
 
             // If no more cached endpoints, make discovery call
             // if none made within cooldown for given key
-            if (time() - $this->discoveryTimes[$cacheKey]
-                < self::$discoveryCooldown
+            if (isset($this->discoveryTimes[$cacheKey])
+                && time() - $this->discoveryTimes[$cacheKey] < self::$discoveryCooldown
             ) {
 
                 // If no more cached endpoints and it's required,
@@ -393,6 +393,9 @@ class EndpointDiscoveryMiddleware
             $split = explode('/', $parsed['path'], 2);
             $parsed['host'] = $split[0];
             if (isset($split[1])) {
+                if (substr($split[1], 0 , 1) !== '/') {
+                    $split[1] = '/' . $split[1];
+                }
                 $parsed['path'] = $split[1];
             } else {
                 $parsed['path'] = '';

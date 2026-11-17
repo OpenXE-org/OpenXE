@@ -11,7 +11,7 @@ final class HttpClientFactory
      *
      * @return HttpClientInterface
      */
-    public function createClient(RequestOptions $options = null): HttpClientInterface
+    public function createClient(?RequestOptions $options = null): HttpClientInterface
     {
         if ($options === null) {
             $options = new RequestOptions();

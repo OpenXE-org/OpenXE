@@ -44,7 +44,7 @@ final class HtmlMailSanitizer
      *
      * @return string
      */
-    public function sanitize($mailContent, SanitizerConfig $config = null)
+    public function sanitize($mailContent, ?SanitizerConfig $config = null)
     {
         $purifierConf = $config !== null ? HTMLPurifier_Config::create($config->toHtmlPurifierConfig()) : null;
 

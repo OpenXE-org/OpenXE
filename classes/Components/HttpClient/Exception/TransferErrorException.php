@@ -34,9 +34,9 @@ class TransferErrorException extends RuntimeException implements TransferErrorEx
     public function __construct(
         $message = '',
         $code = 0,
-        Throwable $previous = null,
-        ClientRequestInterface $request = null,
-        ServerResponseInterface $response = null
+        ?Throwable $previous = null,
+        ?ClientRequestInterface $request = null,
+        ?ServerResponseInterface $response = null
     ) {
         parent::__construct($message, $code, $previous);
 
@@ -102,7 +102,7 @@ class TransferErrorException extends RuntimeException implements TransferErrorEx
      */
     public static function fromClientRequest(
         ClientRequestInterface $request,
-        ServerResponseInterface $response = null
+        ?ServerResponseInterface $response = null
     ): TransferErrorExceptionInterface {
         $message = sprintf('Error Communicating with Server: %s %s', $request->getMethod(), $request->getUri());
 

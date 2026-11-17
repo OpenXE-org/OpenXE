@@ -30,7 +30,7 @@ final class GoogleAccountData
         ?int $id,
         int $userId,
         ?string $identifier,
-        string $refreshToken = null
+        ?string $refreshToken = null
     ) {
         $this->id = $id;
         $this->userId = $userId;

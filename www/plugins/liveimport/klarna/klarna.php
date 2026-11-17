@@ -1462,7 +1462,7 @@ class klarna extends AbstractLiveImportKlarna
             $orderID
         ]));
 
-        $ret = utf8_decode($ret);
+        $ret = mb_convert_encoding($ret, 'ISO-8859-1', 'UTF-8');
 
 //    $replace = [
 //      'ä' => 'ae',

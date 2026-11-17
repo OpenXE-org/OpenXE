@@ -27,7 +27,7 @@ final class GoogleEventConverter
      *
      * @return GoogleCalendarEventData
      */
-    public function convertToGoogleEvent(CalendarEvent $event, GoogleCalendarEventData $googleEvent = null)
+    public function convertToGoogleEvent(CalendarEvent $event, ?GoogleCalendarEventData $googleEvent = null)
     {
         if ($googleEvent === null) {
             $googleEvent = new GoogleCalendarEventData(0, '', GoogleCalendarEventData::STATUS_CONFIRMED);
@@ -81,7 +81,7 @@ final class GoogleEventConverter
      */
     public function convertToEvent(
         GoogleCalendarEventData $googleEvent,
-        CalendarEvent $event = null
+        ?CalendarEvent $event = null
     ) {
         if ($event === null) {
             $event = new CalendarEvent(0, 0, 'Google Calendar Event');
@@ -122,7 +122,7 @@ final class GoogleEventConverter
      */
     public function transformGoogleEventAttendeeToEventUser(
         GoogleCalendarEventAttendeeValue $attendee,
-        CalendarEventUser $user = null
+        ?CalendarEventUser $user = null
     ) {
         if ($user === null) {
             $user = new CalendarEventUser();

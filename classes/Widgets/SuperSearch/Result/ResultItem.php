@@ -29,7 +29,7 @@ final class ResultItem implements JsonSerializable
      * @param string|null $subTitle
      * @param array|null  $additionalInfos
      */
-    public function __construct($identifier, $title, $link, $subTitle = null, array $additionalInfos = null)
+    public function __construct($identifier, $title, $link, $subTitle = null, ?array $additionalInfos = null)
     {
         if (empty($identifier)) {
             throw new InvalidArgumentException('Parameter "id" is empty.');
@@ -42,15 +42,15 @@ final class ResultItem implements JsonSerializable
         }
 
         $this->identifier = $identifier;
-        $this->title = (string)$title;
-        $this->link = (string)$link;
+        $this->title = (string) $title;
+        $this->link = (string) $link;
 
         $subTitle = trim($subTitle);
         if ($subTitle !== '') {
             $this->subTitle = $subTitle;
         }
 
-        $additionalInfos = (array)$additionalInfos;
+        $additionalInfos = (array) $additionalInfos;
         foreach ($additionalInfos as $additionalInfo) {
             $additionalInfo = trim($additionalInfo);
             if ($additionalInfo !== '') {
@@ -66,7 +66,7 @@ final class ResultItem implements JsonSerializable
      */
     public static function fromDbState(array $state)
     {
-        $additionalInfos = explode(' ## ' , $state['additional_infos']);
+        $additionalInfos = explode(' ## ', $state['additional_infos']);
 
         return new self($state['index_id'], $state['title'], $state['link'], $state['subtitle'], $additionalInfos);
     }
@@ -117,11 +117,11 @@ final class ResultItem implements JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'type'            => 'default',
-            'identifier'      => $this->identifier,
-            'title'           => $this->title,
-            'link'            => $this->link,
-            'subtitle'        => $this->subTitle,
+            'type' => 'default',
+            'identifier' => $this->identifier,
+            'title' => $this->title,
+            'link' => $this->link,
+            'subtitle' => $this->subTitle,
             'additionalInfos' => !empty($this->additionalInfos) ? $this->additionalInfos : null,
         ];
     }
