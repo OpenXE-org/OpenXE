@@ -464,6 +464,10 @@ class Lieferschein extends GenLieferschein
 
     $quelllagerplatz = $this->app->Secure->GetPOST('quelllagerplatz');
     $ziellagerplatz = $this->app->Secure->GetPOST('ziellagerplatz');
+    $grund = $this->app->Secure->GetPOST('grund');
+    if ($grund === null || $grund === '') {
+      $grund = "Umlagern Lieferschein " . $belegnr;
+    }
 
     $quellager_id = $this->app->erp->ReplaceLagerPlatz(true, $quelllagerplatz, true);
     $ziellagerplatz_id = $this->app->erp->ReplaceLagerPlatz(true, $ziellagerplatz, true);
@@ -511,11 +515,10 @@ class Lieferschein extends GenLieferschein
                         $artikel = $position['artikel'];
                         $menge = $position['menge'];
                         $projekt = 0;
-                        $grund = "Umlagern Lieferschein ".$belegnr;
                         $importer = "";
                         $paketannahme = "";
                         $doctype = "lieferschein";
-                        $doctypeId = $id;
+                        $doctypeid = $id;
 
                         $this->app->erp->LagerAuslagernRegal($artikel,$quellager_id,$menge,$projekt,$grund,$importer,$doctype,$doctypeid);
                         $this->app->erp->LagerEinlagern($artikel,$menge,$ziellagerplatz_id,$projekt,$grund,$importer,$paketannahme,$doctype,$doctypeid);
@@ -540,6 +543,7 @@ class Lieferschein extends GenLieferschein
 
     $this->app->YUI->AutoComplete("quelllagerplatz", "lagerplatz");
     $this->app->YUI->AutoComplete("ziellagerplatz", "lagerplatz");
+    $this->app->YUI->AutoComplete("grund", "lagergrund");
 
     $this->app->Tpl->Set('KURZUEBERSCHRIFT2',"Lieferschein $belegnr umlagern");
     $this->app->Tpl->Set('TABTEXT',"Umlagern");
@@ -549,6 +553,8 @@ class Lieferschein extends GenLieferschein
     $this->app->Tpl->Set('ZIELLAGERPLATZ',$this->app->erp->ReplaceLagerPlatz(false, $ziellagerplatz_id, false));
 
     $this->app->Tpl->Set('ERNEUT_CHECKED',$erneut?'checked':'');
+
+    $this->app->Tpl->Set('GRUND', htmlspecialchars($grund));
 
     $this->app->Tpl->Parse('PAGE',"lieferschein_umlagern.tpl");    
   }
