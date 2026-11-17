@@ -1357,19 +1357,45 @@ class Rechnung extends GenRechnung
             $headers[] = 'Content-type:text/xml';
             $headers[] = 'Content-Disposition: attachment;filename='.$filename.'.xml';
             $template_id = $this->GetXMLSmartyTemplate($id);
-            if(empty($template_id)) {
+            $template = '';
+            if (!empty($template_id)) {
+                $template = (string)$this->app->DB->Select("SELECT template FROM smarty_templates WHERE id = '$template_id' LIMIT 1");
+            }
+            if (empty($template)) {
+                $defaultTemplate = dirname(__DIR__) . '/lib/rechnung/xrechnung_smarty_template.xml';
+                if (file_exists($defaultTemplate)) {
+                    $template = file_get_contents($defaultTemplate);
+                }
+            }
+            if (empty($template)) {
                 $output = '<?xml version="1.0" encoding="utf-8"?>
 <note>
-  <body>Kein Smarty Template an der Addresse hinterlegt!</body>
+  <body>Kein Smarty Template hinterlegt!</body>
 </note>';
                 $success = false;
             } else {
-                $template = $this->app->DB->Select("SELECT template from smarty_templates WHERE id = '$template_id' LIMIT 1");
-                $smarty = new Smarty;
-                $directory = $this->app->erp->GetTMP().'/smarty/templates';
-                $smarty->setCompileDir($directory);
-                $smarty->assign('rechnung', $result);
-                $output = $smarty->fetch('string:'.$template);
+                if (!class_exists('Smarty')) {
+                    $smartyClassFile = dirname(__DIR__, 2) . '/vendor/smarty/smarty/libs/Smarty.class.php';
+                    if (file_exists($smartyClassFile)) {
+                        require_once $smartyClassFile;
+                    }
+                }
+                if (!class_exists('Smarty')) {
+                    $output = '<?xml version="1.0" encoding="utf-8"?>
+<note>
+  <body>Smarty-Template-Engine nicht verfuegbar!</body>
+</note>';
+                    $success = false;
+                } else {
+                    $smarty = new Smarty;
+                    $directory = $this->app->erp->GetTMP().'/smarty/templates';
+                    if (!is_dir($directory)) {
+                        @mkdir($directory, 0777, true);
+                    }
+                    $smarty->setCompileDir($directory);
+                    $smarty->assign('rechnung', $result);
+                    $output = $smarty->fetch('string:'.$template);
+                }
             }
         }
 
