@@ -40,6 +40,7 @@ class DocumentDataServiceTest
         $this->testAngebotWithOptionalAndExcludedPositions();
         $this->testBestellungCalculation();
         $this->testXRechnungTemplateRendering();
+        $this->testElectronicInvoiceValidation();
 
         echo "----------------------------------------------------\n";
         echo "Tests completed: {$this->passed} passed, {$this->failed} failed.\n";
@@ -433,9 +434,14 @@ class DocumentDataServiceTest
             'zahlungszieltage' => 14,
             'payment_means_code' => '58',
             'faelligkeitsdatum' => '2026-10-09',
-            'freifeld1' => '04011000-12345-67',
+            'leitwegid' => '04011000-12345-67',
             'ihrebestellnummer' => 'PO-9988',
             'bearbeiter' => 'Max Mustermann',
+            'name' => 'Kunden AG',
+            'strasse' => 'Kundenweg 2',
+            'plz' => '10115',
+            'ort' => 'Berlin',
+            'land' => 'DE',
         ];
 
         $rechnungssteller = [
@@ -541,9 +547,9 @@ class DocumentDataServiceTest
         // Verify dynamic values in XML
         $this->assert(strpos($xml, 'DE89370400440532013000') !== false, 'Contains dynamic IBAN');
         $this->assert(strpos($xml, 'BYLADEM1001') !== false, 'Contains dynamic BIC');
-        $this->assert(strpos($xml, 'rechnung@openxe-tech.de') !== false, 'Contains dynamic supplier email');
-        $this->assert(strpos($xml, 'm.mustermann@openxe-tech.de') !== false, 'Contains dynamic clerk email');
+        $this->assert(strpos($xml, 'rechnung@openxe-tech.de') !== false, 'Contains dynamic central supplier email');
         $this->assert(strpos($xml, '04011000-12345-67') !== false, 'Contains Leitweg-ID');
+        $this->assert(strpos($xml, 'PO-9988') !== false, 'Contains customer purchase order reference in OrderReference');
         $this->assert(strpos($xml, '4012345678901') !== false, 'Contains line item EAN');
 
         // Verify totals and line units
@@ -563,6 +569,57 @@ class DocumentDataServiceTest
             unlink($f);
         }
         rmdir($tmpDir);
+    }
+
+    /**
+     * Scenario 15: Electronic invoice mandatory field validation (no silent fallbacks).
+     */
+    public function testElectronicInvoiceValidation()
+    {
+        echo "\nTest 15: Electronic Invoice Validation (EN 16931 Mandatory Fields)\n";
+
+        // Incomplete data: missing customer country and supplier email
+        $incompleteData = [
+            'kopf' => [
+                'name' => 'Kunde ohne Land',
+                'strasse' => 'Musterweg 1',
+                'plz' => '12345',
+                'ort' => 'Musterstadt',
+                'land' => '', // Missing!
+            ],
+            'rechnungssteller' => [
+                'name' => 'Firma GmbH',
+                'land' => 'DE',
+                'email' => '', // Missing!
+            ]
+        ];
+
+        $errors = $this->service->validateElectronicInvoiceData($incompleteData);
+        $this->assert(count($errors) === 2, 'Detects 2 missing mandatory fields without silent fallback');
+        $this->assert(strpos(implode(' ', $errors), 'Land des Rechnungsempfaengers') !== false, 'Detects missing customer country');
+        $this->assert(strpos(implode(' ', $errors), 'PEPPOL-EN16931-R020') !== false, 'Detects missing supplier email');
+
+        // Complete data
+        $completeData = [
+            'kopf' => [
+                'name' => 'Kunde AG',
+                'strasse' => 'Musterweg 1',
+                'plz' => '12345',
+                'ort' => 'Musterstadt',
+                'land' => 'DE',
+            ],
+            'rechnungssteller' => [
+                'name' => 'Firma GmbH',
+                'strasse' => 'Firmenstr. 1',
+                'plz' => '80331',
+                'ort' => 'Muenchen',
+                'land' => 'DE',
+                'email' => 'buchhaltung@firma.de',
+            ]
+        ];
+
+        $errorsComplete = $this->service->validateElectronicInvoiceData($completeData);
+        $this->assert(empty($errorsComplete), 'Passes validation when all mandatory fields are present');
     }
 }
 

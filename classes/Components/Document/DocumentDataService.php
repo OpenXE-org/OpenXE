@@ -602,6 +602,46 @@ class DocumentDataService
     }
 
     /**
+     * Validate that mandatory fields for electronic invoicing (EN 16931 / XRechnung) are present.
+     *
+     * @param array $belegData
+     * @return array List of validation error messages (empty if valid)
+     */
+    public function validateElectronicInvoiceData(array $belegData): array
+    {
+        $errors = [];
+        $kopf = $belegData['kopf'] ?? [];
+        $rechnungssteller = $belegData['rechnungssteller'] ?? [];
+
+        if (empty($rechnungssteller['name'])) {
+            $errors[] = 'Name des Rechnungsstellers fehlt.';
+        }
+        if (empty($rechnungssteller['land'])) {
+            $errors[] = 'Land des Rechnungsstellers fehlt.';
+        }
+        if (empty($rechnungssteller['email'])) {
+            $errors[] = 'Zentrale E-Mail des Rechnungsstellers fehlt (PEPPOL-EN16931-R020).';
+        }
+        if (empty($kopf['name'])) {
+            $errors[] = 'Name des Rechnungsempfaengers fehlt.';
+        }
+        if (empty($kopf['strasse'])) {
+            $errors[] = 'Strasse des Rechnungsempfaengers fehlt.';
+        }
+        if (empty($kopf['ort'])) {
+            $errors[] = 'Ort des Rechnungsempfaengers fehlt.';
+        }
+        if (empty($kopf['plz'])) {
+            $errors[] = 'PLZ des Rechnungsempfaengers fehlt.';
+        }
+        if (empty($kopf['land'])) {
+            $errors[] = 'Land des Rechnungsempfaengers fehlt.';
+        }
+
+        return $errors;
+    }
+
+    /**
      * Collect standard company / seller data.
      */
     protected function getCompanyData(): array

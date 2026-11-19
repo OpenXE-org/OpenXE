@@ -1367,7 +1367,33 @@ class Rechnung extends GenRechnung
                     $template = file_get_contents($defaultTemplate);
                 }
             }
-            if (empty($template)) {
+            // Validierung der Belegvollstaendigkeit gemaess E-Rechnungsvorgaben (keine stillen Fallbacks)
+            $validationErrors = [];
+            if (class_exists('Xentral\Components\Document\DocumentDataService')) {
+                $docService = new \Xentral\Components\Document\DocumentDataService($this->app);
+                $validationErrors = $docService->validateElectronicInvoiceData($result);
+            } else {
+                if (empty($result['rechnungssteller']['name'])) {
+                    $validationErrors[] = 'Name des Rechnungsstellers fehlt.';
+                }
+                if (empty($result['rechnungssteller']['land'])) {
+                    $validationErrors[] = 'Land des Rechnungsstellers fehlt.';
+                }
+                if (empty($result['kopf']['name'])) {
+                    $validationErrors[] = 'Name des Rechnungsempfaengers fehlt.';
+                }
+                if (empty($result['kopf']['land'])) {
+                    $validationErrors[] = 'Land des Rechnungsempfaengers fehlt.';
+                }
+            }
+
+            if (!empty($validationErrors)) {
+                $output = '<?xml version="1.0" encoding="utf-8"?>' . "\n" .
+'<note>' . "\n" .
+'  <body>Belegdaten unvollstaendig: ' . htmlspecialchars(implode(', ', $validationErrors)) . '</body>' . "\n" .
+'</note>';
+                $success = false;
+            } elseif (empty($template)) {
                 $output = '<?xml version="1.0" encoding="utf-8"?>
 <note>
   <body>Kein Smarty Template hinterlegt!</body>
