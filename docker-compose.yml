@@ -1,62 +1,81 @@
-version: '3.9'
 services:
-  vite:
+  app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
-      target: frontend
-    image: openxe_frontend
-    entrypoint: npm run dev
+      dockerfile: Dockerfile
+    image: openxe:local
+    ports:
+      - "8081:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: openxe
+      DB_USER: openxe
+      DB_PASSWORD: openxe
+      AUTO_MIGRATE: "true"
+      IMPORT_SAMPLE: "false"
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: openxe
+      TZ: Europe/Berlin
+    volumes:
+      - userdata:/var/www/html/userdata
+      # For live local development with hot reload, uncomment the host volume mount:
+      # - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openxe:local
+    command: ["migrate"]
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: openxe
+      DB_USER: openxe
+      DB_PASSWORD: openxe
+    volumes:
+      - userdata:/var/www/html/userdata
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - tools
+
+  vite:
+    image: node:20-alpine
+    working_dir: /app
+    command: ["sh", "-c", "npm install && npm run dev"]
     volumes:
       - .:/app
     ports:
       - "5173:5173"
-  app_init:
-    image: openxe:test
-    volumes:
-      - .:/var/www/html
-    working_dir: /var/www/html/upgrade
-    entrypoint: php data/upgrade.php -db -do
-    depends_on:
-      mysql:
-        condition: service_healthy
-  app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    image: openxe:test
-    volumes:
-      - .:/var/www/html
-    ports:
-      - "8081:80"
-    depends_on:
-      app_init:
-        condition: service_completed_successfully
-      mysql:
-        condition: service_healthy
-  mysql:
+    profiles:
+      - dev
+
+  db:
     image: mariadb:10.11
     environment:
-      MYSQL_ROOT_PASSWORD: "rootpw"
-      MYSQL_USER: "openxe"
-      MYSQL_PASSWORD: "openxe"
-      MYSQL_DATABASE: "openxe"
+      MYSQL_RANDOM_ROOT_PASSWORD: "1"
+      MYSQL_USER: openxe
+      MYSQL_PASSWORD: openxe
+      MYSQL_DATABASE: openxe
       MARIADB_AUTO_UPGRADE: "1"
     volumes:
-      - mysqldata:/var/lib/mysql
+      - dbdata:/var/lib/mysql
     ports:
       - "3306:3306"
     healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
-      retries: 3
-      test:
-        [
-          "CMD",
-          "healthcheck.sh",
-          "--connect",
-          "--innodb_initialized"
-        ]
       timeout: 30s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
-  mysqldata: {}
+  userdata:
+  dbdata:

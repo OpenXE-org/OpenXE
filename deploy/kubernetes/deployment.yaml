@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openxe
+  labels:
+    app.kubernetes.io/name: openxe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openxe
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: openxe
+    spec:
+      containers:
+        - name: openxe
+          image: ghcr.io/openxe-org/openxe:v1.13.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: DB_HOST
+              value: "openxe-mysql"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_NAME
+              value: "openxe"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openxe-db-credentials
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openxe-db-credentials
+                  key: password
+            - name: AUTO_MIGRATE
+              value: "false" # Migrations run via pre-rollout Job
+            - name: USERDATA_PATH
+              value: "/var/www/html/userdata"
+          volumeMounts:
+            - name: userdata
+              mountPath: /var/www/html/userdata
+          readinessProbe:
+            httpGet:
+              path: /index.php
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /index.php
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
+      volumes:
+        - name: userdata
+          persistentVolumeClaim:
+            claimName: openxe-userdata-pvc
