@@ -6147,7 +6147,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
       // PDF / XML rechnung
       $xmlrechnung = (string)$this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id='$rechnung' LIMIT 1");
-      if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0 &&!$xmlrechnung)
+      if(($autodruckrechnungstufe1=='1' || $exportdruckrechnungstufe1) && $rechnung > 0 && $xmlrechnung != '1')
       {
         $this->app->DB->Update("UPDATE rechnung SET status='versendet', versendet='1',schreibschutz='1' WHERE id='$rechnung' LIMIT 1");
         $druckercode = $this->app->erp->Projektdaten($projekt,'druckerlogistikstufe1');

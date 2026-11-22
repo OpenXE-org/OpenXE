@@ -15975,9 +15975,9 @@ function IframeDialog($width, $height, $src = "") {
 
     public function GetRechnungFileDownloadLinkIconSQL($tablename = 'r') {
         return(
-            "IF(".$tablename.".xmlrechnung,
-            CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\"></a>'),
-            CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\"></a>')
+            "IF(".$tablename.".xmlrechnung = 1,
+            CONCAT('<a href=\"index.php?module=rechnung&action=xml&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/xml.svg\" border=\"0\" title=\"XML\"></a>'),
+            CONCAT('<a href=\"index.php?module=rechnung&action=pdf&id=',".$tablename.".id,'\"><img src=\"themes/".$this->app->Conf->WFconf['defaulttheme']."/images/pdf.svg\" border=\"0\" title=\"', IF(".$tablename.".xmlrechnung = 2, 'PDF (ZUGFeRD)', 'PDF'), '\"></a>')
             )"
         );
     }
@@ -15986,8 +15986,10 @@ function IframeDialog($width, $height, $src = "") {
         $xmlrechnung =  $this->app->DB->SelectRow("SELECT belegnr, xmlrechnung FROM rechnung WHERE id = '".$id."' LIMIT 1");
         if ($xmlrechnung['belegnr'] == '') {
             return('');
-        }  else if ($xmlrechnung['xmlrechnung']) {
+        }  else if ($xmlrechnung['xmlrechnung'] == 1) {
             return("<a href=\"index.php?module=rechnung&action=xml&id=%value%\"><img border=\"0\" src=\"./themes/new/images/xml.svg\" title=\"XML\"></a>");
+        } else if ($xmlrechnung['xmlrechnung'] == 2) {
+            return("<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF (ZUGFeRD)\"></a>");
         } else {
            return("<a href=\"index.php?module=rechnung&action=pdf&id=%value%\"><img border=\"0\" src=\"./themes/new/images/pdf.svg\" title=\"PDF\"></a>");
         }

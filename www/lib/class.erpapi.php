@@ -2229,15 +2229,30 @@ public function NavigationHooks(&$menu)
     return false;
   }
 
-    // Rechnung special treatment because of XML
+    // Rechnung special treatment because of XML / ZUGFeRD
     function RechnungArchivieren($id) {
         $sql = "SELECT xmlrechnung FROM rechnung WHERE id = '".$id."' LIMIT 1";
-        $xmlrechnung = $this->app->DB->Select($sql);
-        if ($xmlrechnung) {
+        $xmlrechnung = (int)$this->app->DB->Select($sql);
+        if ($xmlrechnung === 1) {
+            // Nur XML
             $rechnungsmodul = $this->app->loadModule('rechnung', false);
             return($rechnungsmodul->RechnungArchiviereXML($id));
         } else {
+            // Standard PDF (0) oder ZUGFeRD Hybrid-PDF (2)
             $this->PDFArchivieren('rechnung',$id,true);
+            if ($xmlrechnung === 2) {
+                // Bei ZUGFeRD auch das XML im Dateiarchiv hinterlegen
+                $rechnungsmodul = $this->app->loadModule('rechnung', false);
+                if ($rechnungsmodul && method_exists($rechnungsmodul, 'RechnungArchiviereXML')) {
+                    try {
+                        $rechnungsmodul->RechnungArchiviereXML($id);
+                    } catch (\Throwable $e) {
+                        if (method_exists($this, 'LogFile')) {
+                            $this->LogFile('ZUGFeRD XML archive error: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -15613,7 +15628,7 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
     if($id > 0)
     {
 
-      if (!$xmlrechnung) {
+      if ($xmlrechnung != 1) {
           $this->app->erp->BriefpapierHintergrunddisable = false;
           if(class_exists('RechnungPDFCustom'))
           {
@@ -23818,8 +23833,8 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
       if($typ=="rechnung")
       {
         // sende
-        $xmlrechnung = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id ='".$id."' LIMIT 1");
-        if ($xmlrechnung) {
+        $xmlrechnung = (int)$this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id ='".$id."' LIMIT 1");
+        if ($xmlrechnung === 1) {
             $xmlrechnungresult = $this->app->erp->GetXMLRechnung($id);
             if ($xmlrechnungresult['success']) {
                 $tmpfile = $xmlrechnungresult['xml'];
