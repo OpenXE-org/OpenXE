@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: openxe
+  labels:
+    app.kubernetes.io/name: openxe
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: openxe.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: openxe
+                port:
+                  number: 80

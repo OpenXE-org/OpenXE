@@ -1,29 +1,71 @@
-ARG PHP_EXT="gd ldap imap mysqli soap zip"
-ARG DEB_PKG="libc-client2007e libaom3 libavif15 libdav1d6 libfreetype6 libjpeg62-turbo libldap-common libpng16-16 libwebp7 libxpm4 libzip4"
-ARG DEB_PKG_TMP="cmake gnutls-dev libaom-dev libavif-dev libbz2-dev libc-client-dev libdav1d-dev libfreetype6-dev libjpeg62-turbo-dev libkrb5-dev libldap2-dev libpng-dev libssl-dev libwebp-dev libxml2-dev libxpm-dev libzip-dev zlib1g-dev"
+# syntax=docker/dockerfile:1
 
-FROM node:20 as frontend
+# Stage 1: Build frontend assets with Vite
+FROM node:20-alpine AS frontend
 WORKDIR /app
-COPY package.json package-lock.json vite.config.js /app/
-RUN npm install
-COPY classes /app/classes
-COPY resources /app/resources
-COPY www /app/www
+
+COPY package.json package-lock.json vite.config.js ./
+RUN npm ci --no-audit --no-fund
+
+COPY classes ./classes
+COPY resources ./resources
+COPY www ./www
 RUN npm run build
 
-#FROM php:8.1-fpm as fpm_server
-FROM php:8.1-apache as web_server
-ARG PHP_EXT
-ARG DEB_PKG
-ARG DEB_PKG_TMP
+# Stage 2: Production PHP + Apache Runtime
+ARG PHP_VERSION=8.5
+FROM php:${PHP_VERSION}-apache AS production
 
-WORKDIR /app
-RUN apt-get update && apt-get install -y ${DEB_PKG} ${DEB_PKG_TMP} && \
-    docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
-    docker-php-ext-install ${PHP_EXT} && \
-    apt-get remove --purge -y ${DEB_PKG_TMP} && \
-    mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+# Copy extension installer from pre-built image
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
-COPY docker/php "$PHP_INI_DIR/conf.d/"
-COPY --chown=www-data:www-data . /var/www/html
-COPY --chown=www-data:www-data --from=frontend /app/www/dist /var/www/html/www/dist
+# Install PHP extensions required by OpenXE
+RUN install-php-extensions \
+    bcmath \
+    exif \
+    gd \
+    imap \
+    intl \
+    ldap \
+    mysqli \
+    opcache \
+    pcntl \
+    pdo_mysql \
+    soap \
+    zip
+
+# Enable Apache modules
+RUN a2enmod rewrite headers remoteip
+
+# Install lightweight mariadb client and utilities for healthchecks & DB init
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    mariadb-client \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Apply PHP and Apache configurations
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY docker/php/memory.ini "$PHP_INI_DIR/conf.d/zz-openxe.ini"
+COPY docker/apache/openxe.conf /etc/apache2/conf-available/openxe.conf
+RUN a2enconf openxe
+
+# Set working directory and copy application source
+WORKDIR /var/www/html
+COPY . .
+
+# Copy compiled frontend assets from Stage 1
+COPY --from=frontend /app/www/dist ./www/dist
+
+# Set up required persistent directories and permissions
+RUN mkdir -p userdata/tmp conf www/cache \
+    && chown -R www-data:www-data /var/www/html
+
+# Install entrypoint script
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 80
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["apache2-foreground"]
