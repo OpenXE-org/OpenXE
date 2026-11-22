@@ -102,8 +102,19 @@ var DocscanFiles = function ($) {
 
             // Dateien werden in Dropzone gedropped
             me.elem.$dropzoneWrapper.on('drop', function (e) {
+                // Immer zuerst verhindern, dass der Browser die Datei im
+                // aktuellen Tab öffnet (Seite würde verlassen werden)
                 e.preventDefault();
-                me.handleDroppedFiles(e.dataTransfer.files);
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                // dataTransfer liegt bei jQuery 3 nicht direkt auf dem
+                // Event-Objekt, sondern im originalEvent
+                var dataTransfer = e.dataTransfer || (e.originalEvent && e.originalEvent.dataTransfer);
+                if (!dataTransfer) {
+                    return;
+                }
+                me.handleDroppedFiles(dataTransfer.files);
                 me.elem.$dropzone.css('borderColor', '#CCC');
             });
 
@@ -508,12 +519,18 @@ var DocscanFiles = function ($) {
                 var fileReader = new FileReader();
                 fileReader.onload = (function (file) {
                     return function () {
-                        if (file.size === 0 || file.type === '') {
+                        if (file.size === 0) {
                             return;
                         }
 
                         var isImage = file.type.substr(0, 6) === 'image/';
                         var isPdf = file.type === 'application/pdf';
+                        // Beim Drag & Drop aus OS-Dateimanagern (Linux/macOS)
+                        // ist der MIME-Type oft leer -> Fallback auf Dateiendung
+                        if (file.type === '') {
+                            isImage = /\.(jpe?g|png|gif|bmp|tiff?|webp)$/i.test(file.name);
+                            isPdf = /\.pdf$/i.test(file.name);
+                        }
                         if (!isImage && !isPdf) {
                             alert('Dieser Dateityp wird nicht unterstützt. Bitte laden Sie nur PDFs und Bilder hoch.');
                             return;
