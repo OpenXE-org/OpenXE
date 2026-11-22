@@ -85,7 +85,7 @@ class RechnungPDF extends BriefpapierCustom {
     );
 
 
-    if ($data['xmlrechnung']) {
+    if ($data['xmlrechnung'] == 1) {
         return;
     }
 
@@ -554,6 +554,27 @@ class RechnungPDF extends BriefpapierCustom {
       $this->filename = $datum2."_RE".$belegnr.".pdf";
 
     $this->setBarcode($belegnr);
+
+    // ZUGFeRD / Hybrid-PDF (xmlrechnung == 2): embed XML into PDF
+    if (isset($data['xmlrechnung']) && (int)$data['xmlrechnung'] === 2) {
+      $rechnungsmodul = $this->app->loadModule('rechnung', false);
+      if ($rechnungsmodul && method_exists($rechnungsmodul, 'RechnungSmarty')) {
+        try {
+          $xmlResult = $rechnungsmodul->RechnungSmarty($id, json: false, returnvalue: true);
+          if (!empty($xmlResult['success']) && !empty($xmlResult['xml'])) {
+            $xmlFilename = \Xentral\Components\Pdf\Zugferd\ZugferdHelper::detectXmlFilename(
+              $xmlResult['template_name'] ?? '',
+              $xmlResult['xml'] ?? ''
+            );
+            $this->AttachFile($xmlResult['xml'], $xmlFilename, 'ZUGFeRD / XRechnung E-Rechnung', 'Alternative');
+          }
+        } catch (\Throwable $e) {
+          if (isset($this->app->erp) && method_exists($this->app->erp, 'LogFile')) {
+            $this->app->erp->LogFile('ZUGFeRD XML attach error: ' . $e->getMessage());
+          }
+        }
+      }
+    }
   }
 
 

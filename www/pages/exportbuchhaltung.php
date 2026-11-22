@@ -348,7 +348,7 @@ class Exportbuchhaltung
                             $allowed_file_types = array('pdf','xml');
                             $allowed_link_file_types = array('pdf');
                             if ($belege_zu_typ['typ'] == 'rechnung') {
-                                if ($this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id'])) {
+                                if ((int)$this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id = ".$beleg['id']) === 1) {
                                     $action = 'load';
                                     $allowed_link_file_types = array('xml');
                                 }
