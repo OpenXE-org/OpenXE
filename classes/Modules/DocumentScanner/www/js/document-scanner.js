@@ -102,8 +102,14 @@ var DocscanFiles = function ($) {
 
             // Dateien werden in Dropzone gedropped
             me.elem.$dropzoneWrapper.on('drop', function (e) {
+                // dataTransfer liegt bei jQuery 3 nicht direkt auf dem
+                // Event-Objekt, sondern im originalEvent
+                var dataTransfer = e.dataTransfer || (e.originalEvent && e.originalEvent.dataTransfer);
+                if (!dataTransfer) {
+                    return;
+                }
                 e.preventDefault();
-                me.handleDroppedFiles(e.dataTransfer.files);
+                me.handleDroppedFiles(dataTransfer.files);
                 me.elem.$dropzone.css('borderColor', '#CCC');
             });
 
@@ -508,13 +514,15 @@ var DocscanFiles = function ($) {
                 var fileReader = new FileReader();
                 fileReader.onload = (function (file) {
                     return function () {
-                        if (file.size === 0 || file.type === '') {
+                        if (file.size === 0) {
                             return;
                         }
 
                         var isImage = file.type.substr(0, 6) === 'image/';
                         var isPdf = file.type === 'application/pdf';
-                        if (!isImage && !isPdf) {
+                        // Dateien ohne erkannten MIME-Type (z.B. bei Drag&Drop
+                        // aus dem Dateimanager) werden ebenfalls akzeptiert
+                        if (file.type !== '' && !isImage && !isPdf) {
                             alert('Dieser Dateityp wird nicht unterstützt. Bitte laden Sie nur PDFs und Bilder hoch.');
                             return;
                         }

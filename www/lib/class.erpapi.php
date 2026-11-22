@@ -37100,7 +37100,13 @@ function Firmendaten($field,$projekt="")
           }
           return false;
         }
-        if(@is_uploaded_file($datei))
+        // $datei kann auch direkt die Datei-Inhalte sein (z.B. per base64
+        // übertragene Daten aus Docscan-Uploads). In dem Fall enthält der
+        // String meist Nullbytes, und is_uploaded_file würde einen
+        // ValueError werfen. Der fwrite-Fallback weiter unten schreibt die
+        // Datei in diesem Fall ohnehin auf die Platte, daher ist
+        // is_uploaded_file für solche Strings nicht nötig.
+        if(is_string($datei) && strpos($datei, "\0") === false && @is_uploaded_file($datei))
         {
           if(@move_uploaded_file($datei,$path.'/'.$versionid))
           {
