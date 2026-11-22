@@ -36929,7 +36929,11 @@ function Firmendaten($field,$projekt="")
         {
             $md5 = md5_file($datei);
         }
-        else if(is_uploaded_file($datei))
+        // $datei kann auch direkt Datei-Inhalt sein (statt Pfad). Inhalt
+        // enthält meist Nullbytes, und is_uploaded_file würde dann unter
+        // PHP 8+ einen ValueError werfen. Inhalt fällt so korrekt in den
+        // md5($datei)-Zweig weiter unten.
+        else if(is_string($datei) && strpos($datei, "\0") === false && is_uploaded_file($datei))
         {
             $_datei = $this->app->erp->GetTMP().$datei;
             if(move_uploaded_file($datei,$_datei)) {

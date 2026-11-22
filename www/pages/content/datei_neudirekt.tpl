@@ -250,7 +250,11 @@ $(document).ready(function() {
 
 	// Makes sure the dataTransfer information is sent when we
 	// Drop the item in the drop box.
-	jQuery.event.props.push('dataTransfer');
+	// jQuery >= 3 hat jQuery.event.props entfernt - dataTransfer liegt dann
+	// im originalEvent.
+	if (typeof jQuery.event.props !== 'undefined') {
+		jQuery.event.props.push('dataTransfer');
+	}
 	
 	var z = -40;
 	// The number of images to display
@@ -265,8 +269,14 @@ $(document).ready(function() {
 			
 		// Stop the default action, which is to redirect the page
 		// To the dropped file
-		
-		var files = e.dataTransfer.files;
+
+		// dataTransfer liegt bei jQuery 3 nicht direkt auf dem
+		// Event-Objekt, sondern im originalEvent
+		var dataTransfer = e.dataTransfer || (e.originalEvent && e.originalEvent.dataTransfer);
+		if (!dataTransfer) {
+			return;
+		}
+		var files = dataTransfer.files;
 		
     
     $.each(files, function(index, file) {
