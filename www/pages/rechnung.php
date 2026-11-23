@@ -1338,21 +1338,22 @@ class Rechnung extends GenRechnung
   }
 
   function RechnungSmarty($id = null, $json = false, $returnvalue = false) {
+        $result = array('success' => true);
+
         if ($id === null) {
             $id = $this->app->Secure->GetGET('id');
         }
-        $result = $this->app->erp->GetBelegData('rechnung', $id);
-        $success = true;
+        $belegdata = $this->app->erp->GetBelegData('rechnung', $id);
 
-        $filename = str_replace('-','',$result['kopf']['datum']).'_RE'.$result['kopf']['belegnr'];
+        $filename = str_replace('-','',$belegdata['kopf']['datum']).'_RE'.$belegdata['kopf']['belegnr'];
 
-        $this->remove_html_entities_from_array($result);
-        $this->remove_CDATA_fragments_from_array($result);
+        $this->remove_html_entities_from_array($belegdata);
+        $this->remove_CDATA_fragments_from_array($belegdata);
 
         if ($json) {
             $headers[] = 'Content-type:text/plain';
             $headers[] = 'Content-Disposition: attachment;filename='.$filename.'.json';
-            $output = json_encode($result,JSON_PRETTY_PRINT);
+            $output = json_encode($belegdata,JSON_PRETTY_PRINT);
         } else {
             $headers[] = 'Content-type:text/xml';
             $headers[] = 'Content-Disposition: attachment;filename='.$filename.'.xml';
@@ -1368,36 +1369,33 @@ class Rechnung extends GenRechnung
             // Validierung der Belegvollstaendigkeit gemaess E-Rechnungsvorgaben (keine stillen Fallbacks)
             $validationErrors = [];
             $docService = new \Xentral\Components\Document\DocumentDataService($this->app);
-            $validationErrors = $docService->validateElectronicInvoiceData($result);
+            $validationErrors = $docService->validateElectronicInvoiceData($belegdata);
 
             if (!empty($validationErrors)) {
-                $output = '<?xml version="1.0" encoding="utf-8"?>' . "\n" .
-'<note>' . "\n" .
-'  <body>Belegdaten unvollstaendig: ' . htmlspecialchars(implode(', ', $validationErrors)) . '</body>' . "\n" .
-'</note>';
-                $success = false;
+                $result['success'] = false;
+                $result['errors'] = $validationErrors;
             } else {
                 $smarty = new Smarty;
                 $directory = $this->app->erp->GetTMP().'/smarty/templates';
                 $smarty->setCompileDir($directory);
-                $smarty->assign('rechnung', $result);
+                $smarty->assign('rechnung', $belegdata);
                 $output = $smarty->fetch('string:'.$template);
             }
         }
 
         if ($returnvalue) {
-            return(Array(
-                'success' => $success,
-                'title' => 'Rechnung '.$result['kopf']['belegnr'],
-                'filename' => $filename,
-                'xml' => $output
-             ));
-        } else {
+            $result['title'] = 'Rechnung '.$result['kopf']['belegnr'];
+            $result['filename'] = $filename;
+            $result['xml'] = $output;
+            return($result);
+        } else if ($result['success']) {
             foreach ($headers as $header) {
                 header($header);
             }
             echo($output);
             $this->app->ExitXentral();
+        } else {
+            throw new Exception("RechnungSmarty fehlgeschlagen. Fehler: ".implode($validationErrors));
         }
   }
 
