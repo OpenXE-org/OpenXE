@@ -1363,29 +1363,12 @@ class Rechnung extends GenRechnung
             }
             if (empty($template)) {
                 $defaultTemplate = dirname(__DIR__) . '/lib/rechnung/xrechnung_smarty_template.xml';
-                if (file_exists($defaultTemplate)) {
-                    $template = file_get_contents($defaultTemplate);
-                }
+                $template = file_get_contents($defaultTemplate);
             }
             // Validierung der Belegvollstaendigkeit gemaess E-Rechnungsvorgaben (keine stillen Fallbacks)
             $validationErrors = [];
-            if (class_exists('Xentral\Components\Document\DocumentDataService')) {
-                $docService = new \Xentral\Components\Document\DocumentDataService($this->app);
-                $validationErrors = $docService->validateElectronicInvoiceData($result);
-            } else {
-                if (empty($result['rechnungssteller']['name'])) {
-                    $validationErrors[] = 'Name des Rechnungsstellers fehlt.';
-                }
-                if (empty($result['rechnungssteller']['land'])) {
-                    $validationErrors[] = 'Land des Rechnungsstellers fehlt.';
-                }
-                if (empty($result['kopf']['name'])) {
-                    $validationErrors[] = 'Name des Rechnungsempfaengers fehlt.';
-                }
-                if (empty($result['kopf']['land'])) {
-                    $validationErrors[] = 'Land des Rechnungsempfaengers fehlt.';
-                }
-            }
+            $docService = new \Xentral\Components\Document\DocumentDataService($this->app);
+            $validationErrors = $docService->validateElectronicInvoiceData($result);
 
             if (!empty($validationErrors)) {
                 $output = '<?xml version="1.0" encoding="utf-8"?>' . "\n" .
@@ -1393,35 +1376,12 @@ class Rechnung extends GenRechnung
 '  <body>Belegdaten unvollstaendig: ' . htmlspecialchars(implode(', ', $validationErrors)) . '</body>' . "\n" .
 '</note>';
                 $success = false;
-            } elseif (empty($template)) {
-                $output = '<?xml version="1.0" encoding="utf-8"?>
-<note>
-  <body>Kein Smarty Template hinterlegt!</body>
-</note>';
-                $success = false;
             } else {
-                if (!class_exists('Smarty')) {
-                    $smartyClassFile = dirname(__DIR__, 2) . '/vendor/smarty/smarty/libs/Smarty.class.php';
-                    if (file_exists($smartyClassFile)) {
-                        require_once $smartyClassFile;
-                    }
-                }
-                if (!class_exists('Smarty')) {
-                    $output = '<?xml version="1.0" encoding="utf-8"?>
-<note>
-  <body>Smarty-Template-Engine nicht verfuegbar!</body>
-</note>';
-                    $success = false;
-                } else {
-                    $smarty = new Smarty;
-                    $directory = $this->app->erp->GetTMP().'/smarty/templates';
-                    if (!is_dir($directory)) {
-                        @mkdir($directory, 0777, true);
-                    }
-                    $smarty->setCompileDir($directory);
-                    $smarty->assign('rechnung', $result);
-                    $output = $smarty->fetch('string:'.$template);
-                }
+                $smarty = new Smarty;
+                $directory = $this->app->erp->GetTMP().'/smarty/templates';
+                $smarty->setCompileDir($directory);
+                $smarty->assign('rechnung', $result);
+                $output = $smarty->fetch('string:'.$template);
             }
         }
 
