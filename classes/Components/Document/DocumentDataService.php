@@ -619,7 +619,7 @@ class DocumentDataService
         if (empty($rechnungssteller['land'])) {
             $errors[] = 'Land des Rechnungsstellers fehlt.';
         }
-        if (empty($rechnungssteller['email'])) {
+        if (empty($rechnungssteller['emailadresseempfang'])) {
             $errors[] = 'Zentrale E-Mail des Rechnungsstellers fehlt (PEPPOL-EN16931-R020).';
         }
         if (empty($kopf['name'])) {
@@ -662,7 +662,7 @@ class DocumentDataService
             'bank' => (string)$erp->Firmendaten('bank'),
             'iban' => (string)$erp->Firmendaten('iban'),
             'bic' => (string)$erp->Firmendaten('swift'),
-            'email' => (string)$erp->Firmendaten('email'),
+            'emailadresseempfang' => (string)$erp->Firmendaten('emailadresseempfang'),
             'telefon' => (string)$erp->Firmendaten('telefon'),
             'telefax' => (string)$erp->Firmendaten('telefax'),
             'handelsregister' => (string)$erp->Firmendaten('handelsregister'),

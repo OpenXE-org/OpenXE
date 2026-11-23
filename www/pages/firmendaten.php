@@ -1044,7 +1044,7 @@ class Firmendaten  {
           'arbeitsnachweis_header','arbeitsnachweis_footer','provisionsgutschrift_header','provisionsgutschrift_footer','proformarechnung_header','proformarechnung_footer','eu_lieferung_vermerk','export_lieferung_vermerk'
           ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2','bcc3'
           ,'firmenfarbe','name','strasse','plz','ort','steuernummer','projekt','steuer_positionen_export','tabsnavigationfarbe','tabsnavigationfarbeschrift'
-          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge", "fibu_buchungen_startdatum", "rechnung_skonto_kontorahmen", "rechnung_schnelleingabe_konto"
+          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge", "fibu_buchungen_startdatum", "rechnung_skonto_kontorahmen", "rechnung_schnelleingabe_konto","emailadresseempfang","telefon"
         );
 
         if(isset($sql2a)){

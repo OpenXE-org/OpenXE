@@ -26966,7 +26966,8 @@ function Firmendaten($field,$projekt="")
             'footer_reihenfolge_bestellung','cleaner_logfile_tage','cleaner_protokoll_tage','cleaner_shopimport_tage','cleaner_versandzentrum_tage','cleaner_uebertragungen_tage','cleaner_adapterbox_tage','begrenzenanzahl_artikeltabelle','begrenzenanzahl_adressetabelle','begrenzenanzahl_belege','versandmails_max','autoversand_maxauftraege'
             ,'gewichtzukgfaktor','gewichtbezeichnung','zeiterfassung_schliessentage','freitext1x','freitext1y','freitext1schriftgroesse','freitext1breite','freitext1inhalt',
               'freitext2x','freitext2y','freitext2schriftgroesse','freitext2breite','freitext2inhalt','kommissionskonsignationslager','bezeichnungaktionscodes','belege_stuecklisteneinrueckenmm','ldap_host','ldap_bindname','ldap_searchbase','ldap_filter','systemmailsempfaenger',
-          'server_url','server_port','cronjob_limit','cleaner_shopexportlog_tage','poll_repeattime','wareneingangbildtypvorauswahl','wareneingangscanverhalten', 'group_sales', 'group_employee'
+          'server_url','server_port','cronjob_limit','cleaner_shopexportlog_tage','poll_repeattime','wareneingangbildtypvorauswahl','wareneingangscanverhalten', 'group_sales', 'group_employee',
+            'emailadresseempfang','telefon'
               );
 
       for($ki=1;$ki<=15;$ki++)

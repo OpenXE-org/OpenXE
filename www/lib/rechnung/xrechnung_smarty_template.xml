@@ -26,8 +26,8 @@
 {/if}
     <cac:AccountingSupplierParty>
         <cac:Party>
-{if !empty($rechnung.rechnungssteller.email)}
-            <cbc:EndpointID schemeID="EM"><![CDATA[{$rechnung.rechnungssteller.email}]]></cbc:EndpointID>
+{if !empty($rechnung.rechnungssteller.emailadresseempfang)}
+            <cbc:EndpointID schemeID="EM"><![CDATA[{$rechnung.rechnungssteller.emailadresseempfang}]]></cbc:EndpointID>
 {elseif !empty($rechnung.rechnungssteller.gln)}
             <cbc:EndpointID schemeID="0088"><![CDATA[{$rechnung.rechnungssteller.gln}]]></cbc:EndpointID>
 {elseif !empty($rechnung.rechnungssteller.leitwegid)}
@@ -77,8 +77,8 @@
 {if !empty($rechnung.rechnungssteller.telefon)}
                 <cbc:Telephone><![CDATA[{$rechnung.rechnungssteller.telefon}]]></cbc:Telephone>
 {/if}
-{if !empty($rechnung.rechnungssteller.email)}
-                <cbc:ElectronicMail><![CDATA[{$rechnung.rechnungssteller.email}]]></cbc:ElectronicMail>
+{if !empty($rechnung.rechnungssteller.emailadresseempfang)}
+                <cbc:ElectronicMail><![CDATA[{$rechnung.rechnungssteller.emailadresseempfang}]]></cbc:ElectronicMail>
 {/if}
             </cac:Contact>
         </cac:Party>

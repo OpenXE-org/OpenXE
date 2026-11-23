@@ -199,6 +199,8 @@
 							<tr><td>PLZ:</td><td><input type="text" name="plz" value="[PLZ]" size="40"></td></tr>
 							<tr><td>Ort:</td><td><input type="text" name="ort" value="[ORT]" size="40"></td></tr>
 							<tr><td>Land:</td><td><input type="text" name="land" value="[LAND]" size="40" maxlength="2"></td></tr>
+							<tr><td>Telefon:</td><td><input type="text" name="telefon" value="[TELEFON]" size="40" maxlength="40"></td></tr>
+							<tr><td>E-Mailadresse:</td><td><input type="email" name="emailadresseempfang" value="[EMAILADRESSEEMPFANG]" size="40" maxlength="40"></td></tr>
 							<tr><td>USTID:</td><td><input type="text" name="steuernummer" value="[STEUERNUMMER]" size="40"></td></tr>
 							<tr><td>SEPA Gl&auml;ubiger ID:</td><td><input type="text" name="sepaglaeubigerid" value="[SEPAGLAEUBIGERID]" size="40"></td></tr>
 						</table>
