@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- OpenXE XRechnung template version 1.4.3 -->
+<!-- OpenXE XRechnung template version 2.0.0 -->
 <ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
              xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
              xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
@@ -14,7 +14,7 @@
 {if !empty($rechnung.kopf.kopftext) or !empty($rechnung.kopf.freitext)}
     <cbc:Note><![CDATA[{if !empty($rechnung.kopf.kopftext)}{$rechnung.kopf.kopftext}{/if}{if !empty($rechnung.kopf.kopftext) and !empty($rechnung.kopf.freitext)} {/if}{if !empty($rechnung.kopf.freitext)}{$rechnung.kopf.freitext}{/if}]]></cbc:Note>
 {/if}
-    <cbc:DocumentCurrencyCode>{$rechnung.kopf.waehrung|default:'EUR'}</cbc:DocumentCurrencyCode>
+    <cbc:DocumentCurrencyCode>{$rechnung.kopf.waehrung}</cbc:DocumentCurrencyCode>
     <cbc:BuyerReference><![CDATA[{if !empty($rechnung.kopf.leitwegid)}{$rechnung.kopf.leitwegid}{elseif !empty($rechnung.adresse.leitwegid)}{$rechnung.adresse.leitwegid}{else}-{/if}]]></cbc:BuyerReference>
 {if !empty($rechnung.kopf.ihrebestellnummer) or !empty($rechnung.kopf.internet_bestellnummer)}
     <cac:OrderReference>
@@ -42,11 +42,11 @@
                 <cbc:Name><![CDATA[{$rechnung.rechnungssteller.name}]]></cbc:Name>
             </cac:PartyName>
             <cac:PostalAddress>
-                <cbc:StreetName><![CDATA[{$rechnung.rechnungssteller.strasse|default:''}]]></cbc:StreetName>
-                <cbc:CityName><![CDATA[{$rechnung.rechnungssteller.ort|default:''}]]></cbc:CityName>
-                <cbc:PostalZone><![CDATA[{$rechnung.rechnungssteller.plz|default:''}]]></cbc:PostalZone>
+                <cbc:StreetName><![CDATA[{$rechnung.rechnungssteller.strasse}]]></cbc:StreetName>
+                <cbc:CityName><![CDATA[{$rechnung.rechnungssteller.ort}]]></cbc:CityName>
+                <cbc:PostalZone><![CDATA[{$rechnung.rechnungssteller.plz}]]></cbc:PostalZone>
                 <cac:Country>
-                    <cbc:IdentificationCode><![CDATA[{$rechnung.rechnungssteller.land|default:''}]]></cbc:IdentificationCode>
+                    <cbc:IdentificationCode><![CDATA[{$rechnung.rechnungssteller.land}]]></cbc:IdentificationCode>
                 </cac:Country>
             </cac:PostalAddress>
             <cac:PartyTaxScheme>
@@ -96,11 +96,11 @@
                 <cbc:ID><![CDATA[{if !empty($rechnung.kopf.kundennummer)}{$rechnung.kopf.kundennummer}{elseif !empty($rechnung.adresse.kundennummer)}{$rechnung.adresse.kundennummer}{else}{$rechnung.kopf.name}{/if}]]></cbc:ID>
             </cac:PartyIdentification>
             <cac:PostalAddress>
-                <cbc:StreetName><![CDATA[{$rechnung.kopf.strasse|default:''}]]></cbc:StreetName>
-                <cbc:CityName><![CDATA[{$rechnung.kopf.ort|default:''}]]></cbc:CityName>
-                <cbc:PostalZone><![CDATA[{$rechnung.kopf.plz|default:''}]]></cbc:PostalZone>
+                <cbc:StreetName><![CDATA[{$rechnung.kopf.strasse}]]></cbc:StreetName>
+                <cbc:CityName><![CDATA[{$rechnung.kopf.ort}]]></cbc:CityName>
+                <cbc:PostalZone><![CDATA[{$rechnung.kopf.plz}]]></cbc:PostalZone>
                 <cac:Country>
-                    <cbc:IdentificationCode><![CDATA[{$rechnung.kopf.land|default:''}]]></cbc:IdentificationCode>
+                    <cbc:IdentificationCode><![CDATA[{$rechnung.kopf.land}]]></cbc:IdentificationCode>
                 </cac:Country>
             </cac:PostalAddress>
 {if !empty($rechnung.kopf.ustid) or !empty($rechnung.adresse.ustid)}
@@ -112,7 +112,7 @@
             </cac:PartyTaxScheme>
 {/if}
             <cac:PartyLegalEntity>
-                <cbc:RegistrationName><![CDATA[{$rechnung.kopf.name|default:''}]]></cbc:RegistrationName>
+                <cbc:RegistrationName><![CDATA[{$rechnung.kopf.name}]]></cbc:RegistrationName>
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingCustomerParty>
@@ -163,11 +163,11 @@
         <cbc:Note><![CDATA[{if !empty($rechnung.kopf.zahlungszieltage)}Zahlbar innerhalb von {$rechnung.kopf.zahlungszieltage} Tagen{if !empty($rechnung.kopf.faelligkeitsdatum)} bis zum {$rechnung.kopf.faelligkeitsdatum}{/if}.{else}Zahlungsweise: {$rechnung.kopf.zahlungsweise}{/if}]]></cbc:Note>
     </cac:PaymentTerms>
     <cac:TaxTotal>
-        <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.tax_total_amount|string_format:"%.2f"}</cbc:TaxAmount>
+        <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.tax_total_amount|string_format:"%.2f"}</cbc:TaxAmount>
 {foreach from=$rechnung.steuern item=steuerposition}
         <cac:TaxSubtotal>
-            <cbc:TaxableAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$steuerposition.umsatz_netto|string_format:"%.2f"}</cbc:TaxableAmount>
-            <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$steuerposition.steuer_betrag|string_format:"%.2f"}</cbc:TaxAmount>
+            <cbc:TaxableAmount currencyID="{$rechnung.kopf.waehrung}">{$steuerposition.umsatz_netto|string_format:"%.2f"}</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung}">{$steuerposition.steuer_betrag|string_format:"%.2f"}</cbc:TaxAmount>
             <cac:TaxCategory>
                 <cbc:ID>{$steuerposition.kategorie|default:'S'}</cbc:ID>
                 <cbc:Percent>{$steuerposition.prozent|string_format:"%.2f"}</cbc:Percent>
@@ -182,16 +182,16 @@
 {/foreach}
     </cac:TaxTotal>
     <cac:LegalMonetaryTotal>
-        <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.line_extension_amount|string_format:"%.2f"}</cbc:LineExtensionAmount>
-        <cbc:TaxExclusiveAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.tax_exclusive_amount|string_format:"%.2f"}</cbc:TaxExclusiveAmount>
-        <cbc:TaxInclusiveAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.tax_inclusive_amount|string_format:"%.2f"}</cbc:TaxInclusiveAmount>
+        <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.line_extension_amount|string_format:"%.2f"}</cbc:LineExtensionAmount>
+        <cbc:TaxExclusiveAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.tax_exclusive_amount|string_format:"%.2f"}</cbc:TaxExclusiveAmount>
+        <cbc:TaxInclusiveAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.tax_inclusive_amount|string_format:"%.2f"}</cbc:TaxInclusiveAmount>
 {if !empty($rechnung.summen.payable_rounding_amount) and $rechnung.summen.payable_rounding_amount != 0}
-        <cbc:PayableRoundingAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.payable_rounding_amount|string_format:"%.2f"}</cbc:PayableRoundingAmount>
+        <cbc:PayableRoundingAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.payable_rounding_amount|string_format:"%.2f"}</cbc:PayableRoundingAmount>
 {/if}
 {if !empty($rechnung.summen.prepaid_amount) and $rechnung.summen.prepaid_amount > 0}
-        <cbc:PrepaidAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.prepaid_amount|string_format:"%.2f"}</cbc:PrepaidAmount>
+        <cbc:PrepaidAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.prepaid_amount|string_format:"%.2f"}</cbc:PrepaidAmount>
 {/if}
-        <cbc:PayableAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$rechnung.summen.payable_amount|string_format:"%.2f"}</cbc:PayableAmount>
+        <cbc:PayableAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.payable_amount|string_format:"%.2f"}</cbc:PayableAmount>
     </cac:LegalMonetaryTotal>
 {foreach from=$rechnung.positionen key=posnr item=position}
     <cac:InvoiceLine>
@@ -200,7 +200,7 @@
         <cbc:Note><![CDATA[{$position.beschreibung}]]></cbc:Note>
 {/if}
         <cbc:InvoicedQuantity unitCode="{$position.unit_code|default:'C62'}">{$position.menge}</cbc:InvoicedQuantity>
-        <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$position.umsatz_netto_gesamt|string_format:"%.2f"}</cbc:LineExtensionAmount>
+        <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_gesamt|string_format:"%.2f"}</cbc:LineExtensionAmount>
         <cac:Item>
 {if !empty($position.beschreibung)}        
             <cbc:Description><![CDATA[{$position.beschreibung}]]></cbc:Description>
@@ -225,7 +225,7 @@
             </cac:ClassifiedTaxCategory>
         </cac:Item>
         <cac:Price>
-            <cbc:PriceAmount currencyID="{$rechnung.kopf.waehrung|default:'EUR'}">{$position.umsatz_netto_einzeln|string_format:"%.4f"}</cbc:PriceAmount>
+            <cbc:PriceAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_einzeln|string_format:"%.4f"}</cbc:PriceAmount>
         </cac:Price>
     </cac:InvoiceLine>
 {/foreach}
