@@ -1134,18 +1134,6 @@ class Gutschrift extends GenGutschrift
       $zahlungsweise = $this->app->Secure->GetPOST('zahlungsweise');
     }
     $zahlungsweise = strtolower($zahlungsweise);
-    $this->app->Tpl->Set('RECHNUNG',"none");
-    $this->app->Tpl->Set('UEBERWEISUNG',"none");
-    $this->app->Tpl->Set('KREDITKARTE',"none");
-    $this->app->Tpl->Set('VORKASSE',"none");
-    $this->app->Tpl->Set('PAYPAL',"none");
-    $this->app->Tpl->Set('EINZUGSERMAECHTIGUNG',"none");
-    if($zahlungsweise=="rechnung") $this->app->Tpl->Set('RECHNUNG',"");
-    if($zahlungsweise=="paypal") $this->app->Tpl->Set('PAYPAL',"");
-    if($zahlungsweise=="ueberweisung") $this->app->Tpl->Set('UEBERWEISUNG',"");
-    if($zahlungsweise=="kreditkarte") $this->app->Tpl->Set('KREDITKARTE',"");
-    if($zahlungsweise=="einzugsermaechtigung" || $zahlungsweise=="lastschrift") $this->app->Tpl->Set('EINZUGSERMAECHTIGUNG',"");
-    if($zahlungsweise=="vorkasse" || $zahlungsweise=="kreditkarte" || $zahlungsweise=="paypal" || $zahlungsweise=="bar") $this->app->Tpl->Set('VORKASSE',"");
 
     $zahlungsinfo = $this->app->DB->SelectArr("SELECT zahlungsstatus, ".$this->app->erp->FormatMenge('soll*(-1)',2)." as betrag FROM gutschrift WHERE id='$id' LIMIT 1");    
     $this->app->Tpl->Set('ZAHLUNGSSTATUS_DB',$zahlungsinfo[0]['zahlungsstatus']);
@@ -1649,22 +1637,6 @@ class Gutschrift extends GenGutschrift
       $this->app->erp->MenuEintrag('index.php', 'Zur&uuml;ck zur &Uuml;bersicht');
     }
 
-    $zahlungsweisen = $this->app->DB->SelectArr('
-      SELECT `zahlungsweise` 
-      FROM `gutschrift`
-      GROUP BY `zahlungsweise`
-    ');
-
-    $zahlungsweiseStr = '';
-    if ($zahlungsweisen) {
-      foreach ($zahlungsweisen as $zahlungsweise) {
-        if (empty($zahlungsweise['zahlungsweise'])) {
-          continue;
-        }
-        $zahlungsweiseStr .= '<option name="' . $zahlungsweise['zahlungsweise'] . '">' . ucfirst($zahlungsweise['zahlungsweise']) . '</option>';
-      }
-    }
-
     $status = $this->app->DB->SelectArr('
       SELECT status
       FROM gutschrift
@@ -1711,7 +1683,6 @@ class Gutschrift extends GenGutschrift
     $this->app->YUI->AutoComplete('gutschriftnummer', 'gutschrift', 1);
     $this->app->YUI->AutoComplete('artikel', 'artikelnummer', 1);
 
-    $this->app->Tpl->Add('ZAHLUNGSWEISEN',$zahlungsweiseStr);
     $this->app->Tpl->Add('STATUS',$statusStr);
     $this->app->Tpl->Add('VERSANDARTEN',$versandartenStr);
     $this->app->Tpl->Add('LAENDER',$laenderStr);

@@ -194,64 +194,6 @@
 <div class="col-xs-12 col-sm-6 col-sm-height">
 <div class="inside inside-full-height">
 
-  <script type="text/javascript"><!--
-
-        function aktion_buchen(cmd)
-        {
-          document.getElementById('kreditkarte').style.display="none";
-          document.getElementById('ueberweisung').style.display="none";
-          document.getElementById('paypal').style.display="none";
-          document.getElementById(cmd).style.display="";
-
-        }
-
-      //-->
-     </script>
-
-
-
-
-
-<div style="display:[UEBERWEISUNG]" id="ueberweisung">
-<fieldset><legend>&uuml;berweisung</legend>
-<table width="100%">
-<tr><td width="200">{|Inhaber|}:</td><td>[BANK_INHABER][MSGBANK_INHABER]</td></tr>
-<tr><td>{|Institut|}:</td><td>[BANK_INSTITUT][MSGBANK_INSTITUT]</td></tr>
-<tr><td>{|BIC|}:</td><td>[BANK_BLZ][MSGBANK_BLZ]</td></tr>
-<tr><td>{|IBAN|}:</td><td>[BANK_KONTO][MSGBANK_KONTO]</td></tr>
-</table>
-</fieldset>
-</div>
-
-<div style="display:[PAYPAL]" id="paypal">
-<fieldset><legend>{|Paypal|}</legend>
-<table width="100%">
-<tr><td>{|Account|}:</td><td>[PAYPALACCOUNT][MSGPAYPALACCOUNT]</td></tr>
-</table>
-</fieldset>
-</div>
-
-<div style="display:[KREDITKARTE]" id="kreditkarte">
-<fieldset><legend>{|Kreditkarte|}</legend>
- <table>
-        <tr><td width="200">{|Kreditkarte|}:</td><td>[KREDITKARTE_TYP][MSGKREDITKARTE_TYP]</td>
-        </tr>
-        <tr><td>{|Karteninhaber|}:</td><td>[KREDITKARTE_INHABER][MSGKREDITKARTE_INHABER]</td>
-	</tr>
-        <tr><td>{|Kreditkartennummer|}:</td><td>[KREDITKARTE_NUMMER][MSGKREDITKARTE_NUMMER]</td>
-	</tr>
-        <tr><td>{|Pr&uuml;fnummer|}:</td><td>[KREDITKARTE_PRUEFNUMMER][MSGKREDITKARTE_PRUEFNUMMER]</td>
-        </tr>
-        <tr><td>{|G&uuml;ltig bis|}:</td><td>
-        [KREDITKARTE_MONAT][MSGKREDITKARTE_MONAT]&nbsp;
-        [KREDITKARTE_JAHR][MSGKREDITKARTE_JAHR]&nbsp;
-        </td>
-        </tr>
-        </table>
-
-</fieldset>
-</div>
-
 <div>
 <fieldset><legend>{|Skonto (nur bei Rechnung und Lastschrift)|}</legend>
 <table width="100%">

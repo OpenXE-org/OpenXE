@@ -6,15 +6,6 @@
         abweichend2();
       });
 
-      function aktion_buchen(cmd)
-      {
-        document.getElementById('rechnung').style.display="none";
-        document.getElementById('kreditkarte').style.display="none";
-        document.getElementById('einzugsermaechtigung').style.display="none";
-        document.getElementById('paypal').style.display="none";
-        document.getElementById(cmd).style.display="";
-      }
-
       function versand(cmd)
       {
         document.getElementById('packstation').style.display="none";
@@ -246,59 +237,54 @@
     <div class="col-xs-12 col-sm-6 col-sm-height">
       <div class="inside inside-full-height">
 
-<fieldset><legend>{|Sonstiges|}</legend>
-<table><tr><td width="200">{|GLN|}:</td><td>[GLN][MSGGLN]</td></tr></table>
-</fieldset>
-
-        <div id="rechnung" style="display:[RECHNUNG]">
-          <fieldset><legend>{|Rechnung|}</legend>
-          <table width="100%">
-          <tr><td width="200">{|Zahlungsziel (in Tagen)|}:</td><td>[ZAHLUNGSZIELTAGE][MSGZAHLUNGSZIELTAGE]</td></tr>
-          <tr><td nowrap>{| Skonto (in Tagen)|}:</td><td>[ZAHLUNGSZIELTAGESKONTO][MSGZAHLUNGSZIELTAGESKONTO]</td></tr>
-          </table>
-          </fieldset>
-        </div>
-
-        <div style="display:[EINZUGSERMAECHTIGUNG]" id="einzugsermaechtigung">
-          <fieldset><legend>Einzugserm&auml;chtigung</legend>
-          <table width="100%">
-          <tr><td width="150">{|Inhaber|}:</td><td>[BANK_INHABER][MSGBANK_INHABER]</td></tr>
-          <tr><td>{|Institut|}:</td><td>[BANK_INSTITUT][MSGBANK_INSTITUT]</td></tr>
-          <tr><td>{|BLZ|}:</td><td>[BANK_BLZ][MSGBANK_BLZ]</td></tr>
-          <tr><td>{|Konto|}:</td><td>[BANK_KONTO][MSGBANK_KONTO]</td></tr>
-          </table>
-          </fieldset>
-        </div>
-
-        <div style="display:[PAYPAL]" id="paypal">
-        </div>
-
-        <div style="display:[KREDITKARTE]" id="kreditkarte">
-          <fieldset><legend>{|Kreditkarte|}</legend>
-           <table>
-                  <tr><td width="150">{|Kreditkarte|}:</td><td>[KREDITKARTE_TYP][MSGKREDITKARTE_TYP]</td>
-                  </tr>
-                  <tr><td>{|Karteninhaber|}:</td><td>[KREDITKARTE_INHABER][MSGKREDITKARTE_INHABER]</td>
-            </tr>
-                  <tr><td>{|Kreditkartennummer|}:</td><td>[KREDITKARTE_NUMMER][MSGKREDITKARTE_NUMMER]</td>
-            </tr>
-                  <tr><td>{|Pr&uuml;fnummer|}:</td><td>[KREDITKARTE_PRUEFNUMMER][MSGKREDITKARTE_PRUEFNUMMER]</td>
-                  </tr>
-                  <tr><td>{|G&uuml;ltig bis|}:</td><td>
-                  [KREDITKARTE_MONAT][MSGKREDITKARTE_MONAT]&nbsp;
-                  [KREDITKARTE_JAHR][MSGKREDITKARTE_JAHR]&nbsp;
-                  </td>
-                  </tr>
-                  </table>
-
-          </fieldset>
-        </div>
-
-        <div><fieldset><legend>{|Skonto (nur bei Rechnung und Lastschrift)|}</legend>
-          <table width="100%"><tr><td width="200">{|Skonto|}:</td><td>[ZAHLUNGSZIELSKONTO][MSGZAHLUNGSZIELSKONTO]</td></tr>
-          </table>
-          </fieldset>
-        </div>
+                    <fieldset>
+                        <legend>{|Sonstiges|}</legend>
+                        <table class="mkTableFormular">
+                           <tr>
+                              <td>{|GLN|}:</td>
+                              <td>[GLN][MSGGLN]</td>
+                           </tr>
+                        </table>
+                     </fieldset>
+                     <div id="rechnung" style="display:[RECHNUNGOPTIONENDISPLAY]">
+                        <fieldset>
+                           <legend>{|Rechnung|}</legend>
+                           <table width="100%">
+                              <tr>
+                                 <td width="200">{|Zahlungsziel (in Tagen)|}:</td>
+                                 <td>[ZAHLUNGSZIELTAGE][MSGZAHLUNGSZIELTAGE]</td>
+                              </tr>
+                              <tr>
+                                 <td nowrap>{|Zahlungsziel Skonto (in Tagen)|}:</td>
+                                 <td>[ZAHLUNGSZIELTAGESKONTO][MSGZAHLUNGSZIELTAGESKONTO]</td>
+                              </tr>
+                           </table>
+                        </fieldset>
+                     </div>
+<!--
+                     <div style="display:[LASTSCHRIFTOPTIONENDISPLAY]" id="lastschrift">
+                        <fieldset>
+                           <legend>Lastschrift</legend>
+                           <table width="100%">
+                              <tr>
+                                 <td width="200">{|Einzugsdatum (fr&uuml;hestens)|}:</td>
+                                 <td>[EINZUGSDATUM][MSGEINZUGSDATUM]</td>
+                              </tr>
+                           </table>
+                        </fieldset>
+                     </div>
+                     <div>
+                        <fieldset>
+                           <legend>{|Skonto (nur bei Rechnung und Lastschrift)|}</legend>
+                           <table width="100%">
+                              <tr>
+                                 <td width="200">{|Skonto|}:</td>
+                                 <td>[ZAHLUNGSZIELSKONTO][MSGZAHLUNGSZIELSKONTO]</td>
+                              </tr>
+                           </table>
+                        </fieldset>
+                     </div>
+-->
 
         [STARTDISABLEVERBAND]
         <div style="">

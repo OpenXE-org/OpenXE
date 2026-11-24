@@ -170,23 +170,7 @@ class WidgetAngebot extends WidgetGenAngebot
     $field->AddOptionsSimpleArray($jahr);
     $this->form->NewField($field);
 
-//    $this->app->Tpl->Set(ONCHANGE_ZAHLUNGSART,"onchange=\"aktion_buchen(this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value);\"");
-
-
-    $zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, type FROM zahlungsweisen WHERE verhalten = 'rechnung'");
-
-	if (!is_null($zahlungsweisenmodule)) {	
-	    for($iz=0;$iz<count($zahlungsweisenmodule);$iz++) $cmdcheck[] = " cmd=='".$zahlungsweisenmodule[$iz]['type']."'";
-	}
-
     $field = new HTMLSelect("zahlungsweise",0);
-
-	if (!is_null($zahlungsweisenmodule)) {	
-	    if(count($zahlungsweisenmodule) > 0)
-	      $field->onchange="var cmd = this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value; if(".implode(' || ',$cmdcheck).") cmd='rechnung';  aktion_buchen(cmd);";
-	    else
-	      $field->onchange="var cmd = this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value;  aktion_buchen(cmd);";
-	}
 
     $field->AddOptionsSimpleArray($zahlungsweise);
     $this->form->NewField($field);

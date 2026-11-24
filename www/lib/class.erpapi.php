@@ -26547,74 +26547,15 @@ function Firmendaten($field,$projekt="")
         return array('offen','bezahlt');
       }
 
-  /**
-   * @param null|int $id
-   *
-   * @return array
-   */
-      public function GetZahlungsweiseGutschrift($id = null)
-      {
-        $zahlungsweise = '';
-        $projectId = 0;
-        $tmp = [];
-        if($id) {
-          $returnOrder = $this->app->DB->SelectRow(
-            sprintf(
-              'SELECT `zahlungsweise`, `projekt` FROM `gutschrift` WHERE `id` = %d LIMIT 1',
-              $id
-            )
-          );
-          if(!empty($returnOrder)) {
-            $projectId = $returnOrder['projekt'];
-            $zahlungsweise = $returnOrder['zahlungsweise'];
-          }
-        }
-        $extra = $this->app->DB->SelectPairs(
-            sprintf(
-              'SELECT z.`type`, z.`bezeichnung`
-              FROM `zahlungsweisen` AS `z`
-              INNER JOIN 
-              (
-                SELECT `type`, max(`projekt`) as projekt 
-                FROM `zahlungsweisen` 
-                WHERE `aktiv` = 1 AND `projekt` = 0 OR `projekt` = %d
-                GROUP BY `type`
-              ) AS `t` ON z.`type` = t.`type` AND z.`projekt` = t.`projekt`',
-              $projectId
-            )
-        );
-
-        foreach($extra as $type => $name) {
-            $tmp[$type] = $name;
-        }
-        asort($tmp);
-
-        return $tmp;
-      }
-
       public function GetZahlungsweise($table = null, $id = null, $projekt = null)
       {
-        $zahlungsweise = '';
-        if($projekt === null){
-          $projekt = (int)$this->Firmendaten('projekt');
-          if(!empty($table) && !empty($id))
-          {
-            $arr = $this->app->DB->SelectRow("SELECT zahlungsweise, projekt FROM $table WHERE id = '$id' LIMIT 1");
-            if(!empty($arr))
-            {
-              $zahlungsweise = $arr['zahlungsweise'];
-              $projekt = (int)$arr['projekt'];
-            }
-          }
-        }
-
         $extra = $this->app->DB->SelectArr("
               SELECT z.`type`, z.`bezeichnung`
               FROM zahlungsweisen z
               INNER JOIN 
               (
               SELECT `type`, max(projekt) as projekt 
-              FROM zahlungsweisen WHERE aktiv=1 AND projekt = 0 OR projekt = $projekt
+              FROM zahlungsweisen WHERE aktiv=1 AND projekt = 0 OR projekt = '$projekt'
               GROUP BY `type`
               ) t ON z.`type` = t.`type` AND z.`projekt` = t.`projekt`
         ");
@@ -39730,6 +39671,23 @@ function Firmendaten($field,$projekt="")
     }
     return $sipuid;
   }
+
+    function getZahlungsweisenBehaviourOptions() {
+        $obj = $this->app->erp->LoadModul('zahlungsweisen');
+        if(!empty($obj) && method_exists($obj, 'getBehaviourOptions')) {
+          return $obj->getBehaviourOptions();
+        }
+        return array();
+    }
+
+    function getZahlungsweisenModule($zahlungsweise, $projekt = 0) {
+        $obj = $this->app->erp->LoadModul('zahlungsweisen');
+        if(!empty($obj) && method_exists($obj, 'getZahlungsweisenModule')) {
+          return $obj->getZahlungsweisenModule($zahlungsweise, $projekt);
+        }
+        return array();
+    }
+
 } // END erpAPI
 
 

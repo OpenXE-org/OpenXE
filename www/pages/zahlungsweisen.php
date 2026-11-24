@@ -884,6 +884,18 @@ class Zahlungsweisen {
     ];
   }
 
+  function getZahlungsweisenModule($zahlungsweise, $projekt) {
+    $zahlungsweisenmodule = $this->app->DB->SelectRow(
+      "SELECT id, modul, verhalten 
+        FROM zahlungsweisen 
+        WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
+          (projekt = '$projekt' OR projekt = 0) 
+        ORDER BY projekt = '$projekt' DESC 
+        LIMIT 1"
+    );
+    return($zahlungsweisenmodule);
+  }
+
   /**
    * @param array $array
    *

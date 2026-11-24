@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -80,7 +80,7 @@ class Rechnung extends GenRechnung
 
     $this->app->ActionHandler("summe","RechnungSumme"); // nur fuer rechte
     $this->app->ActionHandler("belegnredit","belegnredit"); // nur fuer rechte
-    
+
     $this->app->ActionHandler("einkaufspreise","RechnungEinkaufspreise");
     $this->app->ActionHandler("steuer","RechnungSteuer");
     $this->app->ActionHandler("formeln","RechnungFormeln");
@@ -151,7 +151,7 @@ class Rechnung extends GenRechnung
 
   function RechnungFormeln()
   {
-    
+
   }
 
   /**
@@ -163,17 +163,17 @@ class Rechnung extends GenRechnung
   {
     return '';
   }
-  
+
   function RechnungSteuer()
   {
-    
+
   }
-  
+
   function RechnungEinkaufspreise()
   {
-    
+
   }
-  
+
   function RechnungSumme()
   {
   }
@@ -247,13 +247,13 @@ class Rechnung extends GenRechnung
         } else {
             throw new exception("XML Rechnung fehlgeschlagen!");
         }
-        
+
         $this->app->DB->Update("UPDATE rechnung SET schreibschutz='1', zuarchivieren = '0' WHERE id='$id'");
         if ($redirect) {
             $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id);
         }
     }
-      
+
   function RechnungArchivierePDF()
   {
     $id = (int)$this->app->Secure->GetGET('id');
@@ -309,8 +309,8 @@ class Rechnung extends GenRechnung
     }
     $this->app->erp->RechnungProtokoll($invoiceId,'Rechnung manuell als bezahlt entfernt');
     $this->app->DB->Update(
-      "UPDATE rechnung 
-      SET zahlungsstatus='offen',bezahlt_am = NULL, 
+      "UPDATE rechnung
+      SET zahlungsstatus='offen',bezahlt_am = NULL,
       mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt entfernt am ".date('d.m.Y')."')
       WHERE id='$invoiceId'"
     );
@@ -350,9 +350,9 @@ class Rechnung extends GenRechnung
     $this->app->erp->RechnungProtokoll($invoiceId,'Rechnung manuell als bezahlt markiert');
 
     $this->app->DB->Update(
-      "UPDATE rechnung 
+      "UPDATE rechnung
       SET zahlungsstatus='bezahlt',bezahlt_am = now(), mahnwesenfestsetzen='1',
-      mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt markiert am ".date('d.m.Y')."') 
+      mahnwesen_internebemerkung=CONCAT(mahnwesen_internebemerkung,'\r\n','Manuell als bezahlt markiert am ".date('d.m.Y')."')
       WHERE id='$invoiceId'"
     );
 
@@ -419,8 +419,8 @@ class Rechnung extends GenRechnung
     }
     $zertificates = $this->app->DB->SelectArr(
         sprintf(
-          "SELECT ds.datei 
-          FROM datei_stichwoerter ds 
+          "SELECT ds.datei
+          FROM datei_stichwoerter ds
           INNER JOIN datei_stichwoerter ds2 ON ds.datei = ds2.datei AND ds2.objekt = 'Artikel'
           INNER JOIN rechnung_position ap ON ap.artikel = ds2.parameter AND ap.rechnung = %d
           WHERE ds.objekt = 'Adressen' AND ds.parameter = %d
@@ -474,7 +474,7 @@ class Rechnung extends GenRechnung
     $casehook = '';
     $optionhook = '';
     $this->app->erp->RunHook('rechnungiconmenu_option', 5, $id, $casehook, $optionhook, $status, $prefix);
-    
+
     if($this->app->erp->RechteVorhanden("rechnung","undostorno") && !$checkifgsexists)
       $undostorno = "<option value=\"undostorno\">Rechnung Storno rückgängig</option>";
 
@@ -487,7 +487,7 @@ class Rechnung extends GenRechnung
 
     $zertifikatoption = '';
     $zertifikatcase = '';
-    
+
     $optioncustom = $this->Custom('option');
     $casecustom = $this->Custom('case');
 
@@ -507,8 +507,8 @@ class Rechnung extends GenRechnung
       $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '$id' LIMIT 1");
       if($adresse)
       {
-        $zertifikate = $this->app->DB->Select("SELECT ds.datei 
-      FROM datei_stichwoerter ds 
+        $zertifikate = $this->app->DB->Select("SELECT ds.datei
+      FROM datei_stichwoerter ds
       INNER JOIN datei_stichwoerter ds2 ON ds.datei = ds2.datei AND ds2.objekt = 'Artikel'
       INNER JOIN rechnung_position ap ON ap.artikel = ds2.parameter AND ap.rechnung = '$id'
       WHERE ds.objekt = 'Adressen' AND ds.parameter = '$adresse'
@@ -519,17 +519,17 @@ class Rechnung extends GenRechnung
           $zertifikatcase = "case 'zertifikate': if(!confirm('Zertifikate wirklich laden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=rechnung&action=zertifikate&id=%value%'; break; ";
         }
       }
-      
+
     }
 
     if($this->app->erp->RechteVorhanden('belegeimport', 'belegcsvexport'))
-    { 
+    {
       $casebelegeimport = "case 'belegeimport':  window.location.href='index.php?module=belegeimport&action=belegcsvexport&cmd=rechnung&id=%value%'; break;";
       $optionbelegeimport = "<option value=\"belegeimport\">Export als CSV</option>";
     }
 
 
-    
+
     if($checkifgsexists>0) $extendtext = "HINWEIS: Es existiert bereits eine Gutschrift zu dieser Rechnung! "; else $extendtext="";
     $menu ="
       <script type=\"text/javascript\">
@@ -551,7 +551,7 @@ class Rechnung extends GenRechnung
           $zertifikatcase
           $casebelegeimport
           $casecustom
-          $hookcase 
+          $hookcase
           $casehook
         }
 
@@ -559,7 +559,7 @@ class Rechnung extends GenRechnung
     </script>
 
 
-      &nbsp;Aktion:&nbsp;<select id=\"aktion$prefix\" onchange=\"onchangerechnung(this.value)\"> 
+      &nbsp;Aktion:&nbsp;<select id=\"aktion$prefix\" onchange=\"onchangerechnung(this.value)\">
       <option>bitte w&auml;hlen ...</option>
       <option value=\"copy\">Rechnung kopieren</option>
       $freigabe
@@ -577,12 +577,12 @@ class Rechnung extends GenRechnung
       $hookoption
       </select>&nbsp;
       ";
-      
+
       $downloadicon = $this->app->YUI->GetRechnungFileDownloadLinkIcon($id);
-      
+
     $menu .= $downloadicon;
-       
-    $menu .= 
+
+    $menu .=
       "<!--  <a href=\"index.php?module=rechnung&action=edit&id=%value%\" title=\"Bearbeiten\"><img border=\"0\" src=\"./themes/new/images/edit.svg\"></a>
       <a onclick=\"if(!confirm('Wirklich stornieren?')) return false; else window.location.href='index.php?module=rechnung&action=delete&id=%value%';\" title=\"Stornieren\">
       <img src=\"./themes/new/images/delete.svg\" border=\"0\"></a>
@@ -606,7 +606,7 @@ class Rechnung extends GenRechnung
 
     $table->Query(
       "SELECT ap.bezeichnung as artikel, ap.nummer as Nummer, ap.menge as Menge
-      FROM rechnung_position ap, artikel a 
+      FROM rechnung_position ap, artikel a
       WHERE ap.rechnung='$id' AND a.id=ap.artikel"
     );
     $artikel = $table->DisplayNew('return','Menge','noAction');
@@ -650,18 +650,18 @@ class Rechnung extends GenRechnung
   public function RechnungMiniDetail($parsetarget='',$menu=true)
   {
     $id = $this->app->Secure->GetGET('id');
-    
+
     if(!$this->app->DB->Select("SELECT deckungsbeitragcalc FROM rechnung WHERE  id='$id' LIMIT 1")) {
       $this->app->erp->BerechneDeckungsbeitrag($id,'rechnung');
     }
-    
+
     $auftragArr = $this->app->DB->SelectArr("SELECT * FROM rechnung WHERE id='$id' LIMIT 1");
     $kundennummer = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE id='{$auftragArr[0]['adresse']}' LIMIT 1");
     $projekt = $this->app->DB->Select("SELECT abkuerzung FROM projekt WHERE id='{$auftragArr[0]['projekt']}' LIMIT 1");
     $kundenname = $this->app->DB->Select("SELECT name FROM adresse WHERE id='{$auftragArr[0]['adresse']}' LIMIT 1");
 
     $this->app->Tpl->Set('DECKUNGSBEITRAG',0);
-    $this->app->Tpl->Set('DBPROZENT',0);    
+    $this->app->Tpl->Set('DBPROZENT',0);
     $this->app->Tpl->Set('KUNDE',"<a href=\"index.php?module=adresse&action=edit&id=".$auftragArr[0]['adresse']."\">".$kundennummer."</a> ".$kundenname);
 
     if($this->app->erp->RechteVorhanden('projekt','dashboard')){
@@ -696,7 +696,7 @@ class Rechnung extends GenRechnung
     //$this->app->Tpl->Set('INTERNET',$internet);
 
     $auftraginfo = $this->app->DB->SelectRow("
-        SELECT 
+        SELECT
             a.id,
             a.internet,
             a.belegnr,
@@ -710,7 +710,7 @@ class Rechnung extends GenRechnung
     $this->app->Tpl->Set('INTERNET',$auftraginfo['internet']);
     $this->app->Tpl->Set('ONLINESHOP',$auftraginfo['shopname']);
     $this->app->Tpl->Set('IHREBESTELLNUMMER',$auftraginfo['ihrebestellnummer']);
-   
+
     $this->app->Tpl->Set('MAHNWESENDATUM',$this->app->String->Convert($auftragArr[0]['mahnwesen_datum'],"%1-%2-%3","%3.%2.%1"));
 
     $ab_datum = $this->app->String->Convert($auftragArr[0]['datum'],"%1-%2-%3","%3.%2.%1");
@@ -723,13 +723,13 @@ class Rechnung extends GenRechnung
     {
       $this->app->Tpl->Set('AUFTRAG',"<a href=\"index.php?module=auftrag&action=edit&id=".$auftragArr[0]['auftragid']."\" target=\"_blank\" title=\"$ab_datum\">".$auftragArr[0]['auftrag']."</a>&nbsp;<a href=\"index.php?module=auftrag&action=pdf&id=".$auftragArr[0]['auftragid']."\" target=\"_blank\"><img src=\"./themes/new/images/pdf.svg\" title=\"Auftrag PDF\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=auftrag&action=edit&id=".$auftragArr[0]['auftragid']."\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Auftrag bearbeiten\" border=\"0\"></a>&nbsp;");
     }
-    $auftraege = $this->app->DB->SelectArr("(SELECT a.belegnr, a.id FROM sammelrechnung_position s 
-    INNER JOIN auftrag_position ap on ap.id = s.auftrag_position_id INNER JOIN auftrag a on a.id = ap.auftrag 
+    $auftraege = $this->app->DB->SelectArr("(SELECT a.belegnr, a.id FROM sammelrechnung_position s
+    INNER JOIN auftrag_position ap on ap.id = s.auftrag_position_id INNER JOIN auftrag a on a.id = ap.auftrag
     WHERE s.rechnung = '".$id."' GROUP BY a.id ORDER BY a.belegnr)
-    union (SELECT 
+    union (SELECT
     a.belegnr, a.id FROM sammelrechnung_position s INNER JOIN lieferschein_position lp ON lp.id = s.lieferschein_position_id
-    INNER JOIN auftrag_position ap  on ap.id = lp.auftrag_position_id INNER JOIN 
-    auftrag a on a.id = ap.auftrag 
+    INNER JOIN auftrag_position ap  on ap.id = lp.auftrag_position_id INNER JOIN
+    auftrag a on a.id = ap.auftrag
     WHERE s.rechnung = '".$id."' GROUP BY a.id ORDER BY a.belegnr)
     ");
     if($auftraege)
@@ -810,7 +810,7 @@ class Rechnung extends GenRechnung
     $rechnungid = false;
     $this->app->DB->Select("SELECT rechnungid FROM lieferschein LIMIT 1");
     if(!$this->app->DB->error())$rechnungid =true;
-    
+
     $lieferscheinsql = "
     SELECT l.id, CONCAT('<a href=\"index.php?module=lieferschein&action=edit&id=',l.id,'\" target=\"_blank\">',if(l.status!='angelegt',l.belegnr,'ENTWURF'),'</a>&nbsp;<a href=\"index.php?module=lieferschein&action=pdf&id=',l.id,'\"><img src=\"./themes/new/images/pdf.svg\" title=\"Lieferschein PDF\" border=\"0\"></a>&nbsp;<a href=\"index.php?module=lieferschein&action=edit&id=',l.id,'\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Lieferschein bearbeiten\" border=\"0\"></a>') as LS
     FROM lieferschein l
@@ -820,16 +820,16 @@ class Rechnung extends GenRechnung
     if($rechnungid)
     {
       $lieferscheinsql .= "
-        UNION ALL 
+        UNION ALL
         (SELECT id FROM lieferschein WHERE rechnungid = '$id')";
     }
     if($sammelrechnung)
     {
-      $lieferscheinsql .=   "UNION ALL 
+      $lieferscheinsql .=   "UNION ALL
         (SELECT l2.id FROM lieferschein l2 INNER JOIN lieferschein_position lp2 ON lp2.lieferschein = l2.id
       INNER JOIN sammelrechnung_position s ON lp2.id = s.lieferschein_position_id WHERE s.rechnung = '$id' )
       UNION ALL
-      
+
         (SELECT l3.id   FROM lieferschein l3 INNER JOIN lieferschein_position lp3 ON lp3.lieferschein = l3.id
       INNER JOIN auftrag_position ap3 ON ap3.id = lp3.auftrag_position_id
       INNER JOIN sammelrechnung_position s3 ON ap3.id = s3.auftrag_position_id WHERE s3.rechnung = '$id'  )
@@ -838,11 +838,11 @@ class Rechnung extends GenRechnung
     if($gruppenrechnung)
     {
       $lieferscheinsql .= "
-        UNION ALL 
+        UNION ALL
         (SELECT l4.id FROM lieferschein l4 INNER JOIN lieferschein_position lp4 ON lp4.lieferschein = l4.id
       INNER JOIN gruppenrechnung_position s4 ON lp4.id = s4.lieferschein_position_id WHERE s4.rechnung = '$id' )
       UNION ALL
-      
+
         (SELECT l5.id   FROM lieferschein l5 INNER JOIN lieferschein_position lp5 ON lp5.lieferschein = l5.id
       INNER JOIN auftrag_position ap5 ON ap5.id = lp5.auftrag_position_id
       INNER JOIN gruppenrechnung_position s5 ON ap5.id = s5.auftrag_position_id WHERE s5.rechnung = '$id'  )
@@ -853,9 +853,9 @@ class Rechnung extends GenRechnung
     ) ls ON l.id = ls.id
     LEFT JOIN projekt p ON l.projekt = p.id
     WHERE 1 ".$this->app->erp->ProjektRechte('p.id'). " GROUP BY l.id ";
-    
+
     $lieferschein = $this->app->DB->SelectArr($lieferscheinsql);
-    
+
     if($lieferschein=="") $this->app->Tpl->Set('LIEFERSCHEIN','-');
     else{
       $first = true;
@@ -865,9 +865,9 @@ class Rechnung extends GenRechnung
         if(!$first)$this->app->Tpl->Add('LIEFERSCHEIN','<br>');
         $this->app->Tpl->Add('LIEFERSCHEIN',$ls['LS']);
         $first = false;
-      }     
+      }
     }
-    
+
     if (!empty($lieferschein)) {
         $sql = "SELECT SQL_CALC_FOUND_ROWS
                     v.id,
@@ -898,7 +898,7 @@ class Rechnung extends GenRechnung
         }
         $this->app->Tpl->Set('TRACKING',implode('<br>',$tracking_list));
     }
-    
+
     if($auftragArr[0]['ust_befreit']==0)
       $this->app->Tpl->Set('STEUER',"Inland");
     else if($auftragArr[0]['ust_befreit']==1)
@@ -951,7 +951,7 @@ class Rechnung extends GenRechnung
       $this->app->Tpl->Set('ANGEBOTFARBE',"grey");
       $this->app->Tpl->Set('ANGEBOTTEXT',"Das Angebot wird bearbeitet und wurde noch nicht freigegeben und abgesendet!");
     }
-  
+
     $this->app->Tpl->Set('ZAHLUNGEN',$this->app->YUI->BelegZahlungHTMLTable($id, 'rechnung'));
 
     $this->app->Tpl->Set('RECHNUNGADRESSE',$this->Rechnungsadresse($auftragArr[0]['id']));
@@ -974,12 +974,12 @@ class Rechnung extends GenRechnung
       }
       if($zeit)
       {
-        
+
         $tmp2 = new EasyTable($this->app);
         $tmp2->Query("SELECT concat('<a href=\"index.php?module=mahnwesen&action=mahnpdf&id=',rechnung,'&datum=',DATE_FORMAT(zeit,'%d.%m.%Y'),'&mahnwesen=',LOWER(LEFT(grund,LOCATE(' ',grund))),'\"><img src=\"themes/{$this->app->Conf->WFconf['defaulttheme']}/images/pdf.svg\" border=\"0\"></a>') as PDF, Date(zeit) as Datum, bearbeiter,grund FROM rechnung_protokoll WHERE rechnung='$id' AND zeit >= '".$zeit."' ORDER by zeit DESC");
-        $tmp2->DisplayNew('MAHNPROTOKOLL',"Protokoll","noAction");        
+        $tmp2->DisplayNew('MAHNPROTOKOLL',"Protokoll","noAction");
       }
-      
+
 
     }*/
 
@@ -1007,7 +1007,7 @@ class Rechnung extends GenRechnung
           $tmp3->datasets[] = $tmpr;
         }
       }
-      
+
       $tmp3->DisplayNew('PDFARCHIV','Men&uuml;',"noAction");
     }
 
@@ -1028,10 +1028,10 @@ class Rechnung extends GenRechnung
   public function Rechnungsadresse($id)
   {
     $data = $this->app->DB->SelectArr(
-      "SELECT r.*, a.abweichende_rechnungsadresse 
-      FROM rechnung AS r 
-      INNER JOIN adresse AS a ON r.adresse = a.id 
-      WHERE r.id='$id' 
+      "SELECT r.*, a.abweichende_rechnungsadresse
+      FROM rechnung AS r
+      INNER JOIN adresse AS a ON r.adresse = a.id
+      WHERE r.id='$id'
       LIMIT 1"
     );
 
@@ -1080,8 +1080,6 @@ class Rechnung extends GenRechnung
       }
     }
 
-
-
     // offene Rechnungen
     $this->app->Tpl->Set('SUB1TABTEXT',"Offene Rechnungen");
     $table = new EasyTable($this->app);
@@ -1126,7 +1124,7 @@ class Rechnung extends GenRechnung
     $newid = $this->app->erp->WeiterfuehrenRechnungZuGutschrift($id);
 
     // pruefe obes schon eine gutschrift fuer diese rechnung gibt
-    $anzahlgutschriften = $this->app->DB->Select("SELECT COUNT(id) FROM gutschrift WHERE rechnungid='$id' 
+    $anzahlgutschriften = $this->app->DB->Select("SELECT COUNT(id) FROM gutschrift WHERE rechnungid='$id'
         AND rechnungid!=0 AND rechnungid!=''");
 
     if($anzahlgutschriften>1){
@@ -1149,7 +1147,7 @@ class Rechnung extends GenRechnung
       $intern = true;
       $freigabe=$intern;
     }
-   
+
     $allowedFrm = true;
     $showDefault = true;
     $this->app->erp->CheckVertrieb($id,'rechnung');
@@ -1185,11 +1183,11 @@ class Rechnung extends GenRechnung
       $waehrung = $this->app->DB->Select("SELECT waehrung FROM rechnung_position
         WHERE rechnung='$id' LIMIT 1");
 
-      $this->app->Tpl->Set('TAB1', "<div class=\"info\">Soll die Rechnung an <b>$name</b> im Wert von <b>$summe $waehrung</b> 
+      $this->app->Tpl->Set('TAB1', "<div class=\"info\">Soll die Rechnung an <b>$name</b> im Wert von <b>$summe $waehrung</b>
         jetzt freigegeben werden? <input type=\"button\" class=\"btnImportantLarge\" value=\"Jetzt freigeben\" onclick=\"window.location.href='index.php?module=rechnung&action=freigabe&id=$id&freigabe=$id'\">
         </div>");
     }
-    
+
     $this->RechnungMenu();
     $this->app->Tpl->Parse('PAGE','tabview.tpl');
   }
@@ -1240,13 +1238,13 @@ class Rechnung extends GenRechnung
     $belegnr = $invoiceArr['belegnr'];
     $mahnwesen = $invoiceArr['mahnwesen'];
     $projekt = $invoiceArr['projekt'];
-    
+
 
     if($belegnr!='' && $belegnr!='0')
     {
       $Brief = new MahnungPDF($this->app,$projekt);
       $Brief->GetRechnung($id,$mahnwesen);
-      $Brief->displayDocument(); 
+      $Brief->displayDocument();
     }
     $this->app->ExitXentral();
   }
@@ -1272,7 +1270,7 @@ class Rechnung extends GenRechnung
         $Brief = new RechnungPDF($this->app,$projekt);
       }
       $Brief->GetRechnung($id);
-      $Brief->inlineDocument($schreibschutz); 
+      $Brief->inlineDocument($schreibschutz);
     } else {
       $file = urlencode("../../../../index.php?module=rechnung&action=inlinepdf&id=$id");
       echo "<iframe width=\"100%\" height=\"100%\" style=\"height:calc(100vh - 110px)\" src=\"./js/production/generic/web/viewer.html?file=$file\"></iframe>";
@@ -1305,7 +1303,7 @@ class Rechnung extends GenRechnung
     else{
       $Brief->GetRechnung($id);
     }
-    $Brief->displayDocument($schreibschutz); 
+    $Brief->displayDocument($schreibschutz);
 
     $this->RechnungList();
   }
@@ -1314,7 +1312,7 @@ class Rechnung extends GenRechnung
   function RechnungJSON() {
     $this->RechnungSmarty(json: true);
   }
-  
+
   function remove_html_entities_from_array(&$array) {
     foreach ($array as $key => $item) {
         if (is_array($item)) {
@@ -1418,16 +1416,16 @@ class Rechnung extends GenRechnung
       $table = new EasyTable($this->app);
       $this->app->Tpl->Add('ERGEBNISSE',"<h2>Trefferliste:</h2><br>");
       if($name!="")
-        $table->Query("SELECT a.name, a.belegnr as rechnung, adr.kundennummer, a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a 
+        $table->Query("SELECT a.name, a.belegnr as rechnung, adr.kundennummer, a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a
             LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.name LIKE '%$name%')");
       else if($plz!="")
-        $table->Query("SELECT a.name, a.belegnr as rechnung, adr.kundennummer, a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a 
+        $table->Query("SELECT a.name, a.belegnr as rechnung, adr.kundennummer, a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a
             LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.plz LIKE '$plz%')");
       else if($kundennummer!="")
-        $table->Query("SELECT a.name, a.belegnr as rechnung, adr.kundennummer, a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a 
+        $table->Query("SELECT a.name, a.belegnr as rechnung, adr.kundennummer, a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a
             LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (adr.kundennummer='$kundennummer')");
       else if($auftrag!="")
-        $table->Query("SELECT a.name, a.belegnr as rechnung , adr.kundennummer,a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a 
+        $table->Query("SELECT a.name, a.belegnr as rechnung , adr.kundennummer,a.plz, a.ort, a.strasse, a.status, a.id FROM rechnung a
             LEFT JOIN adresse adr ON adr.id = a.adresse WHERE (a.belegnr='$auftrag')");
 
       //     $table->DisplayNew('ERGEBNISSE',"<a href=\"index.php?module=rechnung&action=edit&id=%value%\">Lesen</a>");
@@ -1485,7 +1483,7 @@ class Rechnung extends GenRechnung
     $this->app->erp->MenuEintrag("index.php?module=rechnung&action=dateien&id=$id",'Dateien'.$anzahldateien);
 
 
-    
+
     $this->app->erp->MenuEintrag('index.php?module=rechnung&action=list','Zur&uuml;ck zur &Uuml;bersicht');
     $this->app->erp->RunMenuHook('rechnung');
   }
@@ -1599,10 +1597,10 @@ class Rechnung extends GenRechnung
   {
     $check = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT ds.* 
-        FROM datei_stichwoerter ds 
-        INNER JOIN datei d on ds.datei = d.id 
-        WHERE ds.id = %d and d.geloescht <> 1 
+        'SELECT ds.*
+        FROM datei_stichwoerter ds
+        INNER JOIN datei d on ds.datei = d.id
+        WHERE ds.id = %d and d.geloescht <> 1
         LIMIT 1',
         $fileKeywordId
       )
@@ -1617,10 +1615,10 @@ class Rechnung extends GenRechnung
     }
 
     $check2 = $this->app->DB->SelectArr(
-      "SELECT ds.* FROM datei_stichwoerter ds 
-      INNER JOIN datei d on ds.datei = d.id 
-      WHERE ds.objekt like 'rechnung' AND ds.sort = %d AND d.geloescht <> 1 
-        AND ds.parameter = %d 
+      "SELECT ds.* FROM datei_stichwoerter ds
+      INNER JOIN datei d on ds.datei = d.id
+      WHERE ds.objekt like 'rechnung' AND ds.sort = %d AND d.geloescht <> 1
+        AND ds.parameter = %d
         LIMIT 1",
       $sort, $invoiceId
     );
@@ -1654,10 +1652,10 @@ class Rechnung extends GenRechnung
   {
     $check = $this->app->DB->SelectRow(
       sprintf(
-        'SELECT ds.* 
-        FROM datei_stichwoerter ds 
-        INNER JOIN datei d on ds.datei = d.id 
-        WHERE ds.id = %d and d.geloescht <> 1 
+        'SELECT ds.*
+        FROM datei_stichwoerter ds
+        INNER JOIN datei d on ds.datei = d.id
+        WHERE ds.id = %d and d.geloescht <> 1
         LIMIT 1',
         $fileKeywordId
       )
@@ -1672,10 +1670,10 @@ class Rechnung extends GenRechnung
     }
 
     $check2 = $this->app->DB->SelectArr(
-      "SELECT ds.* FROM datei_stichwoerter ds 
-      INNER JOIN datei d on ds.datei = d.id 
-      WHERE ds.objekt like 'rechnung' AND ds.sort = %d AND d.geloescht <> 1 
-        AND ds.parameter = %d 
+      "SELECT ds.* FROM datei_stichwoerter ds
+      INNER JOIN datei d on ds.datei = d.id
+      WHERE ds.objekt like 'rechnung' AND ds.sort = %d AND d.geloescht <> 1
+        AND ds.parameter = %d
         LIMIT 1",
       $sort, $invoiceId
     );
@@ -1730,7 +1728,7 @@ class Rechnung extends GenRechnung
       echo json_encode($erg);
       $this->app->ExitXentral();
     }
-    
+
     if($cmd === 'daup')
     {
       $erg['status'] = 0;
@@ -1744,7 +1742,7 @@ class Rechnung extends GenRechnung
       echo json_encode($erg);
       $this->app->ExitXentral();
     }
-    
+
     if($this->app->erp->VertriebAendern('rechnung',$id,$cmd,$sid)){
       return;
     }
@@ -1819,7 +1817,7 @@ class Rechnung extends GenRechnung
 
     $this->RechnungMiniDetail('MINIDETAIL',false); //BENE
     $this->app->Tpl->Set('ICONMENU',$this->RechnungIconMenu($id));
-    $this->app->Tpl->Set('ICONMENU2',$this->RechnungIconMenu($id,2)); 
+    $this->app->Tpl->Set('ICONMENU2',$this->RechnungIconMenu($id,2));
 
     $this->app->Tpl->Set('PUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$punkte\" size=\"10\" readonly>");
     $this->app->Tpl->Set('BONUSPUNKTE',"<input type=\"text\" name=\"punkte\" value=\"$bonuspunkte\" size=\"10\" readonly>");
@@ -1836,13 +1834,13 @@ class Rechnung extends GenRechnung
     if($nummer!='') {
 
       $this->app->Tpl->Set('NUMMER',$nummer);
-    
+
       if (($schreibschutz!='1') && $this->app->erp->RechteVorhanden('rechnung','belegnredit')){
         $this->app->Tpl->Set('BELEGNRHIDDEN','hidden');
       } else {
         $this->app->Tpl->Set('BELEGNREDITHIDDEN','hidden');
       }
-      
+
       if($this->app->erp->RechteVorhanden('adresse','edit')){
         $this->app->Tpl->Set('KUNDE', "&nbsp;&nbsp;&nbsp;Kd-Nr. <a href=\"index.php?module=adresse&action=edit&id=$adresse\" target=\"_blank\">" . $kundennummer . "</a>");
       }
@@ -1874,7 +1872,7 @@ class Rechnung extends GenRechnung
       else{
         $this->app->DB->Update("UPDATE rechnung SET lieferdatum='$rechnungsdatum' WHERE id='$id' LIMIT 1");
       }
-    } 
+    }
 
     if($schreibschutz!='1') {
       $this->app->DB->Update("UPDATE rechnung SET auftrag='' WHERE id='$id' AND auftragid<=0 LIMIT 1");
@@ -1885,37 +1883,9 @@ class Rechnung extends GenRechnung
       $zahlungsweise = $this->app->Secure->GetPOST('zahlungsweise');
     }
     $zahlungsweise = strtolower($zahlungsweise);
+    $zahlungsweisenmodule = $this->app->erp->getzahlungsweisenmodule($zahlungsweise, $projekt);
+    $this->app->YUI->AARLGZahlungsweisenOptionenEinblenden($zahlungsweisenmodule['verhalten']);
 
-    $zahlungsweisenmodule = $this->app->DB->SelectArr(
-      "SELECT id, modul, verhalten 
-        FROM zahlungsweisen 
-        WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
-          (projekt = '$projekt' OR projekt = 0) 
-        ORDER BY projekt = '$projekt' DESC 
-        LIMIT 1"
-    );
-
-    $this->app->Tpl->Set('RECHNUNG','none');
-    $this->app->Tpl->Set('KREDITKARTE','none');
-    $this->app->Tpl->Set('VORKASSE','none');
-    $this->app->Tpl->Set('PAYPAL','none');
-    $this->app->Tpl->Set('EINZUGSERMAECHTIGUNG','none');
-    if($zahlungsweise==='rechnung' || isset($zahlungsweisenmodule[0]['verhalten']) && $zahlungsweisenmodule[0]['verhalten']==='rechnung') {
-      $this->app->Tpl->Set('RECHNUNG',"");
-    }
-    if($zahlungsweise==='paypal') {
-      $this->app->Tpl->Set('PAYPAL','');
-    }
-    if($zahlungsweise==='kreditkarte') {
-      $this->app->Tpl->Set('KREDITKARTE','');
-    }
-    if($zahlungsweise==='einzugsermaechtigung' || $zahlungsweise==='lastschrift') {
-      $this->app->Tpl->Set('EINZUGSERMAECHTIGUNG','');
-    }
-    if($zahlungsweise==='vorkasse' || $zahlungsweise==='kreditkarte' || $zahlungsweise==='paypal' || $zahlungsweise==='bar') {
-      $this->app->Tpl->Set('VORKASSE','');
-    }
-   
     if($schreibschutz=="1" && $this->app->erp->RechteVorhanden('rechnung','schreibschutz'))
     {
       $this->app->Tpl->Set('MESSAGE',"<div class=\"warning\">Diese Rechnung ist schreibgesch&uuml;tzt und darf daher nicht mehr bearbeitet werden!&nbsp;<input type=\"button\" value=\"Schreibschutz entfernen\" onclick=\"if(!confirm('Soll der Schreibschutz f&uuml;r diese Rechnung wirklich entfernt werden? Die gespeicherte Rechnung wird &uuml;berschrieben!')) return false;else window.location.href='index.php?module=rechnung&action=schreibschutz&id=$id';\"></div>");
@@ -1966,10 +1936,10 @@ class Rechnung extends GenRechnung
     }
 
     $speichern = $this->app->Secure->GetPOST('speichern');
-    
+
     if($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','belegnredit')) {
         $nummer_neu = $this->app->Secure->GetPOST('belegnredit');
-        
+
         $nummer_neu = $this->app->DB->real_escape_string($nummer_neu);
         if(!$this->app->DB->select("SELECT id from rechnung WHERE belegnr ='".$nummer_neu."'") && $nummer_neu != '0' && $nummer_neu != "") {
             $this->app->DB->update("UPDATE rechnung SET belegnr ='".$nummer_neu."' WHERE id = '".$id."'");
@@ -1998,18 +1968,18 @@ class Rechnung extends GenRechnung
       if($mahnwesenfestsetzen!='1') {
         $mahnwesenfestsetzen='0';
       }
-  
+
       $mahnwesen_datum = $this->app->String->Convert($mahnwesen_datum,'%1.%2.%3','%3-%2-%1');
       $bezahlt_am = $this->app->String->Convert($bezahlt_am,'%1.%2.%3','%3-%2-%1');
 
       if($bezahlt_am=='--')$bezahlt_am='0000-00-00';
       $alte_mahnstufe = $this->app->DB->Select("SELECT mahnwesen FROM rechnung WHERE id='$id' LIMIT 1");
-      if($alte_mahnstufe!=$mahnwesen) $versendet=0;     
+      if($alte_mahnstufe!=$mahnwesen) $versendet=0;
 
 /*      if($mahnwesenfestsetzen=='1')
       {*/
         $this->app->DB->Update("
-                UPDATE rechnung SET 
+                UPDATE rechnung SET
                     mahnwesen_internebemerkung='$mahnwesen_internebemerkung',
                     zahlungsstatus='$zahlungsstatus',
                     versendet_mahnwesen='$versendet',
@@ -2037,11 +2007,11 @@ class Rechnung extends GenRechnung
         $this->app->Tpl->Set('ISTDB',$ist);
         if ($ist > $soll) {
             $this->app->Tpl->addMessage('error','Rechnung ist überzahlt!');
-        }    
+        }
     }
 
     $rechnung_schnelleingabe_konto = $this->app->erp->Firmendaten('rechnung_schnelleingabe_konto');
-        
+
     if (!empty($rechnung_schnelleingabe_konto)) {
         $this->app->Tpl->Set('SCHNELLEINGABE_TOOLTIP_HIDDEN', 'hidden');
         if ($speichern!='' && $this->app->erp->RechteVorhanden('rechnung','manuellbezahltmarkiert') && !empty($zahlbetrag)) {
@@ -2074,8 +2044,8 @@ class Rechnung extends GenRechnung
             $kontoauszug = $this->app->DB->GetInsertID();
             $this->app->erp->fibu_buchungen_buchen("kontoauszuege",$kontoauszug, "rechnung", $id, -$zahlbetrag, 'EUR', $bezahlt_am, "Rechnung ".$nummer." Schnelleingabe");
             $this->rechnung_zahlstatus_berechnen($id);
-        }       
-    } else {    
+        }
+    } else {
         $this->app->Tpl->Set('SCHNELLEINGABE_HIDDEN', 'hidden');
     }
 
@@ -2132,7 +2102,7 @@ class Rechnung extends GenRechnung
     }
 
 
-    // easy table mit arbeitspaketen YUI als template 
+    // easy table mit arbeitspaketen YUI als template
     $table = new EasyTable($this->app);
     $table->Query("SELECT bezeichnung as artikel, nummer as Nummer, menge, vpe as VPE, FORMAT(preis,4) as preis
         FROM rechnung_position
@@ -2167,8 +2137,8 @@ class Rechnung extends GenRechnung
 
     $sollExtSoll = $this->app->DB->SelectRow(
       sprintf(
-        "SELECT extsoll, soll 
-        FROM rechnung 
+        "SELECT extsoll, soll
+        FROM rechnung
         WHERE id = %d AND schreibschutz = 0 AND status = 'versendet' AND extsoll <> 0",
         $id
       )
@@ -2222,10 +2192,10 @@ class Rechnung extends GenRechnung
       $id = $this->CreateRechnung();
       $this->app->Location->execute('index.php?module=rechnung&action=edit&id='.$id);
     }
-    
+
     $this->app->Tpl->Add('KURZUEBERSCHRIFT','Rechnung');
     $this->app->erp->MenuEintrag('index.php?module=rechnung&action=list','Zur&uuml;ck zur &Uuml;bersicht');
-    
+
     $this->app->Tpl->Set('MESSAGE',"<div class=\"warning\">M&ouml;chten Sie eine Rechnung jetzt anlegen? &nbsp;
         <input type=\"button\" onclick=\"window.location.href='index.php?module=rechnung&action=create&anlegen=1'\" value=\"Ja - Rechnung jetzt anlegen\"></div><br>");
     $this->app->Tpl->Set('TAB1',"
@@ -2238,9 +2208,9 @@ class Rechnung extends GenRechnung
         Offene Auftr&auml;ge, die durch andere Mitarbeiter in Bearbeitung sind.
         <br>
         </td>
-        </tr>  
+        </tr>
         </table>
-        <br> 
+        <br>
         [AUFTRAGE]");
 
 
@@ -2260,7 +2230,7 @@ class Rechnung extends GenRechnung
     $reArr = $this->app->DB->SelectRow(
       sprintf(
         "SELECT projekt,belegnr,status,usereditid,
-        DATE_SUB(NOW(), INTERVAL 30 SECOND) < useredittimestamp AS `open` 
+        DATE_SUB(NOW(), INTERVAL 30 SECOND) < useredittimestamp AS `open`
         FROM rechnung WHERE id=%d LIMIT 1",
         $invoiceId
       )
@@ -2282,9 +2252,9 @@ class Rechnung extends GenRechnung
     );
     $this->app->DB->Update(
       sprintf(
-        "UPDATE rechnung 
-        SET status='versendet' 
-        WHERE id = %d AND status!='storniert' 
+        "UPDATE rechnung
+        SET status='versendet'
+        WHERE id = %d AND status!='storniert'
         LIMIT 1",
         $invoiceId
       )
@@ -2296,7 +2266,7 @@ class Rechnung extends GenRechnung
   public function RechnungList()
   {
 
-    $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''"); 
+    $this->app->DB->Update("UPDATE rechnung SET zahlungsstatus='offen' WHERE zahlungsstatus=''");
 
     if($this->app->Secure->GetPOST('ausfuehren') && $this->app->erp->RechteVorhanden('rechnung', 'edit'))
     {
@@ -2337,18 +2307,18 @@ class Rechnung extends GenRechnung
               }
               $xmlrechnung = $this->app->DB->Select("SELECT xmlrechnung FROM rechnung WHERE id=$v LIMIT 1");
               $checkpapier = $this->app->DB->Select(
-                "SELECT a.rechnung_papier FROM rechnung AS r 
-                LEFT JOIN adresse AS a ON r.adresse=a.id 
-                WHERE r.id='$v' 
+                "SELECT a.rechnung_papier FROM rechnung AS r
+                LEFT JOIN adresse AS a ON r.adresse=a.id
+                WHERE r.id='$v'
                 LIMIT 1"
               );
 
               if((($checkpapier !=1) || $erechnung) &&
                 $this->app->DB->Select(
-                  "SELECT r.id 
-                  FROM rechnung AS r 
-                  INNER JOIN adresse AS a ON r.adresse = a.id 
-                  WHERE r.id = '$v' AND r.email <> '' OR a.email <> '' 
+                  "SELECT r.id
+                  FROM rechnung AS r
+                  INNER JOIN adresse AS a ON r.adresse = a.id
+                  WHERE r.id = '$v' AND r.email <> '' OR a.email <> ''
                   LIMIT 1"
                 )
               ) {
@@ -2386,7 +2356,7 @@ class Rechnung extends GenRechnung
                 $reArr = $this->app->DB->SelectRow(
                   sprintf(
                     "SELECT projekt,belegnr,status,usereditid,
-                    DATE_SUB(NOW(), INTERVAL 30 SECOND) < useredittimestamp AS `open` 
+                    DATE_SUB(NOW(), INTERVAL 30 SECOND) < useredittimestamp AS `open`
                     FROM rechnung WHERE id=%d LIMIT 1",
                     $v
                   )
@@ -2483,11 +2453,11 @@ class Rechnung extends GenRechnung
             }
           break;
         }
-      }      
+      }
     } // ende ausfuehren
 
     if($this->app->Secure->GetPOST('zahlungsstatus_berechnen') && $this->app->erp->RechteVorhanden('rechnung', 'edit')) {
-        $this->rechnung_zahlstatus_berechnen();   
+        $this->rechnung_zahlstatus_berechnen();
     }
 
     $this->app->Tpl->Set('UEBERSCHRIFT','Rechnungen');
@@ -2502,25 +2472,6 @@ class Rechnung extends GenRechnung
     }
     //else
     //  $this->app->erp->MenuEintrag("index.php","Zur&uuml;ck zur &Uuml;bersicht");
-
-    $zahlungsweisen = $this->app->DB->SelectArr('
-      SELECT
-        zahlungsweise
-      FROM
-        rechnung
-      GROUP BY
-        zahlungsweise
-    ');
-
-    $zahlungsweiseStr = '';
-    if ($zahlungsweisen) {
-      foreach ($zahlungsweisen as $zahlungsweise) {
-        if (empty($zahlungsweise['zahlungsweise'])) {
-          continue;
-        }
-        $zahlungsweiseStr .= '<option name="' . $zahlungsweise['zahlungsweise'] . '">' . ucfirst($zahlungsweise['zahlungsweise']) . '</option>';
-      }
-    }
 
     $status = $this->app->DB->SelectArr('
       SELECT
@@ -2566,8 +2517,6 @@ class Rechnung extends GenRechnung
       $laenderStr .= '<option value="' . $landKey . '">' . $land . '</option>';
     }
 
-
-    $this->app->Tpl->Add('ZAHLUNGSWEISEN',$zahlungsweiseStr);
     $this->app->Tpl->Add('STATUS',$statusStr);
     $this->app->Tpl->Add('VERSANDARTEN',$versandartenStr);
     $this->app->Tpl->Add('LAENDER',$laenderStr);
@@ -2592,10 +2541,10 @@ class Rechnung extends GenRechnung
     }
 
     $this->app->Tpl->Set('SELDRUCKER', $this->app->erp->GetSelectDrucker($this->app->User->GetParameter('rechnung_list_drucker')));
-    
+
     $this->app->Tpl->Parse('PAGE','rechnunguebersicht.tpl');
   }
-  
+
   public function GetXMLSmartyTemplate($id) {
     $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."'");
     $rechnung_smarty_template = $this->app->DB->Select("SELECT rechnung_smarty_template FROM adresse WHERE id = '".$adresse."'");
@@ -2612,7 +2561,7 @@ class Rechnung extends GenRechnung
     }
     return(null);
   }
- 
+
   // Decide if XML Smarty invoice according to address and group
   public function SetXMLRechnung($id) {
       $adresse = $this->app->DB->Select("SELECT adresse FROM rechnung WHERE id = '".$id."' LIMIT 1");
@@ -2640,7 +2589,7 @@ class Rechnung extends GenRechnung
     $usereditid = 0;
     if(isset($this->app->User) && $this->app->User && method_exists($this->app->User,'GetID')){
       $usereditid = $this->app->User->GetID();
-    }   
+    }
 
     if($this->app->erp->StandardZahlungsweise($projekt)==='rechnung')
     {
@@ -2651,8 +2600,8 @@ class Rechnung extends GenRechnung
           $zahlungszieltage = 0;
           $zahlungszieltageskonto = 0;
           $zahlungszielskonto = 0;
-    }       
-       
+    }
+
     $this->app->DB->Insert("INSERT INTO rechnung (
             id,
             datum,
@@ -2694,7 +2643,7 @@ class Rechnung extends GenRechnung
             '$abweichendebezeichnung'
         )"
     );
-    
+
     $id = $this->app->DB->GetInsertID();
     $this->app->erp->CheckVertrieb($id,'rechnung');
     $this->app->erp->CheckBearbeiter($id,'rechnung');
@@ -2731,7 +2680,7 @@ class Rechnung extends GenRechnung
     $arr['kundennummer'] = $this->app->DB->Select("SELECT kundennummer FROM adresse WHERE id = '".$arr['adresse']."' LIMIT 1");
     $arr['bundesstaat'] = $this->app->DB->Select("SELECT bundesstaat FROM rechnung WHERE id='$id' LIMIT 1");
     $this->app->DB->UpdateArr('rechnung',$newid,'id',$arr, true);
-    
+
     $pos = $this->app->DB->SelectArr("SELECT * FROM rechnung_position WHERE rechnung='$id'");
     $cpos = !empty($pos)?count($pos):0;
     for($i=0;$i<$cpos;$i++){
@@ -2747,7 +2696,7 @@ class Rechnung extends GenRechnung
     $this->app->erp->CopyBelegZwischenpositionen('rechnung',$id,'rechnung',$newid);
     $this->app->erp->LoadSteuersaetzeWaehrung($newid,'rechnung');
     $this->app->erp->SchnellFreigabe('rechnung',$newid);
-    
+
     return $newid;
   }
 
@@ -3007,26 +2956,26 @@ class Rechnung extends GenRechnung
     function rechnung_zahlstatus_berechnen($rechnung_id = null) {
         // START RECALCULATE
         $this->app->erp->fibu_rebuild_tables();
-        
+
         if (!empty($rechnung_id)) {
             $condition = " AND id = '".$rechnung_id."'";
         }
-        
-        $offene_rechnungen = $this->app->DB->SelectArr("  SELECT 
-                                                    id, 
-                                                    soll, 
-                                                    waehrung, 
-                                                    datum, 
-                                                    zahlungszieltage, 
+
+        $offene_rechnungen = $this->app->DB->SelectArr("  SELECT
+                                                    id,
+                                                    soll,
+                                                    waehrung,
+                                                    datum,
+                                                    zahlungszieltage,
                                                     DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as zieldatum,
                                                     CURRENT_DATE > DATE_ADD(datum, INTERVAL zahlungszieltage DAY) as faellig,
-                                                    zahlungszielskonto, 
+                                                    zahlungszielskonto,
                                                     TRUNCATE(soll*(1-(zahlungszielskonto/100)),2) as skontosoll,
-                                                    zahlungszieltageskonto, 
+                                                    zahlungszieltageskonto,
                                                     DATE_ADD(datum, INTERVAL zahlungszieltageskonto DAY) as zieldatumskonto
                                                 FROM
-                                                    rechnung 
-                                                WHERE 
+                                                    rechnung
+                                                WHERE
                                                     belegnr <> '' AND zahlungsstatus = 'offen'
                                                 ".$condition);
 
@@ -3056,19 +3005,19 @@ class Rechnung extends GenRechnung
                         // Not due
                     }
                     // Update rechnung
-                    $sql = "UPDATE 
+                    $sql = "UPDATE
                                 rechnung
                             SET
                                 ist = ".$saldo['betrag']."+soll,
                                 zahlungsstatus = IF(".$saldo['betrag']." = 0,'bezahlt','offen')
                             WHERE id=".$offene_rechnung['id'];
                     $this->app->DB->Update($sql);
-                } 
+                }
             }
             else {
                 $this->app->DB->Update("UPDATE rechnung SET ist = null WHERE id=".$offene_rechnung['id']);
             }
-        }  
+        }
         $this->app->erp->fibu_rebuild_tables();
         // END RECALCULATE
     }

@@ -290,7 +290,7 @@ class Auftrag extends GenAuftrag
                 '>'," :
                 ''
           )."
-          a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." AS `zahlungsweise`,  
+          a.zahlungsweise".($auftragmarkierenegsaldo?",'<span>')":"")." AS `zahlungsweise`,
           ".$app->erp->FormatPreis("a.$summespalte",2)." AS `betrag`,
           ".(!empty($zusatzcols)?implode(', ',$zusatzcols).',':'')."
           (" . $this->app->YUI->IconsSQL() . ")  AS icons,
@@ -877,8 +877,8 @@ class Auftrag extends GenAuftrag
 		auftrag_position.sort position,
 		artikel.nummer artikel,
 		artikel.id artikel_id,
-		auftrag_position.bezeichnung bezeichnung, 
-		round(auftrag_position.menge,0) menge, 
+		auftrag_position.bezeichnung bezeichnung,
+		round(auftrag_position.menge,0) menge,
         ".$app->erp->FormatPreis("$summespalte",2)." umsatz,
 	        (SELECT SUM(menge) FROM lager_platz_inhalt INNER JOIN lager_platz ON lager_platz_inhalt.lager_platz = lager_platz.id WHERE lager_platz_inhalt.artikel = artikel.id AND lager_platz.sperrlager <> 1) as lager,
 		auf.autoversand autoversand,
@@ -1473,7 +1473,7 @@ class Auftrag extends GenAuftrag
             $teillieferungen = '<option>Teilauftrag erstellen (schreibgesch&uuml;tzt)</option>';
         } else {
             $teillieferungen = '<option value="teillieferung">Teilauftrag erstellen</option>';
-        }        
+        }
     }
 
     if($status==='freigegeben') {
@@ -1999,16 +1999,6 @@ class Auftrag extends GenAuftrag
     }
 
     $this->app->Tpl->Set('KUNDENSALDO', $kundensaldo);
-
-    $zahlungsweisearr = $this->app->erp->GetZahlungsweise('auftrag', $id);
-    if($zahlungsweisearr) {
-      foreach($zahlungsweisearr as $k => $v) {
-        if($k == $auftragArr[0]['zahlungsweise']) {
-          $auftragArr[0]['zahlungsweise'] = $v;
-          break;
-        }
-      }
-    }
 
     $versandartarr = $this->app->erp->GetVersandartAuftrag((int)$projectId);
     if($versandartarr){
@@ -3225,7 +3215,7 @@ class Auftrag extends GenAuftrag
 
             $table->headings[] = "Nummer";
             $table->headings[] = "Artikel";
-            $table->headings[] = "Menge";    
+            $table->headings[] = "Menge";
             if ($lagername) {
                 $table->headings[] = $lagername;
             }
@@ -4982,17 +4972,17 @@ class Auftrag extends GenAuftrag
       )
     );
     if(!empty($anzahlteillieferungen)) {
-    
+
         function auftraglink($auftrag) {
            return "<a href=index.php?module=auftrag&action=edit&id=".$auftrag['id'].">".$auftrag['belegnr']."</a>";
         }
         $this->app->Tpl->AddMessage('info',"Zu diesem Auftrag geh&ouml;ren Teilauftr&auml;ge: ".implode(', ',array_map('auftraglink', $anzahlteillieferungen)), html: true);
-        
+
       $canzahlteillieferungen = (!empty($anzahlteillieferungen)?count($anzahlteillieferungen):0);
       for($ati=0;$ati<$canzahlteillieferungen;$ati++) {
         if($canzahlteillieferungen[$ati]['teillieferungnummer'] + 1 > $teillieferungnummermax) {
           $teillieferungnummermax = $canzahlteillieferungen[$ati]['teillieferungnummer'] + 1;
-        }        
+        }
       }
     }
     $teillieferung_von_auftrag_nummer = $teilArr['belegnr'];
@@ -5072,7 +5062,11 @@ class Auftrag extends GenAuftrag
 
     $orderRow = $this->app->DB->SelectRow(sprintf('SELECT * FROM auftrag WHERE id = %d', $id));
 
-    $zahlungsweise= $orderRow['zahlungsweise'];//$this->app->DB->Select("SELECT zahlungsweise FROM auftrag WHERE id='$id' LIMIT 1");
+    $zahlungsweise= $orderRow['zahlungsweise'];
+    $zahlungsweise = strtolower($zahlungsweise);
+    $zahlungsweisenmodule = $this->app->erp->getzahlungsweisenmodule($zahlungsweise, $projekt);
+    $this->app->YUI->AARLGZahlungsweisenOptionenEinblenden($zahlungsweisenmodule['verhalten']);
+
     $zahlungszieltage= $orderRow['zahlungszieltage'];//$this->app->DB->Select("SELECT zahlungszieltage FROM auftrag WHERE id='$id' LIMIT 1");
 
     $status= $orderRow['status'];//$this->app->DB->Select("SELECT status FROM auftrag WHERE id='$id' LIMIT 1");
@@ -5266,7 +5260,7 @@ class Auftrag extends GenAuftrag
                 "<div class=\"warning\">Zu diesem Auftrag gibt es folgende Dokumente. &nbsp;$optional</div>"
             );
         }
-    }    
+    }
 
     if($schreibschutz=='1') {
       $this->app->erp->CommonReadonly();
@@ -5718,10 +5712,10 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
       $meldung = "Auftrag $belegnr kann nicht weitergefuehrt werden, da keine Artikel gebucht sind!";
       $this->app->erp->EventMitSystemLog($this->app->User->GetID(), $meldung, -1,'', 'alert', 1);
     }
-    
+
     // Ensure tax for each position (sometimes it is empty due to an unresolved bug)^M
     $this->app->DB->Update("UPDATE auftrag_position SET umsatzsteuer = 'normal' WHERE auftrag=$id AND umsatzsteuer =''");
-    
+
     $ret = false;
     $zusatzcheck = true;
     $this->app->erp->RunHook('AuftragVersandZusatzcheck', 2, $id, $zusatzcheck);
@@ -6536,15 +6530,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $zahlungsmail= $this->app->Secure->GetPOST('zahlungsmail');
 
     if($zahlungsmail!=''){
-      $meineauftraege = $this->app->DB->SelectArr("SELECT id FROM auftrag WHERE status='freigegeben'
-          AND vorkasse_ok!='1' AND zahlungsweise!='rechnung' AND zahlungsweise!='nachnahme' AND zahlungsweise!='bar' AND zahlungsweise!='lastschrift'");
-      $cmeineauftraege = $meineauftraege?count($meineauftraege):0;
-      for($i=0;$i<$cmeineauftraege;$i++) {
-        $this->app->erp->AuftragNeuberechnen($meineauftraege[$i]['id']);
-
-        $this->app->erp->AuftragEinzelnBerechnen($meineauftraege[$i]['id']);
-        $this->app->erp->AuftragZahlungsmail($meineauftraege[$i]['id']);
-      }
     }
 
     // AUFTAEGE ABSCHLIESSEN!
@@ -6571,7 +6556,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             $selectedIds[] = $selectedId;
           }
         }
-      }      
+      }
 
       if (is_array($auftraegemarkiert)) {
 
@@ -6662,7 +6647,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
                   if($this->AuftragVersand($auftrag, true)) {
                     $processed_orders_num++;
                   }
-                }                
+                }
               }
 
               $this->app->Tpl->Set('MESSAGE','<div class="info">'.$processed_orders_num.' Auftr&auml;ge wurden verarbeitet.</div>');
@@ -7188,19 +7173,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
 
     if($zahlungsmail!='')
     {
-      $orders = $this->app->DB->SelectArr(
-        "SELECT id
-        FROM auftrag
-        WHERE status='freigegeben'
-          AND vorkasse_ok!='1' AND zahlungsweise!='rechnung' AND zahlungsweise!='nachnahme' AND zahlungsweise!='bar' AND zahlungsweise!='lastschrift'"
-      );
-      if(!empty($orders)){
-        foreach($orders as $order) {
-          $this->app->erp->AuftragNeuberechnen($order['id']);
-          $this->app->erp->AuftragEinzelnBerechnen($order['id']);
-          $this->app->erp->AuftragZahlungsmail($order['id']);
-        }
-      }
     }
     // AUFTAEGE ABSCHLIESSEN!
     $submit = $this->app->Secure->GetPOST('submit');
@@ -7237,25 +7209,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
             }
           }
         }
-      }
-    }
-
-    $zahlungsweisen = $this->app->DB->SelectArr('
-      SELECT
-        zahlungsweise
-      FROM
-        auftrag
-      GROUP BY
-        zahlungsweise
-    ');
-
-    $zahlungsweiseStr = '';
-    if ($zahlungsweisen) {
-      foreach ($zahlungsweisen as $zahlungsweise) {
-        if (empty($zahlungsweise['zahlungsweise'])) {
-          continue;
-        }
-        $zahlungsweiseStr .= '<option name="' . $zahlungsweise['zahlungsweise'] . '">' . ucfirst($zahlungsweise['zahlungsweise']) . '</option>';
       }
     }
 
@@ -7312,7 +7265,6 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
     $this->app->YUI->AutoComplete("artikel", "artikelnummer");
     $this->app->YUI->AutoComplete("kundengruppe", "gruppekennziffer",1);
 
-    $this->app->Tpl->Add('ZAHLUNGSWEISEN',$zahlungsweiseStr);
     $this->app->Tpl->Add('STATUS',$statusStr);
     $this->app->Tpl->Add('VERSANDARTEN',$versandartenStr);
     $this->app->Tpl->Add('LAENDER',$laenderStr);

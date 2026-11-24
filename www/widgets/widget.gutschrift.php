@@ -95,7 +95,7 @@ class WidgetGutschrift extends WidgetGenGutschrift
     $field->AddOptionsSimpleArray($typOptions);
     $this->form->NewField($field);
 
-    $zahlungsweise = $this->app->erp->GetZahlungsweiseGutschrift($id);
+    $zahlungsweise = $this->app->erp->GetZahlungsweise($id);
 
     $zahlungsstatus= $this->app->erp->GetZahlungsstatus();
 
@@ -107,7 +107,6 @@ class WidgetGutschrift extends WidgetGenGutschrift
     //$this->app->erp->GetSelect($versandart,$this->app->
 
     $field = new HTMLSelect("zahlungsweise",0);
-    $field->onchange="aktion_buchen(this.form.zahlungsweise.options[this.form.zahlungsweise.selectedIndex].value);";
     $field->AddOptionsSimpleArray($zahlungsweise);
     $this->form->NewField($field);
 

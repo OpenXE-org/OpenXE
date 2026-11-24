@@ -3094,6 +3094,18 @@ class YUI {
 
   }
   
+    function AARLGZahlungsweisenOptionenEinblenden($verhalten) {
+        $options = $this->app->erp->getZahlungsweisenBehaviourOptions();
+        foreach ($options as $key => $option) {
+            if ($key === $verhalten) {
+                $this->app->Tpl->Set(strtoupper($key).'OPTIONENDISPLAY',"");
+            } else {
+                $this->app->Tpl->Set(strtoupper($key).'OPTIONENDISPLAY',"none");
+            }
+        }
+    }
+
+
   function FormatPreis($spalte)
   {
     return "if(trim(round( $spalte *100))+0 <> trim($spalte*100)+0, format($spalte,  length( trim($spalte)+0)-length(round($spalte))-1  ,'de_DE'),format($spalte,2,'de_DE'))";

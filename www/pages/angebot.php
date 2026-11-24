@@ -1,13 +1,13 @@
 <?php
 /*
 **** COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
-* 
+*
 * Xentral (c) Xentral ERP Sorftware GmbH, Fuggerstrasse 11, D-86150 Augsburg, * Germany 2019
 *
-* This file is licensed under the Embedded Projects General Public License *Version 3.1. 
+* This file is licensed under the Embedded Projects General Public License *Version 3.1.
 *
-* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis 
-* to obtain the text of the corresponding license version.  
+* You should have received a copy of this license from your vendor and/or *along with this file; If not, please visit www.wawision.de/Lizenzhinweis
+* to obtain the text of the corresponding license version.
 *
 **** END OF COPYRIGHT & LICENSE NOTICE *** DO NOT REMOVE ****
 */
@@ -143,14 +143,14 @@ class Angebot extends GenAngebot
 
   function AngebotFormeln()
   {
-    
+
   }
 
   function AngebotUndelete()
   {
     $id = (int)$this->app->Secure->GetGET("id");
 
-    $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id='$id' LIMIT 1");    
+    $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id='$id' LIMIT 1");
     $belegnr = $this->app->DB->Select("SELECT belegnr FROM angebot WHERE id='$id' LIMIT 1");
     $name = $this->app->DB->Select("SELECT name FROM angebot WHERE id='$id' LIMIT 1");
 
@@ -165,13 +165,13 @@ class Angebot extends GenAngebot
     } else {
       $msg = $this->app->erp->base64_url_encode("<div class=\"error\">Angebot \"$name\" ($belegnr) kann nicht wieder freigegeben werden da es nicht storniert ist.</div>  ");
     }
-    //header("Location: ".$_SERVER['HTTP_REFERER']."&msg=$msg");    
+    //header("Location: ".$_SERVER['HTTP_REFERER']."&msg=$msg");
     $this->app->Location->execute("index.php?module=angebot&action=list&msg=$msg");
   }
-  
+
   function AngebotSteuer()
   {
-    
+
   }
 
   function AngebotSumme()
@@ -190,7 +190,7 @@ class Angebot extends GenAngebot
     $hauptid = $id;
 
     $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id='$id' LIMIT 1");
-    
+
     if($status!=='angelegt') {
       $timeout = 0;
       while($timeout <= 100) {
@@ -252,7 +252,7 @@ class Angebot extends GenAngebot
     $this->app->DB->Update("UPDATE angebot SET rabatt='',rabatt1='',rabatt2='',rabatt3='',rabatt4='',rabatt5='',realrabatt='' WHERE id='$id' LIMIT 1");
     $msg = $this->app->erp->base64_url_encode("<div class=\"warning\">Die Rabatte wurden entfernt!</div>  ");
     $this->app->Location->execute("index.php?module=angebot&action=edit&id=$id&msg=$msg");
-  } 
+  }
 
   function AngebotEditable()
   {
@@ -306,7 +306,7 @@ class Angebot extends GenAngebot
   function AngebotMiniDetail($parsetarget='',$menu=true)
   {
     $id = $this->app->Secure->GetGET('id');
-    
+
     // Deckungsbeitrag
     if (!$this->app->erp->RechteVorhanden('angebot','einkaufspreise')) {
         $this->app->Tpl->Set('DBHIDDEN','hidden');
@@ -327,7 +327,7 @@ class Angebot extends GenAngebot
 
         $umsatz_gesamt = 0;
         $kosten_gesamt = 0;
-        $db_gesamt = 0;    
+        $db_gesamt = 0;
         foreach ($positionen as $position) {
             if (empty($position['einkaufspreis'])) {
                 $position['einkaufspreis'] = $this->app->erp->GetEinkaufspreis($position['artikel'],$position['menge']);
@@ -347,7 +347,7 @@ class Angebot extends GenAngebot
                                 $this->app->erp->number_format_variable(
                                     round(
                                         $db_gesamt/$umsatz_gesamt*100,2
-                                    )                                
+                                    )               
                                 )."%"
                             );
     }
@@ -393,7 +393,7 @@ class Angebot extends GenAngebot
             l.id,
             '\" target=\"_blank\"><img src=\"./themes/new/images/edit.svg\" title=\"Lieferschein bearbeiten\" border=\"0\" target=\"_blank\"></a>'
             ) as auftrag
-      FROM auftrag AS l 
+      FROM auftrag AS l
       WHERE l.angebotid='$id'"
     );
 
@@ -439,16 +439,16 @@ class Angebot extends GenAngebot
         "SELECT if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung) as artikel, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer, TRIM(ap.menge)+0 as Menge,
           if(a.porto,'-',if(
               (
-                  SELECT SUM(l.menge) 
-                  FROM lager_platz_inhalt l 
+                  SELECT SUM(l.menge)
+                  FROM lager_platz_inhalt l
                   WHERE l.artikel=ap.artikel
                   ) > ap.menge,(
-                      SELECT TRIM(SUM(l.menge))+0 
+                      SELECT TRIM(SUM(l.menge))+0
                       FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel),
               if((SELECT SUM(l.menge) FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel)>0,CONCAT('<font color=red><b>',(SELECT TRIM(SUM(l.menge))+0 FROM lager_platz_inhalt l WHERE l.artikel=ap.artikel),'</b></font>'),
                 '<font color=red><b>aus</b></font>'))) as Lager,".$this->app->erp->FormatPreis("ap.preis*(100-ap.rabatt)/100",2)." as preis
-        FROM angebot_position ap, artikel a 
-        WHERE ap.angebot='$id' AND a.id=ap.artikel 
+        FROM angebot_position ap, artikel a
+        WHERE ap.angebot='$id' AND a.id=ap.artikel
         ORDER by ap.sort"
       ,0,"");
       $artikel = $table->DisplayNew("return","Preis","noAction","false",0,0,false);
@@ -466,7 +466,7 @@ class Angebot extends GenAngebot
         "SELECT if(CHAR_LENGTH(ap.beschreibung) > 0,CONCAT(ap.bezeichnung,' *'),ap.bezeichnung)  as artikel, CONCAT('<a href=\"index.php?module=artikel&action=edit&id=',ap.artikel,'\" target=\"_blank\">', ap.nummer,'</a>') as Nummer, TRIM(ap.menge)+0 as Menge,"
         .$this->app->erp->FormatPreis("ap.preis*(100-ap.rabatt)/100",2)." as preis
         FROM angebot_position ap, artikel a
-        WHERE ap.angebot='$id' AND a.id=ap.artikel 
+        WHERE ap.angebot='$id' AND a.id=ap.artikel
         ORDER by ap.sort"
       ,0,"");
       $artikel = $table->DisplayNew("return","Preis","noAction");
@@ -553,7 +553,7 @@ class Angebot extends GenAngebot
   }
 
   function AngebotRechnungsLieferadresse($angebotid)
-  { 
+  {
     $data = $this->app->DB->SelectArr("SELECT * FROM angebot WHERE id='$angebotid' LIMIT 1");
 
     foreach($data[0] as $key=>$value)
@@ -663,7 +663,7 @@ class Angebot extends GenAngebot
       {
         $this->app->Location->execute("index.php?module=angebot&action=freigabe&id=$id&freigabe=$id");
       } else {
-        $this->app->Tpl->Set('TAB1', "<div class=\"info\">Soll das Angebot  
+        $this->app->Tpl->Set('TAB1', "<div class=\"info\">Soll das Angebot
         jetzt freigegeben werden? <input type=\"button\" value=\"Jetzt freigeben\" class=\"btnImportantLarge\" onclick=\"window.location.href='index.php?module=angebot&action=freigabe&id=$id&freigabe=$id'\">&nbsp;$extra
         </div>");
       }
@@ -689,8 +689,8 @@ class Angebot extends GenAngebot
     $adresse = $this->app->DB->Select("SELECT adresse FROM angebot WHERE id = '$id' LIMIT 1");
     if($adresse)
     {
-      $zertifikate = $this->app->DB->SelectArr("SELECT ds.datei 
-      FROM datei_stichwoerter ds 
+      $zertifikate = $this->app->DB->SelectArr("SELECT ds.datei
+      FROM datei_stichwoerter ds
       INNER JOIN datei_stichwoerter ds2 ON ds.datei = ds2.datei AND ds2.objekt = 'Artikel'
       INNER JOIN angebot_position ap ON ap.artikel = ds2.parameter AND ap.angebot = '$id'
       WHERE ds.objekt = 'Adressen' AND ds.parameter = '$adresse'
@@ -703,7 +703,7 @@ class Angebot extends GenAngebot
         }
       }
     }
-    
+
     header("Location: index.php?module=angebot&action=dateien&id=$id");
     exit;
   }
@@ -740,10 +740,10 @@ class Angebot extends GenAngebot
     $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id=$id");
 
     if($status!="angelegt")
-    { 
+    {
       $newid = $this->app->erp->WeiterfuehrenAngebotZuAuftrag($id);
       $this->app->erp->AngebotProtokoll($id,"Angebot als Auftrag weitergeführt");
-    
+
       // offene wiedervorlage als abgeschlossen
       $this->app->DB->Update("UPDATE wiedervorlage SET abgeschlossen='1' WHERE module='angebot' AND parameter='$id'");
       header("Location: index.php?module=auftrag&action=edit&id=$newid");
@@ -791,7 +791,7 @@ class Angebot extends GenAngebot
     );
   }
 
-  
+
   function AngebotAbschicken()
   {
     $this->AngebotMenu();
@@ -808,12 +808,12 @@ class Angebot extends GenAngebot
     $name = $this->app->DB->Select("SELECT name FROM angebot WHERE id='$id' LIMIT 1");
     $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id='$id' LIMIT 1");
 
-    $this->app->DB->Update("UPDATE angebot SET status='abgelehnt' WHERE id='$id' LIMIT 1");                                                                             
-    $this->app->erp->AngebotProtokoll($id,"Angebot abgelehnt");                                                                                                         
+    $this->app->DB->Update("UPDATE angebot SET status='abgelehnt' WHERE id='$id' LIMIT 1");                                                            
+    $this->app->erp->AngebotProtokoll($id,"Angebot abgelehnt");                                                                                        
 
     $this->app->DB->Update("UPDATE wiedervorlage SET abgeschlossen='1' WHERE module='angebot' AND parameter='$id' AND parameter > 0");
 
-    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Das Angebot \"$name\" ($belegnr) wurde abgelehnt!</div>");                                                                                                 
+    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Das Angebot \"$name\" ($belegnr) wurde abgelehnt!</div>");                                                                                
     header("Location: index.php?module=angebot&action=list&msg=$msg#tabs-1");
     exit;
   }
@@ -826,12 +826,12 @@ class Angebot extends GenAngebot
     $name = $this->app->DB->Select("SELECT name FROM angebot WHERE id='$id' LIMIT 1");
     $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id='$id' LIMIT 1");
 
-    $this->app->DB->Update("UPDATE angebot SET status='beauftragt' WHERE id='$id' LIMIT 1");                                                                             
-    $this->app->erp->AngebotProtokoll($id,"Angebot als beauftragt markiert");                                                                                                         
+    $this->app->DB->Update("UPDATE angebot SET status='beauftragt' WHERE id='$id' LIMIT 1");                                                            
+    $this->app->erp->AngebotProtokoll($id,"Angebot als beauftragt markiert");                                                                                        
 
     $this->app->DB->Update("UPDATE wiedervorlage SET abgeschlossen='1' WHERE module='angebot' AND parameter='$id' AND parameter > 0");
 
-    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Das Angebot \"$name\" ($belegnr) wurde als beauftragt markiert!</div>");                                                                                                 
+    $msg = $this->app->erp->base64_url_encode("<div class=\"info\">Das Angebot \"$name\" ($belegnr) wurde als beauftragt markiert!</div>");                                                                                
     header("Location: index.php?module=angebot&action=list&msg=$msg#tabs-1");
     exit;
   }
@@ -988,10 +988,10 @@ class Angebot extends GenAngebot
     $this->app->erp->MenuEintrag("index.php?module=angebot&action=dateien&id=$id","Dateien".$anzahldateien);
 
     if($status=='bestellt')
-    { 
+    {
       $this->app->erp->MenuEintrag("index.php?module=angebot&action=wareneingang&id=$id","Wareneingang<br>R&uuml;ckst&auml;nde");
       $this->app->erp->MenuEintrag("index.php?module=angebot&action=wareneingang&id=$id","Mahnstufen");
-    } 
+    }
 
     //   $this->app->erp->MenuEintrag("index.php?module=angebot&action=abschicken&id=$id","Abschicken / Protokoll");
     //    $this->app->erp->MenuEintrag("index.php?module=angebot&action=protokoll&id=$id","Protokoll");
@@ -1146,7 +1146,7 @@ class Angebot extends GenAngebot
       for($i=0;$i<=100;$i += 10)
       {
         $this->app->Tpl->Add("CHANCE","<option value=\"$i\"  ".($chance==$i?"selected":"").">$i %</option>");
-      } 
+      }
 
 
       $mitarbeiternummer = trim($this->app->DB->Select("SELECT mitarbeiternummer from adresse where id = ".(int)$adresse_mitarbeiter." limit 1"));
@@ -1158,7 +1158,7 @@ class Angebot extends GenAngebot
       if($bearbeiternummer!="")
         $bearbeitername = "".$this->app->DB->Select("SELECT name from adresse where id = ".(int)$bearbeiter." limit 1");
 
-      $kundenname = "".$this->app->DB->Select("SELECT name from adresse where id = ".(int)$adresse." limit 1");      
+      $kundenname = "".$this->app->DB->Select("SELECT name from adresse where id = ".(int)$adresse." limit 1");
       $this->app->Tpl->Set('DATUM_ANGELEGT',$this->app->String->Convert($datum_angelegt,"%1-%2-%3","%3.%2.%1"));
       $this->app->Tpl->Set('ZEIT_ANGELEGT',$zeit_angelegt);
       $this->app->Tpl->Set('DATUM_ERINNERUNG',$this->app->String->Convert($datum_erinnerung,"%1-%2-%3","%3.%2.%1"));
@@ -1196,7 +1196,7 @@ class Angebot extends GenAngebot
     $this->app->erp->AngebotNeuberechnen($id);
     $this->app->YUI->AARLGPositionen(false);
   }
-  
+
   function CopyAngebotPosition()
   {
     $this->app->YUI->SortListEvent("copy","angebot_position","angebot");
@@ -1270,7 +1270,7 @@ class Angebot extends GenAngebot
 
     // nach page inhalt des dialogs ausgeben
     $filename = 'widgets/widget.angebot_position_custom.php';
-    if(is_file($filename)) 
+    if(is_file($filename))
     {
       include_once $filename;
       $widget = new WidgetAngebot_positionCustom($this->app,'PAGE');
@@ -1288,14 +1288,14 @@ class Angebot extends GenAngebot
 
 
   function AngebotIconMenu($id,$prefix='')
-  { 
+  {
 
     $status = $this->app->DB->Select("SELECT status FROM angebot WHERE id='$id' LIMIT 1");
     $freigabe = '';
     if($status==='angelegt'){
       $freigabe = "<option value=\"freigabe\">Angebot freigeben</option>";
     }
-    
+
     $zertifikatoption = '';
     $zertifikatcase = '';
     $proformarechnungoption = '';
@@ -1305,8 +1305,8 @@ class Angebot extends GenAngebot
       $adresse = $this->app->DB->Select("SELECT adresse FROM angebot WHERE id = '$id' LIMIT 1");
       if($adresse)
       {
-        $zertifikate = $this->app->DB->Select("SELECT ds.datei 
-      FROM datei_stichwoerter ds 
+        $zertifikate = $this->app->DB->Select("SELECT ds.datei
+      FROM datei_stichwoerter ds
       INNER JOIN datei_stichwoerter ds2 ON ds.datei = ds2.datei AND ds2.objekt = 'Artikel'
       INNER JOIN angebot_position ap ON ap.artikel = ds2.parameter AND ap.angebot = '$id'
       WHERE ds.objekt = 'Adressen' AND ds.parameter = '$adresse'
@@ -1317,11 +1317,11 @@ class Angebot extends GenAngebot
           $zertifikatcase = "case 'zertifikate': if(!confirm('Zertifikate wirklich laden?')) return document.getElementById('aktion$prefix').selectedIndex = 0; else window.location.href='index.php?module=angebot&action=zertifikate&id=%value%'; break; ";
         }
       }
-      
+
     }
 
-    if($status=="storniert")      
-      $storno = "<option value=\"unstorno\">Angebot Storno r&uuml;ckg&auml;ngig</option>";    
+    if($status=="storniert")
+      $storno = "<option value=\"unstorno\">Angebot Storno r&uuml;ckg&auml;ngig</option>";
     else if($status!="storniert")
       $storno = "<option value=\"storno\">Angebot stornieren</option>";
 
@@ -1401,7 +1401,7 @@ class Angebot extends GenAngebot
     $id = $this->app->Secure->GetGET("id");
     //   $this->app->erp->AngebotNeuberechnen($id);
 
-    // zum aendern vom Vertrieb    
+    // zum aendern vom Vertrieb
     $sid = $this->app->Secure->GetGET("sid");
     $cmd = $this->app->Secure->GetGET("cmd");
 
@@ -1427,7 +1427,7 @@ class Angebot extends GenAngebot
       echo json_encode($erg);
       $this->app->ExitXentral();
     }
-    
+
     if($cmd === 'daup') {
       $erg['status'] = 0;
       $daid = $this->app->Secure->GetPOST("da_id");
@@ -1450,7 +1450,7 @@ class Angebot extends GenAngebot
       echo json_encode($erg);
       $this->app->ExitXentral();
     }
-    
+
     if($this->app->erp->VertriebAendern('angebot',$id,$cmd,$sid)){
       return;
     }
@@ -1479,7 +1479,7 @@ class Angebot extends GenAngebot
     $hauptid = $id;
     $timeout = 0;
     while($timeout <= 100)
-    { 
+    {
       $checkkopievon = $this->app->DB->Select(
         "SELECT kopievon FROM angebot WHERE id='$hauptid' LIMIT 1"
       );
@@ -1511,8 +1511,8 @@ class Angebot extends GenAngebot
           .$offerNumberr."</a></div>"
         );
       }
-    } 
-    
+    }
+
     $tickets = $this->app->erp->GetBelegTickets('angebot',$id);
     if (!empty($tickets)) {
         function ticketlink($ticket) {
@@ -1593,8 +1593,8 @@ class Angebot extends GenAngebot
       $this->app->erp->AnsprechpartnerAlsLieferadresseButton($adresse);
       $this->app->erp->AdresseAlsLieferadresseButton($adresse);
     }
-    
-    
+
+
     if ($schreibschutz != 1 AND $status != 'abgeschlossen') {
         $this->app->erp->BerechneDeckungsbeitrag($id,'angebot');
     }
@@ -1717,7 +1717,7 @@ class Angebot extends GenAngebot
 
     $table = new EasyTable($this->app);
     $table->Query("SELECT bezeichnung as artikel, nummer as Nummer, menge, vpe as VPE, FORMAT(preis,4) as preis
-        FROM angebot_position 
+        FROM angebot_position
         WHERE angebot='$id'",0,"");
     $table->DisplayNew('POSITIONEN',"Preis","noAction");
 
@@ -1732,26 +1732,12 @@ class Angebot extends GenAngebot
     if($angebot=="0" || $angebot=="") $angebot="keine Nummer";
     $this->app->Tpl->Set('ANGEBOT',"<input type=\"text\" value=\"".$angebot."\" readonly>");
 
-
-
     $zahlungsweise = $this->app->DB->Select("SELECT zahlungsweise FROM angebot WHERE id='$id' LIMIT 1");
     if($this->app->Secure->GetPOST("zahlungsweise")!="") $zahlungsweise = $this->app->Secure->GetPOST("zahlungsweise");
     $zahlungsweise = strtolower($zahlungsweise);
-
-    $zahlungsweisenmodule = $this->app->DB->SelectArr("SELECT id, modul, verhalten FROM zahlungsweisen WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
-     (projekt = '$projekt' OR projekt = 0) ORDER BY projekt = '$projekt' DESC LIMIT 1");
-
-    $this->app->Tpl->Set('RECHNUNG',"none");
-    $this->app->Tpl->Set('KREDITKARTE',"none");
-    $this->app->Tpl->Set('VORKASSE',"none");
-    $this->app->Tpl->Set('PAYPAL',"none");
-    $this->app->Tpl->Set('EINZUGSERMAECHTIGUNG',"none");
-    if($zahlungsweise=="rechnung" || isset($zahlungsweisenmodule[0]['verhalten']) && $zahlungsweisenmodule[0]['verhalten']=='rechnung') $this->app->Tpl->Set('RECHNUNG',"");
-    if($zahlungsweise=="paypal") $this->app->Tpl->Set('PAYPAL',"");
-    if($zahlungsweise=="kreditkarte") $this->app->Tpl->Set('KREDITKARTE',"");
-    if($zahlungsweise=="einzugsermaechtigung" || $zahlungsweise=="lastschrift") $this->app->Tpl->Set('EINZUGSERMAECHTIGUNG',"");
-    if($zahlungsweise=="vorkasse" || $zahlungsweise=="kreditkarte" || $zahlungsweise=="paypal" || $zahlungsweise=="bar") $this->app->Tpl->Set('VORKASSE',"");
-
+    $zahlungsweise = strtolower($zahlungsweise);
+    $zahlungsweisenmodule = $this->app->erp->getzahlungsweisenmodule($zahlungsweise, $projekt);
+    $this->app->YUI->AARLGZahlungsweisenOptionenEinblenden($zahlungsweisenmodule['verhalten']);
 
     $abweichendelieferadresse= $this->app->DB->Select("SELECT abweichendelieferadresse FROM angebot WHERE id='$id' LIMIT 1");
     if($this->app->Secure->GetPOST("abweichendelieferadresse")!="") $versandart = $this->app->Secure->GetPOST("abweichendelieferadresse");
@@ -1785,7 +1771,7 @@ class Angebot extends GenAngebot
     }
     header("Location: index.php?module=angebot&action=edit&id=$id&msg=$msg");
     exit;
-    } 
+    }
      */
     $this->app->erp->MessageHandlerStandardForm();
 
@@ -1865,7 +1851,7 @@ class Angebot extends GenAngebot
     $this->app->Tpl->Set('AKTIV_TAB1',"selected");
 
     $this->app->YUI->TableSearch('ANGEBOTE',"angeboteinbearbeitung");
- 
+
     $this->app->Tpl->Set('TABTEXT',"Angebot anlegen");
     $this->app->Tpl->Parse('PAGE',"tabview.tpl");
     //parent::AngebotCreate();
@@ -2168,7 +2154,6 @@ class Angebot extends GenAngebot
 
     //$this->app->YUI->TableSearch('TAB2',"angeboteoffene");
 
-    $this->app->Tpl->Add('ZAHLUNGSWEISEN',$zahlungsweiseStr);
     $this->app->Tpl->Add('STATUS',$statusStr);
     $this->app->Tpl->Add('VERSANDARTEN',$versandartenStr);
     $this->app->Tpl->Add('LAENDER',$laenderStr);
@@ -2244,7 +2229,7 @@ class Angebot extends GenAngebot
        <br>Kostenstelle pro Position
        <br>Terminangebot (am xx.xx.xxxx raus damit)
        <br>vorschlagsdaten für positionen
-       <br>proposition reinklicken zum ändern und reihenfolge tabelle 
+       <br>proposition reinklicken zum ändern und reihenfolge tabelle
        <br>Angebot muss werden wie angebot (angebot beschreibung = allgemein)
        <br>Positionen (wie stueckliste)
        <br>Wareneingang / Rückstand
