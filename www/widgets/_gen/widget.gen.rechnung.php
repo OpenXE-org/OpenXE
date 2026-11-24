@@ -216,13 +216,6 @@ class WidgetGenrechnung
     $this->form->NewField($field);
 
     $field = new HTMLSelect("zahlungsweise",0,"zahlungsweise","","","0");
-    $field->AddOption('Rechnung','rechnung');
-    $field->AddOption('Vorkasse','vorkasse');
-    $field->AddOption('Nachnahme','nachnahme');
-    $field->AddOption('Kreditkarte','kreditkarte');
-    $field->AddOption('Einzugsermaechtigung','einzugsermaechtigung');
-    $field->AddOption('Bar','bar');
-    $field->AddOption('PayPal','paypal');
     $this->form->NewField($field);
 
     $field = new HTMLInput("lieferbedingung","text","","30","","","","","","","","0","","");

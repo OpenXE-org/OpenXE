@@ -26584,42 +26584,8 @@ function Firmendaten($field,$projekt="")
             )
         );
 
-
-      //    return array('ueberweisung'=>'&Uuml;berweisung','bar'=>'Bar','paypal'=>'PayPal');
-
-        foreach(
-            [
-              'kreditkarte'        => 'Kreditkarte',
-              'lastschrift'        => 'Verrechnen mit Lastschriften',
-              'paypal'             => 'Paypal',
-              'amazon'             => 'Amazon Payments',
-              'amazon_bestellung'  => 'Amazon Bestellung',
-              'secupay'            => 'Secupay',
-              'sofortueberweisung' => 'Sofort&uuml;berweisung',
-              'eckarte'            => 'EC-Karte',
-            ]
-        as $paymentType => $paymentName) {
-          if(!empty($extra[$paymentType])) {
-            continue;
-          }
-          if($zahlungsweise === $paymentType || $this->Firmendaten('zahlung_'.$paymentType)) {
-            $tmp[$paymentType] = $paymentName;
-          }
-        }
-
-        if(!empty($extra)){
-          foreach($extra as $type => $name) {
+        foreach($extra as $type => $name) {
             $tmp[$type] = $name;
-          }
-        }
-
-        if($zahlungsweise && empty($tmp[$zahlungsweise])) {
-          if($zahlungsweise === 'ueberweisung') {
-            $tmp['ueberweisung'] = '&Uuml;berweisung';
-          }
-          else {
-            $tmp[$zahlungsweise] = ucfirst($zahlungsweise);
-          }
         }
         asort($tmp);
 
@@ -26640,59 +26606,6 @@ function Firmendaten($field,$projekt="")
               $projekt = (int)$arr['projekt'];
             }
           }
-        }
-        if($this->Firmendaten("zahlung_rechnung") || $zahlungsweise == 'rechnung'){
-          $tmp['rechnung'] = "Rechnung";
-        }
-
-        if($this->Firmendaten("zahlung_vorkasse") || $zahlungsweise == 'vorkasse'){
-          $tmp['vorkasse'] = "Vorkasse";
-        }
-
-        if($this->Firmendaten("zahlung_nachnahme") || $zahlungsweise == 'nachnahme'){
-          $tmp['nachnahme'] = "Nachnahme";
-        }
-
-        if($this->Firmendaten("zahlung_kreditkarte") || $zahlungsweise == 'kreditkarte'){
-          $tmp['kreditkarte'] = "Kreditkarte";
-        }
-
-
-        if($this->Firmendaten("zahlung_eckarte") || $zahlungsweise == 'eckarte'){
-          $tmp['eckarte'] = "EC-Karte";
-        }
-
-
-        if($this->Firmendaten("zahlung_bar") || $zahlungsweise == 'bar'){
-          $tmp['bar'] = "Bar";
-        }
-
-        if($this->Firmendaten("zahlung_paypal") || $zahlungsweise == 'paypal'){
-          $tmp['paypal'] = "Paypal";
-        }
-
-        if($this->Firmendaten("zahlung_amazon") || $zahlungsweise == 'amazon'){
-          $tmp['amazon'] = "Amazon Payments";
-        }
-
-        if($this->Firmendaten("zahlung_amazon_bestellung") || $zahlungsweise == 'amazon_bestellung'){
-          $tmp['amazon_bestellung'] = "Amazon Bestellung";
-        }
-
-        if($this->Firmendaten("zahlung_secupay") || $zahlungsweise == 'secupay'){
-          $tmp['secupay'] = "Secupay";
-        }
-
-        if($this->Firmendaten("zahlung_sofortueberweisung") || $zahlungsweise == 'sofortueberweisung'){
-          $tmp['sofortueberweisung'] = "Sofort&uuml;berweisung";
-        }
-
-        if($this->Firmendaten("zahlung_lastschrift") || $zahlungsweise == 'lastschrift'){
-          $tmp['lastschrift'] = "Lastschrift";
-        }
-
-        if($this->Firmendaten("zahlung_ratenzahlung") || $zahlungsweise == 'ratenzahlung'){
-          $tmp['ratenzahlung'] = "Ratenzahlung";
         }
 
         $extra = $this->app->DB->SelectArr("
@@ -26715,7 +26628,6 @@ function Firmendaten($field,$projekt="")
             asort($tmp);
         }
         return $tmp;
-        //              return array('rechnung'=>'Rechnung','vorkasse'=>'Vorkasse','nachnahme'=>'Nachnahme','kreditkarte'=>'Kreditkarte','einzugsermaechtigung'=>'Einzugsermaechtigung','bar'=>'Bar','paypal'=>'PayPal','lastschrift'=>'Lastschrift');
       }
 
       function GetPinwandSelect()

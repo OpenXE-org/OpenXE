@@ -171,10 +171,6 @@ class WidgetGengutschrift
     $this->form->NewField($field);
 
     $field = new HTMLSelect("zahlungsweise",0,"zahlungsweise","","","0");
-    $field->AddOption('Kreditkarte','kreditkarte');
-    $field->AddOption('&Uuml;berweisung','ueberweisung');
-    $field->AddOption('Bar','bar');
-    $field->AddOption('PayPal','paypal');
     $this->form->NewField($field);
 
     $field = new HTMLSelect("zahlungsstatus",0,"zahlungsstatus","","","0");

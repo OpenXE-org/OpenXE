@@ -201,13 +201,6 @@ class WidgetGenangebot
     $this->form->NewField($field);
 
     $field = new HTMLSelect("zahlungsweise",0,"zahlungsweise","","","0");
-    $field->AddOption('Rechnung','rechnung');
-    $field->AddOption('Vorkasse','vorkasse');
-    $field->AddOption('Nachnahme','nachnahme');
-    $field->AddOption('Kreditkarte','kreditkarte');
-    $field->AddOption('Einzugsermaechtigung','einzugsermaechtigung');
-    $field->AddOption('Bar','bar');
-    $field->AddOption('PayPal','paypal');
     $this->form->NewField($field);
 
     $field = new HTMLSelect("versandart",0,"versandart","","","0");
