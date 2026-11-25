@@ -48,17 +48,18 @@ final class HubspotDealPropertyService
             throw new HubspotException($response->getError());
         }
 
-        if (($data = $response->getJson()) && array_key_exists('results', $data)) {
-            $stages = array_column($data['results'], 'stages');
+        $data = $response->getJson();
 
-            return reset($stages);
-        }
-
-        return [];
+        return $data['results'][0]['stages'] ?? [];
     }
 
     public function installDealStages()
     {
+        $ahDealStages = $this->getDealStages();
+        if (empty($ahDealStages)) {
+            return;
+        }
+
         // Get Deal Stages
         $firstStage = 0;
         $viewId = 0;
@@ -99,13 +100,13 @@ final class HubspotDealPropertyService
             $viewId = $this->db->lastInsertId();
         }
 
-        if ($viewId > 0 && ($ahDealStages = $this->getDealStages())) {
+        if ($viewId > 0) {
             $position = (int)$this->getMaxSortByViewId($viewId) + 1;
             foreach ($ahDealStages as $hDealStage) {
                 if ($this->db->fetchValue(
                     'SELECT hm.id FROM hs_mapping_leads `hm` WHERE hm.value=:value AND hm.type=:type',
                     [
-                        'value' => $hDealStage['stageId'],
+                        'value' => $hDealStage['id'],
                         'type'  => 'deals',
                     ]
                 )) {
@@ -131,7 +132,7 @@ final class HubspotDealPropertyService
                             VALUES(:label, :value,:type, :wstage_id, :is_system, :view_id)',
                         [
                             'label'     => $hDealStage['label'],
-                            'value'     => $hDealStage['stageId'],
+                            'value'     => $hDealStage['id'],
                             'type'      => 'deals',
                             'wstage_id' => $stageId,
                             'is_system' => 1,

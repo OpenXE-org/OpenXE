@@ -5,6 +5,7 @@ namespace Xentral\Modules\Hubspot;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use Xentral\Modules\Hubspot\HubspotHttpResponseService as Response;
 use Xentral\Modules\Hubspot\Exception\HttpClientException;
 use Xentral\Modules\Hubspot\Interfaces\HubspotHttpClientInterface;
@@ -35,7 +36,10 @@ final class HubspotHttpClientService implements HubspotHttpClientInterface
     /**
      * @var int
      */
-    private $timeout;
+    private $timeout = 0;
+
+    /** @var ClientInterface|null */
+    private $client;
 
     /**
      * @var array
@@ -43,10 +47,11 @@ final class HubspotHttpClientService implements HubspotHttpClientInterface
     private $_headers = [];
 
     /**
-     * @param int $timeout > 0
+     * @param int                  $timeout >= 0
+     * @param ClientInterface|null $client
      *
      */
-    public function __construct($timeout = 0)
+    public function __construct($timeout = 0, ?ClientInterface $client = null)
     {
         if (!is_int($timeout) || $timeout < 0) {
             throw new HttpClientException(
@@ -56,9 +61,8 @@ final class HubspotHttpClientService implements HubspotHttpClientInterface
                 )
             );
         }
-        if (!empty($timeout)) {
-            $this->timeout = $timeout;
-        }
+        $this->timeout = $timeout;
+        $this->client = $client;
     }
 
     /**
@@ -98,11 +102,11 @@ final class HubspotHttpClientService implements HubspotHttpClientInterface
     }
 
     /**
-     * @return Client
+     * @return ClientInterface
      */
     protected function getClient()
     {
-        return new Client(['timeout' => $this->timeout]);
+        return $this->client ?? new Client(['timeout' => $this->timeout]);
     }
 
     /**
@@ -167,7 +171,7 @@ final class HubspotHttpClientService implements HubspotHttpClientInterface
      */
     protected function setHeader($option = [])
     {
-        $this->_headers += $option;
+        $this->_headers = $option;
     }
 
     /**
@@ -177,7 +181,7 @@ final class HubspotHttpClientService implements HubspotHttpClientInterface
     {
         $default = ['User-Agent' => 'Xentral-ERP-CRM'];
 
-        return $this->_headers += $default;
+        return $this->_headers + $default;
     }
 
     /**

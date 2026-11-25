@@ -28,7 +28,7 @@ final class HubspotClientService
         'getAllContactProperties'  => '/properties/v1/contacts/properties',
         'getContactProperty'       => '/properties/v1/contacts/properties/named/:property_name',
         'getCompanyProperty'       => '/properties/v1/companies/properties/named/:property_name',
-        'getPipelineProperties'    => '/crm-pipelines/v1/pipelines/:object_type',
+        'getPipelineProperties'    => '/crm/pipelines/2026-09/:object_type',
         'getDealById'              => '/deals/v1/deal/:dealId',
         'getCompanyById'           => '/companies/v2/companies/:companyId',
         'getRecentCompanies'       => '/companies/v2/companies/recent/modified',
@@ -45,9 +45,7 @@ final class HubspotClientService
 
     ];
 
-    private $authMethod = 'key';
-
-    /** @var string|null $apiKey */
+    /** @var string|null $apiKey Access token; the parameter name is retained for compatibility. */
     private $apiKey;
 
     /** @var HubspotHttpClientService $client */
@@ -88,10 +86,6 @@ final class HubspotClientService
 
         $suffixUrl = null === $suffix ? $this->endPoints[$resource] : $suffix;
         $url = sprintf($this->apiUrl, $suffixUrl);
-        if ($this->authMethod === 'key') {
-            $apiKey = null === $this->apiKey ? $this->getConfApiKey() : $this->apiKey;
-            $url .=   strpos($url, '?') === false? '?hapikey=' . $apiKey : '&hapikey=' . $apiKey;
-        }
         if (!empty($args)) {
             preg_match_all('/:[a-zA-Z0-9._-]+/', $url, $match);
             if (!empty($match) && !empty($match[0])) {
@@ -131,7 +125,7 @@ final class HubspotClientService
      */
     public function read($data = [], $endPointArgs = [])
     {
-        return $this->client->get($this->getEndPoint(null, $endPointArgs), $data);
+        return $this->client->get($this->getEndPoint(null, $endPointArgs), $data, $this->getAuthorizationHeaders());
     }
 
     /**
@@ -143,6 +137,19 @@ final class HubspotClientService
     }
 
     /**
+     * @return array
+     */
+    private function getAuthorizationHeaders()
+    {
+        $accessToken = null === $this->apiKey ? $this->getConfApiKey() : $this->apiKey;
+        if (!is_string($accessToken) || trim($accessToken) === '') {
+            throw new HubspotException('HubSpot access token is missing');
+        }
+
+        return ['Authorization' => 'Bearer ' . trim($accessToken)];
+    }
+
+    /**
      * @param array $data
      *
      * @param array $endPointArgs
@@ -151,7 +158,7 @@ final class HubspotClientService
      */
     public function post($data = [], $endPointArgs = [])
     {
-        return $this->client->post($this->getEndPoint(null, $endPointArgs), $data);
+        return $this->client->post($this->getEndPoint(null, $endPointArgs), $data, $this->getAuthorizationHeaders());
     }
 
     /**
@@ -163,7 +170,7 @@ final class HubspotClientService
      */
     public function delete($data = [], $endPointArgs = [])
     {
-        return $this->client->delete($this->getEndPoint(null, $endPointArgs), $data);
+        return $this->client->delete($this->getEndPoint(null, $endPointArgs), $data, $this->getAuthorizationHeaders());
     }
 
     /**
@@ -175,7 +182,7 @@ final class HubspotClientService
      */
     public function put($data = [], $endPointArgs = [])
     {
-        return $this->client->put($this->getEndPoint(null, $endPointArgs), $data);
+        return $this->client->put($this->getEndPoint(null, $endPointArgs), $data, $this->getAuthorizationHeaders());
     }
 
     /**
@@ -188,7 +195,7 @@ final class HubspotClientService
      */
     public function patch($data = [], $endPointArgs = []): HubspotHttpResponseService
     {
-        return $this->client->patch($this->getEndPoint(null, $endPointArgs), $data);
+        return $this->client->patch($this->getEndPoint(null, $endPointArgs), $data, $this->getAuthorizationHeaders());
     }
 
     /**
@@ -223,6 +230,6 @@ final class HubspotClientService
             throw new HttpClientException(sprintf('Methode ::%s is not yet implemented !', $type));
         }
         $this->resource = $resource;
-        return $this->client->{strtolower($type)}($this->getEndPoint(null, $endPointArgs), $data);
+        return $this->client->{strtolower($type)}($this->getEndPoint(null, $endPointArgs), $data, $this->getAuthorizationHeaders());
     }
 }
