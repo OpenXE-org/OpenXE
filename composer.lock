@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a4a54fb0a303bda76106b653a41eb28b",
+    "content-hash": "b0556585479486163f032b2b71d06fbf",
     "packages": [
         {
             "name": "aura/sqlquery",
@@ -73,6 +73,59 @@
                 "source": "https://github.com/auraphp/Aura.SqlQuery/tree/2.7.1"
             },
             "time": "2016-10-03T20:34:56+00:00"
+        },
+        {
+            "name": "automattic/woocommerce",
+            "version": "3.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/woocommerce/wc-api-php.git",
+                "reference": "e378120df655b7dacbeff4756e23b41b66fe9688"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/woocommerce/wc-api-php/zipball/e378120df655b7dacbeff4756e23b41b66fe9688",
+                "reference": "e378120df655b7dacbeff4756e23b41b66fe9688",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">= 7.4.0"
+            },
+            "require-dev": {
+                "doctrine/instantiator": "^1.5.0",
+                "phpunit/phpunit": "^9.5.0",
+                "squizlabs/php_codesniffer": "3.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Automattic\\WooCommerce\\": [
+                        "src/WooCommerce"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Claudio Sanches",
+                    "email": "claudio.sanches@automattic.com"
+                }
+            ],
+            "description": "A PHP wrapper for the WooCommerce REST API",
+            "keywords": [
+                "api",
+                "woocommerce"
+            ],
+            "support": {
+                "issues": "https://github.com/woocommerce/wc-api-php/issues",
+                "source": "https://github.com/woocommerce/wc-api-php/tree/3.1.1"
+            },
+            "time": "2026-01-30T16:26:03+00:00"
         },
         {
             "name": "aws/aws-crt-php",
@@ -4053,5 +4106,5 @@
     "platform-overrides": {
         "php": "8.5.1"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => 'ec8d1c04007fd005393307342e319cc401f8ec08',
+        'pretty_version' => '1.13.x-dev',
+        'version' => '1.13.9999999.9999999-dev',
+        'reference' => '6de9fab63b03d23143f6a7379c0b4d20d301723c',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => 'ec8d1c04007fd005393307342e319cc401f8ec08',
+            'pretty_version' => '1.13.x-dev',
+            'version' => '1.13.9999999.9999999-dev',
+            'reference' => '6de9fab63b03d23143f6a7379c0b4d20d301723c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -25,6 +25,15 @@
             'reference' => 'dd81b57aeb43628180a9c70a4df58d872024d7f2',
             'type' => 'library',
             'install_path' => __DIR__ . '/../aura/sqlquery',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'automattic/woocommerce' => array(
+            'pretty_version' => '3.1.1',
+            'version' => '3.1.1.0',
+            'reference' => 'e378120df655b7dacbeff4756e23b41b66fe9688',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../automattic/woocommerce',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
