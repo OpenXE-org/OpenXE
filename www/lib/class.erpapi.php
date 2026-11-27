@@ -25431,9 +25431,15 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           $to_name_csv .= $item;
         }
       } else if (!empty($to_name)) {
-        foreach (explode(',',$to_name) as $item)  {
-          $to_name_array[] = $item;
-          $to_name_csv .= $item;
+        if (count($to_array) <= 1) {
+          // Einzelner Empfaenger: der Name kann Kommas enthalten (z.B. "Mustermann, Max")
+          $to_name_array[] = $to_name;
+          $to_name_csv .= $to_name;
+        } else {
+          foreach (explode(',',$to_name) as $item)  {
+            $to_name_array[] = $item;
+            $to_name_csv .= $item;
+          }
         }
       }
 
@@ -25450,6 +25456,9 @@ function MailSendFinal($from,$from_name,$to,$to_name,$betreff,$text,$files="",$p
           }
         }
       }
+
+      // Ueberzaehlige Namen verwerfen, array_combine benoetigt gleich lange Arrays
+      $to_name_array = array_slice($to_name_array, 0, count($to_array));
 
       $to_combined_array = array_combine($to_array,$to_name_array);
 
