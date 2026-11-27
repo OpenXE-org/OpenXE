@@ -7832,7 +7832,7 @@ class Artikel extends GenArtikel {
     }
 
     $seriennummern = $this->app->DB->Select("SELECT seriennummern FROM artikel WHERE id = '$id' LIMIT 1");
-    if($seriennummern==='eigene' || $seriennummern==='vomprodukt' || $seriennummern==='vomprodukteinlagern')
+    if($seriennummern==='eigene' || $seriennummern==='eigeneposition' || $seriennummern==='vomprodukt' || $seriennummern==='vomprodukteinlagern')
     {
       $this->app->Tpl->Add('FORMULAR',"<tr><td>Seriennummer:</td><td><input type=\"text\" id=\"seriennummer\" name=\"seriennummer\" value=\"\" size=\"40\"></td></tr>");
       $this->app->YUI->AutoComplete('seriennummer', 'lagerseriennummern',0,"&artikel=$id");

@@ -73,7 +73,7 @@
 							<tr><td>steuer_aufwendung_inland_euermaessigt</td><td></td><td></td></tr>
 							<tr><td>steuer_aufwendung_inland_import</td><td></td><td></td></tr>
 							<tr><td>mindesthaltbarkeitsdatum</td><td></td><td>(1=aktiv,0=nicht aktiv)</td></tr>
-							<tr><td>seriennummern</td><td></td><td>(keine,eigene,vomprodukt,vomprodukteinlagern)</td></tr>
+							<tr><td>seriennummern</td><td></td><td>(keine,eigene,eigeneposition,vomprodukt,vomprodukteinlagern)</td></tr>
 							<tr><td>chargenverwaltung</td><td></td><td>(0=keine,2=originale nutzen)</td></tr>
 							<tr><td>mindestlager</td><td>Minimaler Lagerbestand</td><td></td></tr>
 							<tr><td>mindestbestellung</td><td></td><td></td></tr>

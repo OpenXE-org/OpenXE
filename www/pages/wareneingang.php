@@ -3286,7 +3286,7 @@ class Wareneingang {
             $error++;
         }
         //vomprodukteinlagern hinzugefuegt 08.01.20 LG OS904009
-        if (($seriennummern !== 'keine' && $seriennummern !== 'vomprodukt' && $seriennummern !== 'eigene' && $seriennummern != 'vomprodukteinlagern' && $seriennummern != '') && $rma !== 'rma') {
+        if (($seriennummern !== 'keine' && $seriennummern !== 'vomprodukt' && $seriennummern !== 'eigene' && $seriennummern !== 'eigeneposition' && $seriennummern != 'vomprodukteinlagern' && $seriennummern != '') && $rma !== 'rma') {
             $tmpcheck = $this->app->Secure->GetPOST('seriennummern');
             for ($checkser = 0; $checkser < $menge; $checkser++) {
                 if ($tmpcheck[$checkser] == '') {
