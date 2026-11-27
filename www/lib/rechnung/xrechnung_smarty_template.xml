@@ -159,9 +159,11 @@
         </cac:PayeeFinancialAccount>
 {/if}
     </cac:PaymentMeans>
+{if !empty($rechnung.kopf.paymenttext)}
     <cac:PaymentTerms>
-        <cbc:Note><![CDATA[{if !empty($rechnung.kopf.zahlungszieltage)}Zahlbar innerhalb von {$rechnung.kopf.zahlungszieltage} Tagen{if !empty($rechnung.kopf.faelligkeitsdatum)} bis zum {$rechnung.kopf.faelligkeitsdatum}{/if}.{else}Zahlungsweise: {$rechnung.kopf.zahlungsweise}{/if}]]></cbc:Note>
+        <cbc:Note><![CDATA[{$rechnung.kopf.paymenttext}]]></cbc:Note>
     </cac:PaymentTerms>
+{/if}
     <cac:TaxTotal>
         <cbc:TaxAmount currencyID="{$rechnung.kopf.waehrung}">{$rechnung.summen.tax_total_amount|string_format:"%.2f"}</cbc:TaxAmount>
 {foreach from=$rechnung.steuern item=steuerposition}
@@ -174,7 +176,7 @@
 {if !empty($steuerposition.steuertext) and $steuerposition.kategorie != 'S'}
                 <cbc:TaxExemptionReason><![CDATA[{$steuerposition.steuertext}]]></cbc:TaxExemptionReason>
 {/if}
-                <cac:TaxScheme>                
+                <cac:TaxScheme>
                     <cbc:ID>VAT</cbc:ID>
                 </cac:TaxScheme>
             </cac:TaxCategory>
@@ -196,15 +198,15 @@
 {foreach from=$rechnung.positionen key=posnr item=position}
     <cac:InvoiceLine>
         <cbc:ID>{$posnr+1}</cbc:ID>
-{if !empty($position.beschreibung)}        
+{if !empty($position.beschreibung)}
         <cbc:Note><![CDATA[{$position.beschreibung}]]></cbc:Note>
 {/if}
         <cbc:InvoicedQuantity unitCode="{$position.unit_code|default:'C62'}">{$position.menge}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_gesamt|string_format:"%.2f"}</cbc:LineExtensionAmount>
         <cac:Item>
-{if !empty($position.beschreibung)}        
+{if !empty($position.beschreibung)}
             <cbc:Description><![CDATA[{$position.beschreibung}]]></cbc:Description>
-{/if}        
+{/if}
             <cbc:Name><![CDATA[{$position.bezeichnung}]]></cbc:Name>
 {if !empty($position.nummer)}
             <cac:SellersItemIdentification>

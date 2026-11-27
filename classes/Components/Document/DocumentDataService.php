@@ -215,10 +215,14 @@ class DocumentDataService
         }
 
         // Map payment means code according to UNCL4461
-        $zahlungsweise = strtolower(trim($kopf['zahlungsweise'] ?? ''));                       
+        $zahlungsweise = strtolower(trim($kopf['zahlungsweise'] ?? ''));
         $paymentMethodService = $this->app->Container->get('PaymentMethodService');
         $zahlungsweiseData = $paymentMethodService->getFromShortname($kopf['zahlungsweise']);
         $kopf['payment_means_code'] = $zahlungsweiseData['UNTDID4461'];
+
+        // Get generated text for payment terms
+        $paymenttext = $this->app->erp->Zahlungsweisetext($doctype, $id);
+        $kopf['paymenttext'] = $paymenttext;
 
         // Calculate due date if available
         if (!empty($kopf['datum']) && isset($kopf['zahlungszieltage']) && $kopf['zahlungszieltage'] !== '') {
