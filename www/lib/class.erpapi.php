@@ -3877,11 +3877,7 @@ title: 'Abschicken',
   // @refactor Document Komponente
   function Zahlungsweisetext($doctype,$doctypeid)
   {
-    //if($doctype!="rechnung") return;//AUSKOMMENTIEREN?
     $doctypeRow = $this->app->DB->SelectRow(sprintf("SELECT * FROM `%s` WHERE id=%d LIMIT 1", $doctype, (int)$doctypeid));
-    if(empty($doctypeRow['zahlungsweise'])) {
-      $zahlungsweise = '';
-    }
     $zahlungsweise = !empty($doctypeRow['zahlungsweise'])?$doctypeRow['zahlungsweise']:'';
     $zahlungsstatus = !empty($doctypeRow['zahlungsstatus'])?$doctypeRow['zahlungsstatus']:'';
     $zahlungszieltage = !empty($doctypeRow['zahlungszieltage'])?$doctypeRow['zahlungszieltage']:'';
@@ -3889,25 +3885,6 @@ title: 'Abschicken',
     $zahlungszielskonto = !empty($doctypeRow['zahlungszielskonto'])?$doctypeRow['zahlungszielskonto']:'';
 
     $zahlungszielskontototal=$zahlungszielskonto;
-
-    if($doctype === 'auftrag' || $doctype === 'rechnung' || $doctype === 'gutschrift' || $doctype === 'angebot' || $doctype === 'bestellung')
-    {
-      if(empty($doctypeRow['skontoberechnet'])) {
-        $skontobetrag = null;
-      } else {
-        $skontobetrag = isset($doctypeRow['skontobetrag'])?$doctypeRow['skontobetrag']:null;
-      }
-      if($skontobetrag !== null)
-      {
-        if($doctype === 'auftrag' || $doctype === 'angebot' || $doctype === 'bestellung')
-        {
-          $soll = !empty($doctypeRow['gesamtsumme'])?$doctypeRow['gesamtsumme']:0;
-        }else{
-          $soll = !empty($doctypeRow['soll'])?$doctypeRow['soll']:0;
-        }
-        //$zahlungszielskonto = round((100 * $skontobetrag / $soll),2); // den wert lassen sonst sieht es komisch am briefpapier aus Ticket 757670
-      }
-    }
 
     $zahlungszieltage = (int) $zahlungszieltage;
 
@@ -3943,8 +3920,6 @@ title: 'Abschicken',
       }
     }
 
-    //$this->RunHook('ZahlungsweisetextZahlungsdatum',4, $doctype, $doctypeid, $zahlungdatum, $zahlungsweisetext);
-
     $zahlungszieltageskonto = (int) $zahlungszieltageskonto;
 
     $zahlungszielskontodatum = $this->app->DB->Select("SELECT DATE_FORMAT(DATE_ADD(datum, INTERVAL $zahlungszieltageskonto DAY),'%d.%m.%Y') FROM $doctype WHERE id='$doctypeid' LIMIT 1");
@@ -3966,184 +3941,6 @@ title: 'Abschicken',
 
     $zahlungsweise = strtolower($zahlungsweise);
 
-    //if($zahlungsweise=="rechnung"&&$zahlungsstatus!="bezahlt")
-    if($zahlungsweisetext == '')
-    {
-      if($doctype==='rechnung'){
-        if($zahlungsweise==='rechnung' || $zahlungsweise==='einzugsermaechtigung' || $zahlungsweise==='lastschrift')
-        {
-
-          if($zahlungsweise==='rechnung')
-          {
-            if($zahlungszieltage==0){
-              $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_rechnung_sofort_de");
-              //if($zahlungsweisetext=='') {
-              //  $zahlungsweisetext = 'Rechnung zahlbar sofort. ';
-              //}
-            }else{
-              $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_rechnung_de");
-              //if($zahlungsweisetext=="") $zahlungsweisetext ="Rechnung zahlbar innerhalb von {ZAHLUNGSZIELTAGE} Tagen bis zum {ZAHLUNGBISDATUM}. ";
-              $zahlungsweisetext = str_replace("{ZAHLUNGSZIELTAGE}",$zahlungszieltage,$zahlungsweisetext);
-              $zahlungsweisetext = str_replace("{ZAHLUNGBISDATUM}",$zahlungdatum,$zahlungsweisetext);
-            }
-
-
-          if($this->app->erp->Firmendaten("eigener_skontotext")=="1" && ($zahlungszielskonto>0 || $skontobetrag > 0))
-          {
-            $skontotext = $this->app->erp->Beschriftung("eigener_skontotext_re");
-            $skontotext = str_replace('{ZAHLUNGSZIELSKONTO}',number_format($zahlungszielskonto,2,',','.'),$skontotext);
-            $skontotext = str_replace('{ZAHLUNGSZIELSKONTOTOTAL}',number_format($zahlungszielskontototal,2,',','.'),$skontotext);
-            $skontotext = str_replace('{ZAHLUNGSZIELTAGESKONTO}',$zahlungszieltageskonto,$skontotext);
-            $skontotext = str_replace('{ZAHLUNGSZIELSKONTODATUM}',$zahlungszielskontodatum,$skontotext);
-
-            $zahlungsweisetext .= "\n".$skontotext;
-          }else{
-            if($zahlungszielskonto!=0)
-            {
-              $zahlungsweisetext .="\n".$this->app->erp->Beschriftung("dokument_skonto")." ".number_format($zahlungszielskonto,2,',','.')." % ".$this->app->erp->Beschriftung("dokument_innerhalb")." $zahlungszieltageskonto ".$this->app->erp->Beschriftung("dokument_tagebiszum")." ".$zahlungszielskontodatum;
-            }
-          }
-        }else{
-          //lastschrift
-          $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_".$zahlungsweise."_de");
-          if($zahlungsweisetext=="") $zahlungsweisetext ="Der Betrag wird von Ihrem Konto abgebucht.";
-          if($zahlungszielskonto!=0)
-            $zahlungsweisetext .="\r\n".$this->app->erp->Beschriftung("dokument_skontoanderezahlungsweisen");
-            //$zahlungsweisetext .="\r\n".$this->app->erp->Beschriftung("dokument_skonto")." $zahlungszielskonto % aus Zahlungskonditionen";
-
-            $zahlungsweisetext = str_replace('{ZAHLUNGSZIELSKONTO}',number_format($zahlungszielskonto,2,',','.'),$zahlungsweisetext);
-            $zahlungsweisetext = str_replace('{ZAHLUNGSZIELSKONTOTOTAL}',number_format($zahlungszielskontototal,2,',','.'),$zahlungsweisetext);
-          }
-
-        }else{
-          // schauen ob es zahlungsweise gibt
-          $zahlungsweisetext = $this->Beschriftung("zahlungsweise_freitext_".$this->app->DB->Select("SELECT id FROM zahlungsweisen WHERE type='".$zahlungsweise."' AND aktiv='1' AND type!='' LIMIT 1"));
-          if($zahlungsweisetext=="")
-          {
-            $zahlungsweisetext = $this->app->DB->Select("SELECT freitext FROM zahlungsweisen WHERE type='".$zahlungsweise."' AND aktiv='1' AND type!='' LIMIT 1");
-          }
-
-          if($zahlungsweisetext=="")
-            $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_".$zahlungsweise."_de");
-
-        if($zahlungsweisetext=="")// || $zahlungsweise=="vorkasse")
-        {
-          $zahlweisetmp = ucfirst($zahlungsweise);
-          if($zahlweisetmp == "Eckarte") $zahlweisetmp = "EC-Karte";
-          $zahlungsweisetext = $this->app->erp->Beschriftung("dokument_zahlung_per")." ".$zahlweisetmp;
-        }
-      }
-    }
-
-    if($doctype=="auftrag"){
-      //$zahlungstext = "\nZahlungsweise: $zahlungsweise ";
-
-        if($zahlungsweise=="lastschrift" || $zahlungsweise=="einzugsermaechtigung")
-          $zahlungsweise="lastschrift";
-
-        if($zahlungsweise=="rechnung")
-        {
-          // das ist immer ein Vorschlag und keine Rechnung! Daher hier anderen Text!
-          if($zahlungszieltage >0) {
-            $zahlung_auftrag_de = $this->app->erp->Beschriftung("zahlung_auftrag_de");
-            if(empty($zahlung_auftrag_de)){
-              $zahlungsweisetext = $this->app->erp->Beschriftung("dokument_zahlung_rechnung_anab");
-            }
-            else{
-              $zahlungsweisetext = $zahlung_auftrag_de;
-            }
-          }
-          else {
-            $zahlung_auftrag_sofort_de =$this->app->erp->Beschriftung("zahlung_auftrag_sofort_de");
-            if(empty($zahlung_auftrag_sofort_de))
-            {
-              $zahlungsweisetext = $this->app->erp->Beschriftung("dokument_zahlung_rechnung_anab");
-            }else{
-              $zahlungsweisetext =$zahlung_auftrag_sofort_de;
-            }
-          }
-          if($this->app->erp->Firmendaten("eigener_skontotext")=="1" && $zahlungszielskonto>0)
-          {
-            $skontotext = $this->app->erp->Beschriftung("eigener_skontotext_anab");
-            $skontotext = str_replace('{ZAHLUNGSZIELSKONTO}',number_format($zahlungszielskonto,2,',','.'),$skontotext);
-            $skontotext = str_replace('{ZAHLUNGSZIELSKONTOTOTAL}',number_format($zahlungszielskontototal,2,',','.'),$skontotext);
-            $skontotext = str_replace('{ZAHLUNGSZIELTAGESKONTO}',$zahlungszieltageskonto,$skontotext);
-            $zahlungsweisetext .= "\n".$skontotext;
-          } else {
-            if($zahlungszielskonto>0) $zahlungsweisetext .= "\n".$this->app->erp->Beschriftung("dokument_skonto")." ".number_format($zahlungszielskonto,2,',','.')."% ".$this->app->erp->Beschriftung("dokument_innerhalb")." $zahlungszieltageskonto ".$this->app->erp->Beschriftung("dokument_tagen");
-          }
-        }
-        else {
-          // schauen ob es zahlungsweise gibt
-
-          if($zahlungsweisetext=="")
-            $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_".$zahlungsweise."_de");
-          if($zahlungsweisetext=="")
-            $zahlungsweisetext = $this->app->erp->Beschriftung("dokument_zahlung_per")." ".ucfirst($zahlungsweise);
-
-          // alt
-          //if($zahlungszielskonto>0) $zahlungsweisetext .= "\n".$this->app->erp->Beschriftung("dokument_skonto")." ".number_format($zahlungszielskonto,2,',','.')."% ";
-          if($zahlungszielskonto!=0)
-              $zahlungsweisetext .="\r\n".$this->app->erp->Beschriftung("dokument_skontoanderezahlungsweisen");
-
-          if($zahlungsweisetext =='') {
-            $zahlungsweisetext = "\n".ucfirst($zahlungsweise);
-          }
-        }
-      }
-
-      if($doctype==='angebot')
-      {
-        if($zahlungsweise==='rechnung')
-        {
-          if($zahlungszieltage >0) {
-            $zahlung_rechnung_de = $this->app->erp->Beschriftung('zahlung_auftrag_de');
-            if(empty($zahlung_rechnung_de)) {
-              $zahlungsweisetext = $this->app->erp->Beschriftung('dokument_zahlung_rechnung_anab');
-            }
-            else {
-              $zahlungsweisetext = $zahlung_rechnung_de;
-            }
-          }
-          else {
-            $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_auftrag_sofort_de");
-          }
-
-          if($zahlungszielskonto>0 && $this->app->erp->Firmendaten('eigener_skontotext')=='1') {
-            $skontotext = $this->app->erp->Beschriftung("eigener_skontotext_anab");
-            $skontotext = str_replace('{ZAHLUNGSZIELSKONTO}',number_format($zahlungszielskonto,2,',','.'),$skontotext);
-            $skontotext = str_replace('{ZAHLUNGSZIELTAGESKONTO}',$zahlungszieltageskonto,$skontotext);
-            $zahlungsweisetext .= "\n".$skontotext;
-          } else {
-            if($zahlungszielskonto>0) {
-              $zahlungsweisetext .= "\n".$this->app->erp->Beschriftung("dokument_skonto")." ".number_format($zahlungszielskonto,2,',','.')."% ".$this->app->erp->Beschriftung("dokument_innerhalb")." $zahlungszieltageskonto ".$this->app->erp->Beschriftung("dokument_tagen");
-            }
-          }
-
-        } else {
-          $zahlungsweisetext = $this->app->DB->Select("SELECT freitext FROM zahlungsweisen WHERE type='".$zahlungsweise."' AND aktiv='1' AND type!='' LIMIT 1");
-          if($zahlungsweisetext=="")
-            $zahlungsweisetext = $this->app->erp->Beschriftung("zahlung_".$zahlungsweise."_de");
-          if($zahlungsweisetext=="")
-            $zahlungsweisetext = $this->app->erp->Beschriftung("dokument_zahlung_per")." ".ucfirst($zahlungsweise);
-        }
-      }
-
-
-      if($doctype=="rechnung"){
-        if(1)//$zahlungszielskonto!=0)
-        {
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELSKONTO}",number_format($zahlungszielskonto,2,',','.'),$zahlungsweisetext);
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELSKONTOTOTAL}",number_format($zahlungszielskontototal,2,',','.'),$zahlungsweisetext);
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELTAGESKONTO}",$zahlungszieltageskonto,$zahlungsweisetext);
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELSKONTODATUM}",$zahlungszielskontodatum,$zahlungsweisetext);
-        } /*else {
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELSKONTO}","0",$zahlungsweisetext);
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELTAGESKONTO}","0",$zahlungsweisetext);
-          $zahlungsweisetext = str_replace("{ZAHLUNGSZIELSKONTODATUM}",$zahlungdatum,$zahlungsweisetext);
-        }*/
-      }
-    }
     $zahlungsweisetext = str_replace('{SKONTOFAEHIG}',$skontofaehig, $zahlungsweisetext);
     $zahlungsweisetext = str_replace('{SKONTOFAEHIGNETTO}',$skontofaehignetto, $zahlungsweisetext);
     $zahlungsweisetext = $this->ParseUserVars($doctype,$doctypeid, $zahlungsweisetext);

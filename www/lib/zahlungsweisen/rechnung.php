@@ -46,130 +46,45 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
    *
    * @return string
    */
-  public function getSkontoText(
+    public function getSkontoText(
     $doctype,
     $doctypeId,
     $text,
     $language = '',
-    $zahlungszielskonto = null,
-    $zahlungszieltageskonto = null,
-    $zahlungszieltage = null
-  ) {
-    if($zahlungszielskonto === null || $zahlungszieltageskonto === null) {
-      $doctypeRow = $this->app->DB->SelectRow(
-        sprintf(
-          "SELECT *
-          FROM `%s` 
-          WHERE id = %d",
-          $doctype, $doctypeId
-        )
-      );
-      if(isset($doctypeRow['zahlungszieltage']) && isset($doctypeRow['zahlungszieltageskonto'])) {
-        $zahlungszielskonto = $doctypeRow['zahlungszielskonto'];
-        $zahlungszieltageskonto = $doctypeRow['zahlungszieltageskonto'];
-        $zahlungszieltage = $doctypeRow['zahlungszieltage'];
-      }
-      else {
-        $doctypeRow = $this->app->DB->SelectRow(
-          sprintf(
-            "SELECT zahlungszieltage, zahlungszieltageskonto
-            FROM `adresse` 
-            WHERE id = %d",
-            $doctypeRow['adresse']
-          )
+    $zahlungszielskonto,
+    $zahlungszieltageskonto,
+    $zahlungszieltage
+    ) 
+    {
+        if($zahlungszielskonto == 0) {
+            return $text;
+        }
+        $zahlungszielskontototal=$zahlungszielskonto;
+        $text .= "\n".$this->app->erp->Beschriftung('dokument_skonto', $language)
+            ." $zahlungszielskonto% "
+            .$this->app->erp->Beschriftung('dokument_innerhalb', $language)
+            ." $zahlungszieltageskonto "
+            .$this->app->erp->Beschriftung('dokument_tagen', $language);
+
+        $text = str_replace(
+          [
+            '{ZAHLUNGSZIELSKONTO}',
+            '{ZAHLUNGSZIELTAGE}',
+            '{ZAHLUNGSZIELTAGESKONTO}',
+            '{ZAHLUNGSZIELSKONTOTOTAL}',
+            '{ZAHLUNGSZIELSKONTODATUM}',
+          ],
+          [
+            number_format($zahlungszielskonto,2,',','.'),
+            $zahlungszieltage,
+            $zahlungszieltageskonto,
+            number_format($zahlungszielskontototal,2,',','.'),
+            $zahlungszielskontodatum,
+          ],
+          $text
         );
-        $zahlungszielskonto = $doctypeRow['zahlungszielskonto'];
-        $zahlungszieltageskonto = $doctypeRow['zahlungszieltageskonto'];
-        $zahlungszieltage = $doctypeRow['zahlungszieltage'];
-      }
-      if($zahlungszielskonto == 0) {
         return $text;
-      }
     }
-    $zahlungszielskontototal=$zahlungszielskonto;
-    if(empty($language)) {
-      $doctypeRow = $this->app->DB->SelectRow(
-        sprintf(
-          "SELECT sprache, adresse, datum, DATE_FORMAT(datum, '%%d.%%m.%%Y') AS datum_de, 
-          DATE_FORMAT(DATE_ADD(datum, INTERVAL zahlungszieltage DAY),'%%d.%%m.%%Y') AS zahlungdatum,
-          zahlungszieltage
-          FROM `%s` 
-          WHERE id = %d",
-          $doctype, $doctypeId
-        )
-      );
-
-      $language = !empty($doctypeRow['sprache'])?(String)$doctypeRow['sprache']:(String)$this->app->DB->Select(
-        sprintf(
-          'SELECT sprache FROM adresse WHERE id = %d',
-          $doctypeRow['adresse']
-        )
-      );
-    }
-    $zahlungszielskontodatum = $this->app->DB->Select(
-      sprintf(
-        "SELECT DATE_FORMAT(DATE_ADD(`datum`, INTERVAL %d DAY),'%%d.%%m.%%Y') 
-          FROM `%s`
-          WHERE `id` = %d 
-          LIMIT 1",
-        $zahlungszieltageskonto, $doctype, $doctypeId
-      )
-    );
-    if($this->einstellungen['own_discount_text']) {
-      if($doctype === 'rechnung') {
-        $ownText = $this->app->erp->Beschriftung('own_discount_text_invoice', $language);
-        if(empty($ownText)) {
-          $ownText = $this->einstellungen['own_discount_text_invoice'];
-        }
-        $text .= "\n".$ownText;
-      }
-      else{
-        $ownText = $this->app->erp->Beschriftung('own_discount_text_order', $language);
-        if(empty($ownText)) {
-          $ownText = $this->einstellungen['own_discount_text_order'];
-        }
-        $text .= "\n".$ownText;
-      }
-
-      if($zahlungszieltageskonto<=0){
-        $zahlungdatum = $this->app->DB->Select(
-          sprintf(
-            "SELECT DATE_FORMAT(DATE_ADD(`datum`, INTERVAL %d DAY),'%%d.%%m.%%Y') 
-            FROM `%s`
-            WHERE `id` = %d 
-            LIMIT 1",
-            $zahlungszieltageskonto, $doctype, $doctypeId
-          )
-        );
-        $zahlungszielskontodatum = $zahlungdatum;
-      }
-    }
-    else {
-      $text .= "\n".$this->app->erp->Beschriftung('dokument_skonto', $language)
-        ." $zahlungszielskonto% "
-        .$this->app->erp->Beschriftung('dokument_innerhalb', $language)
-        ." $zahlungszieltageskonto "
-        .$this->app->erp->Beschriftung('dokument_tagen', $language);
-    }
-
-    return str_replace(
-      [
-        '{ZAHLUNGSZIELSKONTO}',
-        '{ZAHLUNGSZIELTAGE}',
-        '{ZAHLUNGSZIELTAGESKONTO}',
-        '{ZAHLUNGSZIELSKONTOTOTAL}',
-        '{ZAHLUNGSZIELSKONTODATUM}',
-      ],
-      [
-        number_format($zahlungszielskonto,2,',','.'),
-        $zahlungszieltage,
-        $zahlungszieltageskonto,
-        number_format($zahlungszielskontototal,2,',','.'),
-        $zahlungszielskontodatum,
-      ],
-      $text
-    );
-  }
 
   /**
    * @return string
@@ -238,9 +153,15 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
   {
     $doctypeRow = $this->app->DB->SelectRow(
       sprintf(
-        "SELECT sprache, adresse, datum, DATE_FORMAT(datum, '%%d.%%m.%%Y') AS datum_de, 
-        DATE_FORMAT(DATE_ADD(datum, INTERVAL zahlungszieltage DAY),'%%d.%%m.%%Y') AS zahlungdatum,
-        zahlungszieltage
+        "SELECT 
+            sprache,
+            adresse,
+            datum,
+            DATE_FORMAT(datum, '%%d.%%m.%%Y') AS datum_de,
+            DATE_FORMAT(DATE_ADD(datum, INTERVAL zahlungszieltage DAY),'%%d.%%m.%%Y') AS zahlungdatum,
+            zahlungszieltage,
+            zahlungszielskonto,
+            zahlungszieltageskonto
         FROM `%s` 
         WHERE id = %d",
         $doctype, $doctypeid
@@ -248,6 +169,8 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
     );
     $zahlungszieltage = $doctypeRow['zahlungszieltage'];
     $zahlungdatum= $doctypeRow['zahlungdatum'];
+    $zahlungszielskonto = $doctypeRow['zahlungszielskonto'];
+    $zahlungszieltageskonto = $doctypeRow['zahlungszieltageskonto'];
     $language = !empty($doctypeRow['sprache'])?$doctypeRow['sprache']:
       $this->app->DB->Select(
         sprintf(
@@ -255,7 +178,6 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
           $doctypeRow['adresse']
         )
       );
-
     if($zahlungszieltage == 0) {
       $name = $doctype==='rechnung'?'invoice_immediately':'order_immediately';
     }
@@ -266,29 +188,14 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
     if(empty($zahlungsweisetext)) {
       $zahlungsweisetext = (String)$this->einstellungen[$name];
     }
-    if(empty($zahlungsweisetext)) {
-      
-    }
-    if(empty($zahlungsweisetext)) {
-      switch($name) {
-        case 'invoice_immediately':
-            $zahlungsweisetext = 'Rechnung zahlbar sofort. ';
-          break;
-        case 'invoice_next':
-          $zahlungsweisetext = 'Rechnung zahlbar innerhalb von {ZAHLUNGSZIELTAGE} Tagen bis zum {ZAHLUNGBISDATUM}. ';
-          break;
-      }
-    }
     $zahlungsweisetext = str_replace(
       ['{ZAHLUNGSZIELTAGE}','{ZAHLUNGBISDATUM}'],
       [$zahlungszieltage,$zahlungdatum],
       $zahlungsweisetext
     );
-
-    if(in_array($doctype, ['rechnung','auftrag','angebot'])) {
-      $zahlungsweisetext = $this->getSkontoText($doctype, $doctypeid, $zahlungsweisetext);
+    if(in_array($doctype, ['rechnung','auftrag','angebot'])) {    
+        $zahlungsweisetext = $this->getSkontoText($doctype, $doctypeid, $zahlungsweisetext, $language, $zahlungszielskonto, $zahlungszieltageskonto, $zahlungszieltage);
     }
-
     return $zahlungsweisetext;
   }
 
@@ -298,7 +205,6 @@ class Zahlungsweise_rechnung extends Zahlungsweisenmodul
   public function updatePostDataForAssistent($postData)
   {
     $postData['verhalten'] = 'rechnung';
-
     return $postData;
   }
 
