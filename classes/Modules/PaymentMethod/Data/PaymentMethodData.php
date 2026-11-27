@@ -30,6 +30,8 @@ final class PaymentMethodData
     /** @var string $paymentBehavior */
     private $paymentBehavior;
 
+    private $UNTDID4461;
+
     /** @var bool $autoPayed */
     private $autoPayed;
 
@@ -74,7 +76,8 @@ final class PaymentMethodData
         bool $autoPayedLiability,
         string $text,
         ?array $settings = [],
-        bool $deleted = false
+        bool $deleted = false,
+        $UNTDID4461 = null
     ) {
         self::ensureBehavior($paymentBehavior);
         $this->setName($name);
@@ -92,6 +95,7 @@ final class PaymentMethodData
         $this->text = $text;
         $this->settings = $settings;
         $this->deleted = $deleted;
+        $this->UNTDID4461 = $UNTDID4461;
     }
 
     /**
@@ -149,7 +153,8 @@ final class PaymentMethodData
             (bool)$array['automatischbezahltverbindlichkeit'],
             (string)$array['freitext'],
             $settings,
-            (bool)$array['geloescht']
+            (bool)$array['geloescht'],
+            $array['UNTDID4461']
         );
 
         return $self;
@@ -167,6 +172,7 @@ final class PaymentMethodData
             'aktiv'                             => (int)$this->active,
             'projekt'                           => $this->projectId,
             'verhalten'                         => $this->paymentBehavior,
+            'UNTDID4461'                        => $this->UNTDID4461,
             'automatischbezahlt'                => (int)$this->autoPayed,
             'automatischbezahltverbindlichkeit' => (int)$this->autoPayedLiability,
             'freitext'                          => $this->text,
@@ -279,6 +285,26 @@ final class PaymentMethodData
     /**
      * @return string
      */
+    public function getUNTDID4461(): ?string
+    {
+        return $this->UNTDID4461;
+    }
+
+    /**
+     * @param string $paymentBehavior
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return void
+     */
+    public function setUNTDID4461(string $UNTDID4461): void
+    {
+        $this->UNTDID4461 = $UNTDID4461;
+    }
+
+    /**
+     * @return string
+     */
     public function getPaymentBehavior(): string
     {
         return $this->paymentBehavior;
@@ -296,6 +322,7 @@ final class PaymentMethodData
         self::ensureBehavior($paymentBehavior);
         $this->paymentBehavior = $paymentBehavior;
     }
+
 
     /**
      * @return bool

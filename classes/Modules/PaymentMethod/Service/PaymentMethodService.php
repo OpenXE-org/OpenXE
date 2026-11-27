@@ -31,10 +31,34 @@ final class PaymentMethodService
     {
         $this->db->perform(
             'INSERT INTO `zahlungsweisen`
-            (`modul`,`type`, `bezeichnung`, `einstellungen_json`, `freitext`, `aktiv`, `geloescht`, `projekt`,
-            `automatischbezahlt`, `automatischbezahltverbindlichkeit`, `verhalten`)
-            VALUES (:module, :type, :name, :json, :text, :active, 0, :project_id,
-             :auto_payed, :auto_payed_liability, :payment_behavior)',
+            (
+                `modul`,
+                `type`,
+                `bezeichnung`,
+                `einstellungen_json`,
+                `freitext`,
+                `aktiv`,
+                `geloescht`,
+                `projekt`,
+                `automatischbezahlt`,
+                `automatischbezahltverbindlichkeit`,
+                `verhalten`,
+                `UNTDID4461`
+            )
+            VALUES (
+                :module,
+                :type,
+                :name,
+                :json,
+                :text,
+                :active,
+                0,
+                :project_id,
+                :auto_payed,
+                :auto_payed_liability,
+                :payment_behavior,
+                :UNTDID4461,
+            )',
             [
                 'module'               => $paymentMethod->getModule(),
                 'type'                 => $paymentMethod->getType(),
@@ -46,6 +70,7 @@ final class PaymentMethodService
                 'auto_payed'           => (int)$paymentMethod->isAutoPayed(),
                 'auto_payed_liability' => (int)$paymentMethod->isAutoPayedLiability(),
                 'payment_behavior'     => $paymentMethod->getPaymentBehavior(),
+                'UNTDID4461'           => $paymentMethod->getUNTDID4461()
             ]
         );
 
@@ -77,6 +102,7 @@ final class PaymentMethodService
                 `automatischbezahlt` = :auto_payed,
                 `automatischbezahltverbindlichkeit` = :auto_payed_liability,
                 `verhalten` = :payment_behavior,
+                `UNTDID4461` = :UNTDID4461,
                 `geloescht` = :deleted
             WHERE `id` = :id',
             [
@@ -90,6 +116,7 @@ final class PaymentMethodService
                 'auto_payed'           => (int)$paymentMethod->isAutoPayed(),
                 'auto_payed_liability' => (int)$paymentMethod->isAutoPayedLiability(),
                 'payment_behavior'     => $paymentMethod->getPaymentBehavior(),
+                'UNTDID4461'           => $paymentMethod->getUNTDID4461(),
                 'deleted'              => (int)$paymentMethod->isDeleted(),
                 'id'                   => $paymentMethodId,
             ]

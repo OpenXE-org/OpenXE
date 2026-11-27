@@ -19,6 +19,7 @@
           <tr><td>{|Autom. bezahlt (Rechnung)|}:</td><td><input type="checkbox" [AUTOMATISCHBEZAHLT] name="automatischbezahlt" value="1"><i>{|Rechnungen werden automatisch auf bezahlt gesetzt <p style="color:red; display:inline">Achtung: nur setzen, wenn keine Verknüpfung im Zahlungseingang vorgenommern werden soll</b>|}.</i></td></tr>
           <tr><td>{|Autom. bezahlt (Verbindlichkeit)|}:</td><td><input type="checkbox" [AUTOMATISCHBEZAHLTVERBINDLICHKEIT] name="automatischbezahltverbindlichkeit" value="1"><i>{|Verbindlichkeiten werden automatisch auf bezahlt gesetzt|}.</i></td></tr>
           <tr><td>{|Verhalten wie|}:</td><td><select name="verhalten">[SELVERHALTEN]</select></td></tr>
+          <tr><td>{|Zahlungsart für EN 16931|}:</td><td><select name="UNTDID4461">[UNTDID4461]</select><i>Für elektronische Rechnungen, in der Regel SEPA-Überweisung</i></td></tr>
           <tr><td>{|Aktiv|}:</td><td><input type="checkbox" name="aktiv" [AKTIV] value="1"><i>{|Nicht mehr verwendete Zahlungsweisen k&ouml;nnen deaktiviert werden|}.</i></td></tr>
           [JSON]
           [ZAHLUNGSWEISEN_EDIT_HOOK1]

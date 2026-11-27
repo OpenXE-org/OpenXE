@@ -716,12 +716,6 @@ class Zahlungsweisen {
         }
         $paymentMethod = new PaymentMethodData(0, '', 'Custom', 'custom', true, 0, '', false, false, '');
         $id = $this->service->create($paymentMethod);
-        /*$this->app->DB->Insert(
-          "INSERT INTO 
-            `zahlungsweisen` (`bezeichnung`, `type`,`aktiv`, `geloescht`, `modul`) 
-            VALUES ('','',1,0,'')"
-        );
-        $id = $this->app->DB->GetInsertID();*/
         $this->app->Location->execute('index.php?module=zahlungsweisen&action=edit&id='.$id);
       }
       if($this->app->erp->ModulVorhanden($auswahlmodul)) {
@@ -845,6 +839,7 @@ class Zahlungsweisen {
     $input['automatischbezahlt'] = (int)$this->app->Secure->GetPOST('automatischbezahlt');
     $input['automatischbezahltverbindlichkeit'] = (int)$this->app->Secure->GetPOST('automatischbezahltverbindlichkeit');
     $input['verhalten'] = $this->app->Secure->GetPOST('verhalten', null, '', $escapeString);
+    $input['UNTDID4461'] = $this->app->Secure->GetPOST('UNTDID4461', null, '', $escapeString);
     $input['modul'] = $this->app->Secure->GetPOST('selmodul', null, '', $escapeString);
     $input['freitext'] = $this->app->Secure->GetPOST('freitext', null, '', $escapeString);
 
@@ -884,9 +879,30 @@ class Zahlungsweisen {
     ];
   }
 
+  public function getUNTDID4461codes(): array
+  {
+    return [
+        null => '',
+        1 => 'Nicht definiert',
+        10 => 'Barzahlung',
+        20 => 'Scheck',
+        30 => 'Überweisung (allgemein)',
+        31 => 'Lastschrift (allgemein)',
+        42 => 'Banküberweisung (international)',
+        48 => 'Kartenzahlung',
+        54 => 'Kreditkarte',
+        55 => 'Debitkarte',
+        57 => 'Dauerauftrag',
+        58 => 'SEPA-Überweisung',
+        59 => 'SEPA-Lastschrift',
+        68 => 'Online-Zahlung',
+        'ZZZ' => 'Sonstige'
+    ];
+  }
+
   function getZahlungsweisenModule($zahlungsweise, $projekt) {
     $zahlungsweisenmodule = $this->app->DB->SelectRow(
-      "SELECT id, modul, verhalten 
+      "SELECT id, modul, verhalten, UNTDID4461
         FROM zahlungsweisen 
         WHERE type = '".$this->app->DB->real_escape_string($zahlungsweise)."' AND
           (projekt = '$projekt' OR projekt = 0) 
@@ -995,6 +1011,7 @@ class Zahlungsweisen {
             $paymentMethodRow['type'] = $input['type'];
             $paymentMethodRow['verhalten'] = $input['verhalten'];
             $paymentMethodRow['id'] = $id;
+
             $paymentMethod = PaymentMethodData::fromDbState($paymentMethodRow);
             $paymentMethod->setName($input['bezeichnung']);
             $paymentMethod->setType($input['type']);
@@ -1005,6 +1022,7 @@ class Zahlungsweisen {
             $paymentMethod->setAutoPayed((bool)$input['automatischbezahlt']);
             $paymentMethod->setAutoPayedLiability((bool)$input['automatischbezahltverbindlichkeit']);
             $paymentMethod->setPaymentBehavior($input['verhalten']);
+            $paymentMethod->setUNTDID4461($input['UNTDID4461']);
             $this->service->update($paymentMethod);
 
             if($input['aktiv'] == 1){
@@ -1103,9 +1121,9 @@ class Zahlungsweisen {
       $aktiv = $daten['aktiv'];
       $automatischbezahlt = $daten['automatischbezahlt'];
       $automatischbezahltverbindlichkeit = $daten['automatischbezahltverbindlichkeit'];
-      $vorkasse = $daten['vorkasse'];
       $freitext = $daten['freitext'];
       $verhalten = $daten['verhalten'];
+      $UNTDID4461 = $daten['UNTDID4461'];
       $projektname = $this->app->DB->Select(
         sprintf(
           'SELECT `abkuerzung` FROM `projekt` WHERE `id` = %d',
@@ -1116,10 +1134,6 @@ class Zahlungsweisen {
       if(isset($obj) && method_exists($obj, 'Einstellungen')) {
         $obj->Einstellungen('JSON');
       }
-    }
-    else{
-      $this->app->Tpl->Set('AKTMODUL','');
-      $verhalten = 'vorkasse';
     }
 
     if($error == '') {
@@ -1140,6 +1154,8 @@ class Zahlungsweisen {
     $this->app->Tpl->Set('PROJEKT', $error == ''?$projektname:$input['projekt']);
 
     $this->app->Tpl->Set('SELVERHALTEN', $this->VerhaltenSel($error == ''?$verhalten:$input['verhalten']));
+    $this->app->Tpl->Set('UNTDID4461', $this->app->erp->GetSelectAsso($this->getUNTDID4461codes(),$UNTDID4461?$UNTDID4461:58)); // 58 default, SEPA-Überweisung
+
     if(($error == '' && $aktiv == 1) || ($error != '' && $input['aktiv'])){
       $this->app->Tpl->Set('AKTIV', 'checked');
     }

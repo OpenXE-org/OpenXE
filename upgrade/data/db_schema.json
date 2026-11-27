@@ -118360,6 +118360,17 @@
                     "Comment": ""
                 },
                 {
+                    "Field": "UNTDID4461",
+                    "Type": "varchar(5)",
+                    "Collation": "utf8mb3_general_ci",
+                    "Null": "NO",
+                    "Key": "",
+                    "Default": null,
+                    "Extra": "",
+                    "Privileges": "select,insert,update,references",
+                    "Comment": ""
+                },
+                {
                     "Field": "einstellungen_json",
                     "Type": "text",
                     "Collation": "utf8mb3_general_ci",
