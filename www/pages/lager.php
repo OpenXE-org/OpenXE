@@ -3099,7 +3099,7 @@ $check_charge=="2" || $check_charge=="1" || $check_mhd=="1")
             // umlagern3 in lager_platz_inhalt buchen
             if($cmd==='umlagern')
             {
-              $this->app->erp->LagerEinlagernDifferenz($artikel,$menge,$regalneu,$projektid,"Umlagern");
+              $this->app->erp->LagerEinlagern($artikel,$menge,$regalneu,$projektid,$grundtext);
               //$this->app->erp->LogFile("ETIKETT2 A $artikel M $menge R $regalneu"); //BENE
               //$data['lager_platz_name'] = $this->app->DB->Select("SELECT kurzbezeichnung FROM lager_platz WHERE id='$regalneu'");
               //$this->app->erp->EtikettenDrucker("artikel_klein",1,'artikel',$artikel,$data);
