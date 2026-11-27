@@ -209,7 +209,7 @@ class Managementboard
                AND r.mahnwesen_gesperrt='0' AND r.mahnwesenfestsetzen!=1 AND p.mahnwesen=1";
         break;
       case 25:
-        $sql = "SELECT SUM(if(k.saldo_summieren,k.saldo_betrag+IFNULL((SELECT SUM(ka.haben-ka.soll) 
+        $sql = "SELECT SUM(if(k.saldo_summieren,k.saldo_betrag+IFNULL((SELECT SUM(ka.soll) 
           FROM kontoauszuege ka 
           WHERE ka.konto=k.id AND ka.buchung >= k.saldo_datum AND (ka.importfehler=0 OR ka.importfehler IS NULL)),0),0)) 
           FROM konten k 
