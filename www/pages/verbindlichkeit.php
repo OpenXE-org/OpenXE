@@ -1332,24 +1332,29 @@ class Verbindlichkeit {
                     $file_paths[] = $this->app->erp->GetDateiPfad($file_attachment);
                 }
             }
-            $pdfMerger = $this->app->Container->get('PdfMerger');
-            $mergeOutputPath = realpath($this->app->erp->GetTMP()) . '/' . uniqid('sammelpdf_', true) . '.pdf';
-            try {
-                $pdfMerger->merge($file_paths, $mergeOutputPath);
-                header('Content-type:application/pdf');
-                header('Content-Disposition: attachment;filename='.md5(microtime(true)).'.pdf');
-                readfile($mergeOutputPath);
-                $this->app->ExitXentral();
-            } catch (Exception $exception) {
-                // Just the first PDF
-                foreach ($file_attachments as $file_attachment) {
-                    if ($this->app->erp->GetDateiEndung($file_attachment) == 'pdf') {
-                        $file_contents = $this->app->erp->GetDatei($file_attachment);
-                        header('Content-type:application/pdf');
-                        header('Content-Disposition: attachment;filename=verbindlichkeit_'.$id.'.pdf');
-                        echo($file_contents);
-                        $this->app->ExitXentral();
-                    }
+            // Merge only if there are several PDFs, a single PDF is shown unaltered
+            if (count($file_paths) > 1) {
+                $pdfMerger = $this->app->Container->get('PdfMerger');
+                $mergeOutputPath = realpath($this->app->erp->GetTMP()) . '/' . uniqid('sammelpdf_', true) . '.pdf';
+                try {
+                    $pdfMerger->merge($file_paths, $mergeOutputPath);
+                    header('Content-type:application/pdf');
+                    header('Content-Disposition: attachment;filename=' . md5(microtime(true)) . '.pdf');
+                    readfile($mergeOutputPath);
+                    $this->app->ExitXentral();
+                } catch (Exception $exception) {
+                    // Fall through to the first PDF
+                }
+            }
+
+            // Just the first PDF
+            foreach ($file_attachments as $file_attachment) {
+                if ($this->app->erp->GetDateiEndung($file_attachment) == 'pdf') {
+                    $file_contents = $this->app->erp->GetDatei($file_attachment);
+                    header('Content-type:application/pdf');
+                    header('Content-Disposition: attachment;filename=verbindlichkeit_' . $id . '.pdf');
+                    echo ($file_contents);
+                    $this->app->ExitXentral();
                 }
             }
         }
