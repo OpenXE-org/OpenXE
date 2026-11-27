@@ -1389,11 +1389,39 @@ class Rechnung extends GenRechnung
             $positionen[$key]['umsatz_brutto_gesamt'] = round($position['umsatz_brutto_gesamt'],2);
 
             $steuern[$steuersatz]['umsatz_netto'] += round($position['umsatz_netto_gesamt'],2);
-            $steuern[$steuersatz]['umsatz_brutto'] += round($position['umsatz_brutto_gesamt'],2);
             $steuern[$steuersatz]['prozent'] = $steuersatz;
-            $umsatz_brutto_gesamt += round($position['umsatz_brutto_gesamt'],2);
-            $steuer_gesamt += round($position['umsatz_brutto_gesamt'],2)-round($position['umsatz_netto_gesamt'],2);
         }
+
+        // Die Steuer je Steuersatz kommt aus erpAPI::steuerAusBelegArray(), wie im PDF und in rechnung.soll,
+        // damit die XML-Rechnung fuer jede Rundungsart (Projekt: preisberechnung) dieselben Steuerbetraege enthaelt.
+        // Die Summe der je Position gerundeten Steuerbetraege wich um einige Cent vom PDF ab (-> PayableRoundingAmount).
+        // Die Bemessungsgrundlage bleibt die Summe der gerundeten Positionsbetraege (EN 16931 BR-S-08).
+        $steuer_pro_satz = [];
+        $mit_umsatzsteuer = $this->app->erp->RechnungMitUmsatzeuer($id);
+        if ($mit_umsatzsteuer) {
+            foreach ((array) $this->app->erp->steuerAusBelegArray('rechnung', $id) as $zeile) {
+                $satz = sprintf('%.2f', $zeile['steuersatz']);
+                $steuer_pro_satz[$satz] = ($steuer_pro_satz[$satz] ?? 0) + $zeile['brutto'] - $zeile['netto'];
+            }
+        }
+        foreach ($steuern as $key => $steuer) {
+            $umsatz_netto = round($steuer['umsatz_netto'], 2);
+            if (!$mit_umsatzsteuer) {
+                // wie im PDF: keine Steuer, unabhaengig von den Steuersaetzen der Positionen
+                $steuerbetrag = 0;
+            } else {
+                // Fallback, sollte nicht vorkommen: Steuer auf die Bemessungsgrundlage (EN 16931 BR-CO-17)
+                $steuerbetrag = round($steuer_pro_satz[sprintf('%.2f', $steuer['prozent'])]
+                    ?? $umsatz_netto * $steuer['prozent'] / 100, 2);
+            }
+            $steuern[$key]['umsatz_netto'] = $umsatz_netto;
+            $steuern[$key]['umsatz_brutto'] = round($umsatz_netto + $steuerbetrag, 2);
+            $steuer_gesamt += $steuerbetrag;
+            $umsatz_brutto_gesamt += $steuern[$key]['umsatz_brutto'];
+        }
+        $steuer_gesamt = round($steuer_gesamt, 2);
+        $umsatz_brutto_gesamt = round($umsatz_brutto_gesamt, 2);
+
         $result['positionen'] = $positionen;
         $result['steuern'] = $steuern;
         $result['umsatz_brutto_gesamt'] = $umsatz_brutto_gesamt;
