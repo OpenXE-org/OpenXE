@@ -16298,10 +16298,11 @@ function Gegenkonto($ust_befreit,$ustid='', $doctype = '', $doctypeId = 0)
 
   function DokumentCreateQuick($adresse,$betreff,$text,$projekt)
   {
-    $data['adresse'] = $adresse;
-    $data['betreff'] = $betreff;
-    $data['content'] = $text;
-    $data['projekt'] = $projekt;
+    // DokumentCreate erwartet SQL-escapte Werte (wie von Secure->GetPOST)
+    $data['adresse'] = $this->app->DB->real_escape_string((string) $adresse);
+    $data['betreff'] = $this->app->DB->real_escape_string((string) $betreff);
+    $data['content'] = $this->app->DB->real_escape_string((string) $text);
+    $data['projekt'] = $this->app->DB->real_escape_string((string) $projekt);
     $this->DokumentCreate($data);
   }
 

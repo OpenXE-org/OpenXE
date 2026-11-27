@@ -769,6 +769,11 @@ class Mahnwesen {
         $data['email_an'] = $rechnung['email'];
         $data['sent'] = 1;
 
+        // DokumentCreate erwartet SQL-escapte Werte (wie von Secure->GetPOST)
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->app->DB->real_escape_string((string) $value);
+        }
+
         $crm_id = $this->app->erp->DokumentCreate($data,$this->app->User->GetAdresse());
         $this->app->erp->AddDateiStichwort($fileid,'anhang','dokument',$crm_id);
 
