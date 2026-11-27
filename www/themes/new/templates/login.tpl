@@ -6,17 +6,17 @@
   </div>
   <div class="field">
     <label for="username">Benutzer:</label>
-    <input type="text" id="username" name="username" /><input type="hidden" name="isbarcode" id="isbarcode" value="0" />
+    <input type="text" id="username" name="username" autocomplete="username" /><input type="hidden" name="isbarcode" id="isbarcode" value="0" />
   </div>
 
   <div class="field">
     <label for="password">Passwort:</label>
-    <input type="password" id="password" name="password" />
+    <input type="password" id="password" name="password" autocomplete="current-password" />
   </div>
 
   <div class="field">
     <label for="token">OTP (optional)</label>
-    <input type="text" autocomplete="off" id="token" name="token" />
+    <input type="text" autocomplete="one-time-code" id="token" name="token" />
   </div>
   <!--<span id="loginmsg">[LOGINMSG]</span>-->
   <span style="color:red">[LOGINERRORMSG]</span>

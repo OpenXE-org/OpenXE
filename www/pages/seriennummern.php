@@ -1163,7 +1163,7 @@ class Seriennummern {
 
                switch ($from) {
                     case 'wareneingang':
-                        $this->app->erp->MenuEintrag("index.php?module=wareneingang&action=distriinhalt&id=".$wareneingang_id, "Zur&uuml;ck");
+                        $this->app->erp->MenuEintrag("index.php?module=wareneingang&action=distriinhalt&id=".$wareneingang_id, "Zur&uuml;ck zum Wareneingang");
                     break;
                     case 'seriennummern':
                         $this->app->erp->MenuEintrag("index.php?module=seriennummern&action=wareneingaenge_list", "Zur&uuml;ck");

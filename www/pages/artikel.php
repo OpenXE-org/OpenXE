@@ -1104,7 +1104,7 @@ class Artikel extends GenArtikel {
           $findcols[] = 'bildvorschau';
         }
         $heading = array_merge($heading, array('Nummer', 'Artikel'));
-        $width = array_merge($width, array('1%', '55%'));
+        $width = array_merge($width, array('10%', '55%'));
         $findcols = array_merge($findcols, array('nummer', 'name_de'));
         if($this->app->erp->RechteVorhanden("multilevel","list") && $this->app->erp->Firmendaten("modul_mlm")=="1")
         {

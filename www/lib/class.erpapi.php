@@ -24702,7 +24702,7 @@ function ChargenMHDAuslagern($artikel, $menge, $lagerplatztyp, $lpid,$typ,$wert,
         $extraspalte = "<td width=40 nowrap><img src=\"themes/new/images/down.png\" onclick=\"daup(".$dv['id'].")\" /><img src=\"themes/new/images/up.png\" onclick=\"dadown(".$dv['id'].")\" /></td>";
       } else $extraspalte="<td width=40>&nbsp;</td>";
 
-        $this->app->Tpl->Add('DATEIANHAENGE','<tr><td width=20 id="td_'.$dv['id'].'"><input type="hidden" name="dateisort_'.$dv['datei'].'" value="'.($dk+1).'" /><input type="checkbox" value="1" name="datei_'.$dv['datei'].'" '.$checked.'></td><td><a target="_blank" style="font-weight:normal;color:black;" href="index.php?module=dateien&action=download&typ='.$dokument.'&id='.$dv['datei'].'">'.$dateiname.'</a></td>'.$extraspalte.'</tr>');
+        $this->app->Tpl->Add('DATEIANHAENGE','<tr><td width=20 id="td_'.$dv['id'].'"><input type="hidden" name="dateisort_'.$dv['datei'].'" value="'.($dk+1).'" /><input type="checkbox" value="1" name="datei_'.$dv['datei'].'" '.$checked.'></td><td style="overflow-wrap:anywhere;"><a target="_blank" style="font-weight:normal;color:black;" href="index.php?module=dateien&action=download&typ='.$dokument.'&id='.$dv['datei'].'">'.$dateiname.'</a></td>'.$extraspalte.'</tr>');
 
       }
     } else {
