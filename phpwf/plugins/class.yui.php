@@ -1454,7 +1454,7 @@ class YUI {
     $fmodul = $this->app->Secure->GetGET("fmodul");
 
     if($this->app->erp->Firmendaten("erweiterte_positionsansicht")=="1")
-      $erweiterte_ansicht=",'<br><div style=\"width:300px; white-space:normal;\">',b.beschreibung,'</div>'";
+      $erweiterte_ansicht=",'<div style=\"width:300px; white-space:normal;\">',b.beschreibung,'</div>'";
 
     $hersteller_ansicht = '';
 
