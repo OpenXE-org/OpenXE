@@ -5889,7 +5889,7 @@ Die Gesamtsumme stimmt nicht mehr mit urspr&uuml;nglich festgelegten Betrag '.
           );
 
           $this->app->erp->ANABREGSNeuberechnen($rechnung,"rechnung");
-          $this->app->erp->rechnung_zahlstatus_berechnen($id);
+          $this->app->erp->rechnung_zahlstatus_berechnen($rechnung);
           $this->app->erp->RechnungArchivieren($rechnung);
         }
       }
