@@ -12592,8 +12592,8 @@ function SendPaypalFromAuftrag($auftrag, $test = false)
         $this->app->DB->Update("UPDATE auftrag SET porto_ok='1' WHERE id='$auftrag' LIMIT 1");
       }
       else{
-        $portoFreeLimit = (double) $this->app->DB->Select("SELECT portofreiab FROM adresse WHERE id={$adresse} LIMIT 1");
-        $parcelValue = (double) $auftragarr['gesamtsumme'];
+        $portoFreeLimit = (float) $this->app->DB->Select("SELECT portofreiab FROM adresse WHERE id={$adresse} LIMIT 1");
+        $parcelValue = (float) $auftragarr['gesamtsumme'];
 
         if(!empty($portoFreeLimit) && !empty($parcelValue) && $parcelValue > $portoFreeLimit){
           $this->app->DB->Update("UPDATE auftrag SET porto_ok='1' WHERE id='$auftrag' LIMIT 1");
@@ -29276,7 +29276,7 @@ function Firmendaten($field,$projekt="")
               {
                 $originalwaehrung = $ek['waehrung'];
                 $originalpreis = $ek['preis'];
-                $ekpreis = (double)$this->GetEinkaufspreisWaehrung($ek['artikel'],$ek['menge'],$waehrung,$originalwaehrung, $originalpreis);
+                $ekpreis = (float)$this->GetEinkaufspreisWaehrung($ek['artikel'],$ek['menge'],$waehrung,$originalwaehrung, $originalpreis);
                 if($originalwaehrung == '')$originalwaehrung = 'EUR';
                 switch($typ)
                 {

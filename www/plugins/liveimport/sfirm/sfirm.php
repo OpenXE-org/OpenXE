@@ -145,7 +145,7 @@ function parse_csv ($csv_string, $delimiter = ",", $skip_empty_lines = true, $tr
             $fields = $trim_fields ? array_map('trim', explode($delimiter, $line)) : explode($delimiter, $line);
             return array_map(
                 function ($field) {
-                    return str_replace('!!Q!!', '"', mb_convert_encoding(urldecode($field, 'ISO-8859-1', 'UTF-8')));
+                    return str_replace('!!Q!!', '"', mb_convert_encoding(urldecode($field), 'ISO-8859-1', 'UTF-8'));
                 },
                 $fields
             );
