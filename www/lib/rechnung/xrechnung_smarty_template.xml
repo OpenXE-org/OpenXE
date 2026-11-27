@@ -144,7 +144,7 @@
     </cac:Delivery>
 {/if}
     <cac:PaymentMeans>
-        <cbc:PaymentMeansCode>{$rechnung.kopf.payment_means_code|default:'58'}</cbc:PaymentMeansCode>
+        <cbc:PaymentMeansCode>{$rechnung.kopf.payment_means_code}</cbc:PaymentMeansCode>
 {if !empty($rechnung.rechnungssteller.iban)}
         <cac:PayeeFinancialAccount>
             <cbc:ID><![CDATA[{$rechnung.rechnungssteller.iban}]]></cbc:ID>

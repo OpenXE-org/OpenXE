@@ -215,18 +215,10 @@ class DocumentDataService
         }
 
         // Map payment means code according to UNCL4461
-        $zahlungsweise = strtolower(trim($kopf['zahlungsweise'] ?? ''));
-        $paymentMeansCode = '58'; // default: SEPA credit transfer
-        if (in_array($zahlungsweise, ['lastschrift', 'sepa_lastschrift', 'sepalastschrift', 'sepa'])) {
-            $paymentMeansCode = '59'; // SEPA direct debit
-        } elseif (in_array($zahlungsweise, ['kreditkarte', 'creditcard'])) {
-            $paymentMeansCode = '48';
-        } elseif ($zahlungsweise === 'paypal') {
-            $paymentMeansCode = '68';
-        } elseif (in_array($zahlungsweise, ['bar', 'cash'])) {
-            $paymentMeansCode = '10';
-        }
-        $kopf['payment_means_code'] = $paymentMeansCode;
+        $zahlungsweise = strtolower(trim($kopf['zahlungsweise'] ?? ''));                       
+        $paymentMethodService = $this->app->Container->get('PaymentMethodService');
+        $zahlungsweiseData = $paymentMethodService->getFromShortname($kopf['zahlungsweise']);
+        $kopf['payment_means_code'] = $zahlungsweiseData['UNTDID4461'];
 
         // Calculate due date if available
         if (!empty($kopf['datum']) && isset($kopf['zahlungszieltage']) && $kopf['zahlungszieltage'] !== '') {
