@@ -2398,7 +2398,7 @@ class Rechnung extends GenRechnung
                 LIMIT 1"
               );
 
-              if((($checkpapier !=1) || $erechnung) &&
+              if((($checkpapier !=1) || $xmlrechnung) &&
                 $this->app->DB->Select(
                   "SELECT r.id 
                   FROM rechnung AS r 
@@ -2410,7 +2410,7 @@ class Rechnung extends GenRechnung
                 $this->app->erp->RechnungArchivieren($v);
                 $this->app->erp->Rechnungsmail($v);
               }
-              else if($checkpapier && $drucker && !$erechnung) {
+              else if($checkpapier && $drucker && !$xmlrechnung) {
                 $this->app->erp->RechnungArchivieren($v);
                 $projekt = $this->app->DB->Select(
                   "SELECT projekt FROM rechnung WHERE id='$v' LIMIT 1"
