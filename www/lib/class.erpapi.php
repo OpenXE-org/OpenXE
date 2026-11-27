@@ -39728,6 +39728,12 @@ function Firmendaten($field,$projekt="")
       }elseif($this->Firmendaten('freifeld'.$i.'typ') === 'mehrzeilig') {
         $field = new HTMLTextarea('freifeld'.$i, 5,75);
         $form->NewField($field);
+      }elseif($this->Firmendaten('freifeld'.$i.'typ') === 'datum') {
+        // Freifelder vom Typ Datum werden als JJJJ-MM-TT gespeichert
+        $this->app->YUI->DatePickerISO('freifeld'.$i);
+        if($form !== null) {
+          $form->AddMandatory('freifeld'.$i, 'isodatum_oder_leer', 'Kein g&uuml;ltiges Datum (JJJJ-MM-TT)!', 'MSGFREIFELD'.$i);
+        }
       }
     }
   }

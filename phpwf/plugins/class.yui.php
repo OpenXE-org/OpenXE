@@ -3355,8 +3355,17 @@ class YUI {
   }
 
   function DatePicker($name) {
+    $this->datePickerWithFormat($name, 'dd.mm.yy');
+  }
 
-    $this->app->Tpl->Add('JQUERY', '$( "#' . $name . '" ).datepicker({ dateFormat: \'dd.mm.yy\',dayNamesMin: [\'SO\', \'MO\', \'DI\', \'MI\', \'DO\', \'FR\', \'SA\'], firstDay:1,
+  // Datepicker mit ISO-Datumsformat (JJJJ-MM-TT)
+  function DatePickerISO($name) {
+    $this->datePickerWithFormat($name, 'yy-mm-dd');
+  }
+
+  private function datePickerWithFormat($name, $dateFormat) {
+
+    $this->app->Tpl->Add('JQUERY', '$( "#' . $name . '" ).datepicker({ dateFormat: \'' . $dateFormat . '\',dayNamesMin: [\'SO\', \'MO\', \'DI\', \'MI\', \'DO\', \'FR\', \'SA\'], firstDay:1,
           showWeek: true, monthNames: [\'Januar\', \'Februar\', \'März\', \'April\', \'Mai\', 
           \'Juni\', \'Juli\', \'August\', \'September\', \'Oktober\',  \'November\', \'Dezember\'], });');
   }
