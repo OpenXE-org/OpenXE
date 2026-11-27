@@ -226,7 +226,7 @@ class Exportbuchhaltung
         if (empty($buchhaltung_wj_beginn)) {
             $missing_obligatory[] = "Wirtschaftsjahr";
         }
-        $buchhaltung_sachkontenlaenge = $this->app->erp->Firmendaten('buchhaltung_sachkontenlaenge');
+        $buchhaltung_sachkontenlaenge = (int) $this->app->erp->Firmendaten('buchhaltung_sachkontenlaenge');
         if (empty($buchhaltung_sachkontenlaenge)) {
             $missing_obligatory[] = "Sachkontenl&auml;nge";
         }
