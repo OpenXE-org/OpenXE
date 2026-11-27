@@ -23,7 +23,7 @@ final class HttpClient implements HttpClientInterface
     /**
      * @param RequestOptions|null $options
      */
-    public function __construct(RequestOptions $options = null)
+    public function __construct(?RequestOptions $options = null)
     {
         $this->options = $options === null ? new RequestOptions() : clone $options;
     }
@@ -56,7 +56,7 @@ final class HttpClient implements HttpClientInterface
      */
     public function sendRequest(
         ClientRequestInterface $request,
-        RequestOptions $options = null
+        ?RequestOptions $options = null
     ): ServerResponseInterface {
         $optionsArray = $options === null ? $this->options->toArray() : $options->toArray();
 

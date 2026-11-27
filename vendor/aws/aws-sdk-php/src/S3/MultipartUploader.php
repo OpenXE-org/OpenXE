@@ -55,6 +55,8 @@ class MultipartUploader extends AbstractUploader
      *   of the multipart upload and that is used to resume a previous upload.
      *   When this option is provided, the `bucket`, `key`, and `part_size`
      *   options are ignored.
+     * - track_upload: (boolean) Set true to track status in 1/8th increments
+     *   for upload.
      *
      * @param S3ClientInterface $client Client used for the upload.
      * @param mixed             $source Source of the data to upload.
@@ -70,6 +72,10 @@ class MultipartUploader extends AbstractUploader
             'key'    => null,
             'exception_class' => S3MultipartUploadException::class,
         ]);
+
+        if ($this->displayProgress) {
+            $this->getState()->setProgressThresholds($this->source->getSize());
+        }
     }
 
     protected function loadUploadWorkflowInfo()
@@ -113,8 +119,8 @@ class MultipartUploader extends AbstractUploader
             // Case 2: Stream is not seekable; must store in temp stream.
             $source = $this->limitPartStream($this->source);
             $source = $this->decorateWithHashes($source, $data);
-            $body = Psr7\stream_for();
-            Psr7\copy_to_stream($source, $body);
+            $body = Psr7\Utils::streamFor();
+            Psr7\Utils::copyToStream($source, $body);
         }
 
         $contentLength = $body->getSize();
@@ -126,6 +132,13 @@ class MultipartUploader extends AbstractUploader
 
         $body->seek(0);
         $data['Body'] = $body;
+
+        if (isset($config['add_content_md5'])
+            && $config['add_content_md5'] === true
+        ) {
+            $data['AddContentMD5'] = true;
+        }
+
         $data['ContentLength'] = $contentLength;
 
         return $data;
@@ -139,7 +152,7 @@ class MultipartUploader extends AbstractUploader
     protected function getSourceMimeType()
     {
         if ($uri = $this->source->getMetadata('uri')) {
-            return Psr7\mimetype_from_filename($uri)
+            return Psr7\MimeType::fromFilename($uri)
                 ?: 'application/octet-stream';
         }
     }

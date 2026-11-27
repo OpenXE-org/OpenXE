@@ -22,7 +22,7 @@ class SubscriptionModule implements SubscriptionModuleInterface
     $this->db = $db;
   }
 
-  public function GetPositions(int $address, string $documentType, DateTimeInterface $calculationDate = null): array
+  public function GetPositions(int $address, string $documentType, ?DateTimeInterface $calculationDate = null): array
   {
     if ($calculationDate === null)
       $calculationDate = new DateTimeImmutable('today');
@@ -70,7 +70,7 @@ class SubscriptionModule implements SubscriptionModuleInterface
         'address' => $address]);
   }
 
-  public function CreateInvoice(int $address, DateTimeInterface $calculationDate = null) {
+  public function CreateInvoice(int $address, ?DateTimeInterface $calculationDate = null) {
     $positions = $this->GetPositions($address, 'rechnung', $calculationDate);
     if(empty($positions))
       return;
@@ -92,7 +92,7 @@ class SubscriptionModule implements SubscriptionModuleInterface
     //$this->app->erp->BelegFreigabe('rechnung', $invoice);
   }
 
-  public function CreateOrder(int $address, DateTimeInterface $calculationDate = null) {
+  public function CreateOrder(int $address, ?DateTimeInterface $calculationDate = null) {
     $positions = $this->GetPositions($address, 'auftrag', $calculationDate);
     if(empty($positions))
       return;

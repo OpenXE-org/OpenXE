@@ -46,7 +46,7 @@ final class MysqliAdapter implements AdapterInterface
      * @param DatabaseConfig         $config
      * @param ProfilerInterface|null $profiler
      */
-    public function __construct(DatabaseConfig $config, ProfilerInterface $profiler = null)
+    public function __construct(DatabaseConfig $config, ?ProfilerInterface $profiler = null)
     {
         $this->config = $config;
         $this->profiler = $profiler;

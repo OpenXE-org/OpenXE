@@ -12,7 +12,7 @@ class ValidationErrorException extends HttpException
         array $errors,
         $message = 'Validation error',
         $code = ApiError::CODE_VALIDATION_ERROR,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         parent::__construct(400, $message, $code, $previous, $errors);
     }

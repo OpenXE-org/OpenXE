@@ -43,7 +43,7 @@ final class SystemConfigGateway
      *
      * @return string
      */
-    public function tryGetValue(string $namespace, string $key, string $default = null): ?string
+    public function tryGetValue(string $namespace, string $key, ?string $default = null): ?string
     {
         $configurationKey = $this->helper->getValidatedConfigurationKey($namespace, $key);
 

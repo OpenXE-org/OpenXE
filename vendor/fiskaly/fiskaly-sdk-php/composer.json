@@ -1,0 +1,28 @@
+{
+    "name": "fiskaly/fiskaly-sdk-php",
+    "description": "fiskaly Cloud-TSE SDK for PHP",
+    "keywords": ["fiskaly", "php", "src"],
+    "type": "library",
+    "homepage": "https://github.com/fiskaly/fiskaly-sdk-php",
+    "license": "MIT",
+    "version": "1.2.100",
+    "require": {
+        "php": ">=7.1",
+        "datto/json-rpc-http": "*",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "FiskalyClient\\": "src"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.1",
+        "friendsofphp/php-cs-fixer": "^2.16"
+    },
+    "scripts": {
+        "format": [
+            "vendor/bin/php-cs-fixer fix"
+        ]
+    }
+}

@@ -4,7 +4,9 @@ namespace Aws\S3;
 use Aws;
 use Aws\CommandInterface;
 use Aws\Exception\AwsException;
+use Aws\MetricsBuilder;
 use GuzzleHttp\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\PromisorInterface;
 use Iterator;
 
@@ -25,7 +27,9 @@ class Transfer implements PromisorInterface
     private $concurrency;
     private $mupThreshold;
     private $before;
+    private $after;
     private $s3Args = [];
+    private $addContentMD5;
 
     /**
      * When providing the $source argument, you may provide a string referencing
@@ -50,6 +54,11 @@ class Transfer implements PromisorInterface
      *   callback accepts a single argument: Aws\CommandInterface $command.
      *   The provided command will be either a GetObject, PutObject,
      *   InitiateMultipartUpload, or UploadPart command.
+     * - after: (callable) A callback to invoke after each transfer promise is fulfilled.
+     *   The function is invoked with three arguments: the fulfillment value, the index
+     *   position from the iterable list of the promise, and the aggregate
+     *   promise that manages all the promises. The aggregate promise may
+     *   be resolved from within the callback to short-circuit the promise.
      * - mup_threshold: (int) Size in bytes in which a multipart upload should
      *   be used instead of PutObject. Defaults to 20971520 (20 MB).
      * - concurrency: (int, default=5) Number of files to upload concurrently.
@@ -124,6 +133,14 @@ class Transfer implements PromisorInterface
             }
         }
 
+        // Handle "after" callback option.
+        if (isset($options['after'])) {
+            $this->after = $options['after'];
+            if (!is_callable($this->after)) {
+                throw new \InvalidArgumentException('after must be a callable.');
+            }
+        }
+
         // Handle "debug" option.
         if (isset($options['debug'])) {
             if ($options['debug'] === true) {
@@ -133,12 +150,22 @@ class Transfer implements PromisorInterface
                 $this->addDebugToBefore($options['debug']);
             }
         }
+
+        // Handle "add_content_md5" option.
+        $this->addContentMD5 = isset($options['add_content_md5'])
+            && $options['add_content_md5'] === true;
+        MetricsBuilder::appendMetricsCaptureMiddleware(
+            $this->client->getHandlerList(),
+            MetricsBuilder::S3_TRANSFER
+        );
     }
 
     /**
      * Transfers the files.
+     *
+     * @return PromiseInterface
      */
-    public function promise()
+    public function promise(): PromiseInterface
     {
         // If the promise has been created, just return it.
         if (!$this->promise) {
@@ -215,23 +242,28 @@ class Transfer implements PromisorInterface
         return rtrim(str_replace('\\', '/', $path), '/');
     }
 
-    private function resolveUri($uri)
+    private function resolvesOutsideTargetDirectory($sink, $objectKey)
     {
         $resolved = [];
-        $sections = explode('/', $uri);
-        foreach ($sections as $section) {
+        $sections = explode('/', $sink);
+        $targetSectionsLength = count(explode('/', $objectKey));
+        $targetSections = array_slice($sections, -($targetSectionsLength + 1));
+        $targetDirectory = $targetSections[0];
+
+        foreach ($targetSections as $section) {
             if ($section === '.' || $section === '') {
                 continue;
             }
             if ($section === '..') {
                 array_pop($resolved);
+                if (empty($resolved) || $resolved[0] !== $targetDirectory) {
+                    return true;
+                }
             } else {
                 $resolved []= $section;
             }
         }
-
-        return ($uri[0] === '/' ? '/' : '')
-            . implode('/', $resolved);
+        return false;
     }
 
     private function createDownloadPromise()
@@ -240,17 +272,10 @@ class Transfer implements PromisorInterface
         $prefix = "s3://{$parts['Bucket']}/"
             . (isset($parts['Key']) ? $parts['Key'] . '/' : '');
 
-
         $commands = [];
         foreach ($this->getDownloadsIterator() as $object) {
             // Prepare the sink.
             $objectKey = preg_replace('/^' . preg_quote($prefix, '/') . '/', '', $object);
-
-            $resolveSink = $this->destination['path'] . '/';
-            if (isset($parts['Key']) && strpos($objectKey, $parts['Key']) !== 0) {
-                $resolveSink .= $parts['Key'] . '/';
-            }
-            $resolveSink .= $objectKey;
             $sink = $this->destination['path'] . '/' . $objectKey;
 
             $command = $this->client->getCommand(
@@ -258,11 +283,7 @@ class Transfer implements PromisorInterface
                 $this->getS3Args($object) + ['@http'  => ['sink'  => $sink]]
             );
 
-            if (strpos(
-                    $this->resolveUri($resolveSink),
-                    $this->destination['path']
-                ) !== 0
-            ) {
+            if ($this->resolvesOutsideTargetDirectory($sink, $objectKey)) {
                 throw new AwsException(
                     'Cannot download key ' . $objectKey
                     . ', its relative path resolves outside the'
@@ -283,6 +304,7 @@ class Transfer implements PromisorInterface
         return (new Aws\CommandPool($this->client, $commands, [
             'concurrency' => $this->concurrency,
             'before'      => $this->before,
+            'fulfill'     => $this->after,
             'rejected'    => function ($reason, $idx, Promise\PromiseInterface $p) {
                 $p->reject($reason);
             }
@@ -300,7 +322,7 @@ class Transfer implements PromisorInterface
 
         // Create an EachPromise, that will concurrently handle the upload
         // operations' yielded promises from the iterator.
-        return Promise\each_limit_all($files, $this->concurrency);
+        return Promise\Each::ofLimitAll($files, $this->concurrency, $this->after);
     }
 
     /** @return Iterator */
@@ -345,6 +367,7 @@ class Transfer implements PromisorInterface
         $args = $this->s3Args;
         $args['SourceFile'] = $filename;
         $args['Key'] = $this->createS3Key($filename);
+        $args['AddContentMD5'] = $this->addContentMD5;
         $command = $this->client->getCommand('PutObject', $args);
         $this->before and call_user_func($this->before, $command);
 
@@ -356,7 +379,7 @@ class Transfer implements PromisorInterface
         $args = $this->s3Args;
         $args['Key'] = $this->createS3Key($filename);
         $filename = $filename instanceof \SplFileInfo ? $filename->getPathname() : $filename;
-        
+
         return (new MultipartUploader($this->client, $filename, [
             'bucket'          => $args['Bucket'],
             'key'             => $args['Key'],
@@ -364,6 +387,7 @@ class Transfer implements PromisorInterface
             'before_upload'   => $this->before,
             'before_complete' => $this->before,
             'concurrency'     => $this->concurrency,
+            'add_content_md5' => $this->addContentMD5
         ]))->promise();
     }
 

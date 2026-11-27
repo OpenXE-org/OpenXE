@@ -183,7 +183,7 @@ final class ImapMailClient implements MailClientInterface
      *
      * @return MailBoxInfoData
      */
-    public function examineInbox(string $inbox = null): MailBoxInfoData
+    public function examineInbox(?string $inbox = null): MailBoxInfoData
     {
         $this->ensureConnection();
         if ($inbox === null) {

@@ -47,7 +47,7 @@ final class ImageAttachment implements EmailAttachmentInterface
     public function __construct(
         string $path,
         string $cid,
-        string $name = null,
+        ?string $name = null,
         string $encoding = self::ENCODING_BASE64,
         string $type = '',
         string $disposition = self::DISPOSITION_INLINE

@@ -41,7 +41,7 @@ final class SuperSearchEngine
      *
      * @return ResultCollection
      */
-    public function search($searchTerm, array $projectIds = null, array $moduleNames = null, $resultLimit = 30)
+    public function search($searchTerm, ?array $projectIds = null, ?array $moduleNames = null, $resultLimit = 30)
     {
         $resultLimit = (int)$resultLimit;
         if ($resultLimit < 1) {

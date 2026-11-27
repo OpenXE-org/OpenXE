@@ -33,7 +33,7 @@ final class FileAttachment implements EmailAttachmentInterface
      */
     public function __construct(
         string $path,
-        string $name = null,
+        ?string $name = null,
         string $encoding = self::ENCODING_BASE64,
         string $type = 'application/octet-stream',
         string $disposition = self::DISPOSITION_ATTACHMENT

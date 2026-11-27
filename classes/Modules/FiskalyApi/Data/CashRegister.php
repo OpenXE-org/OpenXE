@@ -66,7 +66,7 @@ class CashRegister
         string $model,
         string $baseCurrencyCode = 'EUR',
         ?string $softwareBrand = null,
-        string $softwareVersion = null,
+        ?string $softwareVersion = null,
         ?bool $vatIdAvailable = null,
         ?string $env = null
     ) {
