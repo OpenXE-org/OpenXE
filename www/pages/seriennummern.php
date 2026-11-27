@@ -12,6 +12,18 @@ class Seriennummern {
 
     const SQL_CONDITION_ACTIVE = "(a.seriennummern <> 'keine' AND a.seriennummern <> '')";
 
+    // Artikel mit dieser Einstellung (z.B. Lizenzverlaengerungen, bei denen die Menge die Anzahl der Monate ist)
+    // benoetigen genau eine Seriennummer je Lieferscheinposition, unabhaengig von der Menge
+    const JE_POSITION = 'eigeneposition';
+
+    /*
+    * SQL-Ausdruck fuer die Anzahl der Seriennummern, die eine Lieferscheinposition benoetigt.
+    * $menge ist der SQL-Ausdruck fuer die Positionsmenge, die Tabelle artikel muss als a gejoint sein.
+    */
+    static function sql_menge_soll(string $menge) : string {
+        return "IF(a.seriennummern = '".self::JE_POSITION."', IF($menge > 0, 1, 0), $menge)";
+    }
+
     function __construct($app, $intern = false) {
         $this->app = $app;
         if ($intern)
@@ -291,7 +303,7 @@ class Seriennummern {
                             adr.name,
                             ".$app->erp->FormatMengeFuerFormular("SUM(menge)").",
                             SUM(COALESCE(menge_nummern,0)),
-                            ".$app->erp->FormatMengeFuerFormular("SUM(GREATEST(lp.menge-COALESCE(sbp.menge_nummern,0),0))").",
+                            ".$app->erp->FormatMengeFuerFormular("SUM(GREATEST(".self::sql_menge_soll('lp.menge')."-COALESCE(sbp.menge_nummern,0),0))").",
                             ".$app->erp->ConcatSQL($menu_link).",
                             l.id";
                 $sql_tables = "
@@ -502,7 +514,7 @@ class Seriennummern {
                             a.name_de,
                             ".$app->erp->FormatMengeFuerFormular("menge").",
                             SUM(if(slp.id IS NULL,0,1)),
-                            ".$app->erp->FormatMengeFuerFormular("menge-SUM(if(slp.id IS NULL,0,1))").",
+                            ".$app->erp->FormatMengeFuerFormular(self::sql_menge_soll('lp.menge')."-SUM(if(slp.id IS NULL,0,1))").",
                             lp.id
                         FROM
                             lieferschein_position lp
@@ -940,7 +952,7 @@ class Seriennummern {
                         $check_lieferschein = $this->seriennummern_check_delivery_notes($lieferschein_id, ignore_date: true);        
                         $written = false;
                         foreach ($check_lieferschein as $position) {
-                            $menge_offen = $position['menge_lieferschein']-$position['menge_nummern'];
+                            $menge_offen = $position['menge_soll']-$position['menge_nummern'];
 
                             if ($menge_offen > 0) {  
                                 if (empty($lieferschein_position)) {
@@ -1146,7 +1158,7 @@ class Seriennummern {
                     $this->app->Tpl->Set('START', $matches[2]);
                     $this->app->Tpl->Set('POSTFIX', $matches[3]);
 
-                    $anzahl_vorschlag = $check_lieferschein[0]['menge_lieferschein']-$check_lieferschein[0]['menge_nummern'];
+                    $anzahl_vorschlag = $check_lieferschein[0]['menge_soll']-$check_lieferschein[0]['menge_nummern'];
                     if ($anzahl_vorschlag < 0) {
                         $anzahl_vorschlag = 0;
                     }
@@ -1366,7 +1378,7 @@ class Seriennummern {
                     a.nummer artikel_nummer,
                     a.name_de,
                     ".$this->app->erp->FormatMenge('SUM(menge)')." menge_lieferschein,
-                    ".$this->app->erp->FormatMengeFuerFormular('SUM(lp.menge)')." menge_soll,
+                    ".$this->app->erp->FormatMengeFuerFormular('SUM('.self::sql_menge_soll('lp.menge').')')." menge_soll,
                     SUM(COALESCE(menge_nummern,0)) menge_nummern
                 FROM
                     lieferschein_position lp                
@@ -1405,7 +1417,7 @@ class Seriennummern {
 
         if ($only_missing) {
             // Je Position vergleichen, damit sich fehlende und ueberzaehlige Nummern verschiedener Positionen nicht aufheben
-            $sql .= " HAVING SUM(lp.menge <> COALESCE(slp.menge_nummern,0)) > 0";
+            $sql .= " HAVING SUM(".self::sql_menge_soll('lp.menge')." <> COALESCE(slp.menge_nummern,0)) > 0";
         }
 
         $result = $this->app->DB->SelectArr($sql);        

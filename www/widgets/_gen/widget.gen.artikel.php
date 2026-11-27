@@ -223,6 +223,7 @@ class WidgetGenartikel
     $field = new HTMLSelect("seriennummern",0,"seriennummern","","","0");
     $field->AddOption('{|keine|}','keine');
     $field->AddOption('{|eigene erzeugen|}','eigene');
+    $field->AddOption('{|eigene erzeugen (je Position)|}','eigeneposition');
     $field->AddOption('{|originale nutzen|}','vomprodukt');
     $field->AddOption('{|originale einlagern + nutzen|}','vomprodukteinlagern');
     $this->form->NewField($field);
