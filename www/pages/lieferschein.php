@@ -515,7 +515,7 @@ class Lieferschein extends GenLieferschein
                         $importer = "";
                         $paketannahme = "";
                         $doctype = "lieferschein";
-                        $doctypeId = $id;
+                        $doctypeid = $id;
 
                         $this->app->erp->LagerAuslagernRegal($artikel,$quellager_id,$menge,$projekt,$grund,$importer,$doctype,$doctypeid);
                         $this->app->erp->LagerEinlagern($artikel,$menge,$ziellagerplatz_id,$projekt,$grund,$importer,$paketannahme,$doctype,$doctypeid);
