@@ -114,19 +114,7 @@ class Firmendaten  {
    */
   public function __construct($app, $intern = false) {
     $this->app=$app;
-    $this->payments = [
-      'eckarte' => 'EC-Karte',
-      'ratenzahlung' => 'Ratenzahlung',
-      'sofortueberweisung' => 'Sofort&uuml;berweisung',
-      'secupay' => 'Secupay',
-      'amazon' => 'Amazon',
-      'kreditkarte' => 'Kreditkarte',
-      'paypal' => 'Paypal',
-      'bar' => 'Barzahlung',
-      'lastschrift' => 'Lastschrift',
-      'vorkasse' => 'Vorkasse',
-      'nachnahme' => 'Nachnahme'
-    ];
+ 
     if($intern) {
       return;
     }
@@ -531,52 +519,12 @@ class Firmendaten  {
     $this->app->ExitXentral();
   }
 
-  /**
-   * @return array
-   */
-  protected function getPaymentMethods()
-  {
-    return [
-      'rechnung',
-      'vorkasse',
-      'nachnahme',
-      'lastschrift',
-      'bar',
-      'paypal',
-      'kreditkarte',
-      'amazon',
-      'amazon_bestellung',
-      'secupay',
-      'sofortueberweisung',
-      'ratenzahlung',
-      'eckarte',
-    ];
-  }
-
-  /**
-   * @return array
-   */
-  protected function getPaymentmethodsToHide()
-  {
-    return $this->app->DB->SelectFirstCols(
-      sprintf(
-        "SELECT DISTINCT type 
-        FROM zahlungsweisen 
-        WHERE aktiv = 1 AND projekt = 0 AND type IN ('%s')",
-        implode("', '", $this->getPaymentMethods())
-      )
-    );
-  }
-
   public function FirmendatenEdit()
   {
 
     // Make sure the default values are all there, otherwise they are not editable
     $this->app->erp->StandardFirmendatenWerte();
 
-    if($this->app->Secure->GetPOST('installnewpayent')) {
-      $this->checkPaymentModules(true);
-    }
     $this->FirmendatenMenu();
     $this->app->erp->Headlines('Grundeinstellungen','Bearbeiten');
     $this->app->erp->MenuEintrag("index.php?module=einstellungen&action=list","Zur&uuml;ck zur &Uuml;bersicht");
@@ -1027,24 +975,133 @@ class Firmendaten  {
             $firmendaten_werte_spalten[$v['name']]['id'] = $this->app->DB->real_escape_string($v['id']);
           }
         }
-        $toupdate = array('absender','sichtbar','rechnung_gutschrift_ansprechpartner','knickfalz','standardaufloesung','standardversanddrucker','standardetikettendrucker','etikettendrucker_wareneingang','barcode','aufgaben_bondrucker'
-          ,'schriftgroesse','betreffszeile','dokumententext','tabellenbeschriftung','tabelleninhalt','zeilenuntertext','freitext','infobox','brieftext','spaltenbreite','seite_von_sichtbar','seite_von_ausrichtung','footersichtbar','briefpapier2vorhanden'
-          ,'hintergrund','benutzername','abstand_adresszeileoben','abstand_boxrechtsoben','abstand_boxrechtsoben_lr','abstand_betreffzeileoben','abstand_artikeltabelleoben','abstand_name_beschreibung','artikel_suche_kurztext'
-          ,'adresse_freitext1_suche','artikel_freitext1_suche','artikel_suche_variante_von','artikel_artikelnummer_suche'
-          ,'standard_datensaetze_datatables','waehrung','branch'
-          ,'warnung_doppelte_nummern','wareneingang_zwischenlager','boxausrichtung'
-          ,'footer_breite1','footer_breite2','footer_breite3','footer_breite4','steuersatz_normal','steuersatz_ermaessigt','angebot_ohnebriefpapier','auftrag_ohnebriefpapier','rechnung_ohnebriefpapier',
-          'lieferschein_ohnebriefpapier','gutschrift_ohnebriefpapier','bestellung_ohnebriefpapier','arbeitsnachweis_ohnebriefpapier','externereinkauf'
-          ,'projektnummerimdokument','mailanstellesmtp','herstellerimdokument','herstellernummerimdokument','artikeleinheit','artikeleinheit_standard','auftrag_bezeichnung_bearbeiter','auftrag_bezeichnung_bestellnummer','bezeichnungkundennummer'
-          ,'auftrag_bezeichnung_vertrieb','standardmarge','schriftart'
-          ,'zahlung_rechnung','zahlung_vorkasse','zahlung_nachnahme','zahlung_bar','zahlung_paypal','zahlung_amazon','zahlung_lastschrift','zahlung_kreditkarte','zahlung_ratenzahlung','zahlung_rechnung_sofort_de','zahlung_rechnung_de'
-          ,'zahlung_vorkasse_de','zahlung_bar_de','zahlung_lastschrift_de','zahlung_nachnahme_de','zahlung_paypal_de','zahlung_amazon_de','zahlung_kreditkarte_de','zahlung_ratenzahlung_de','zahlungszieltage','zahlungszieltageskonto'
-          ,'zahlungszielskonto','kleinunternehmer','schnellanlegen','bestellvorschlaggroessernull','immernettorechnungen','rechnung_header','rechnung_footer',
-          'lieferschein_header','lieferschein_footer','auftrag_header','auftrag_footer','angebot_header','angebot_footer','gutschrift_header','gutschrift_footer','bestellung_header','bestellung_footer',
-          'arbeitsnachweis_header','arbeitsnachweis_footer','provisionsgutschrift_header','provisionsgutschrift_footer','proformarechnung_header','proformarechnung_footer','eu_lieferung_vermerk','export_lieferung_vermerk'
-          ,'wareneingang_kamera_waage','layout_iconbar','passwort','host','port','mailssl','signatur','email','absendername','bcc1','bcc2','bcc3'
-          ,'firmenfarbe','name','strasse','plz','ort','steuernummer','projekt','steuer_positionen_export','tabsnavigationfarbe','tabsnavigationfarbeschrift'
-          ,"buchhaltung_berater","buchhaltung_mandant","buchhaltung_wj_beginn","buchhaltung_sachkontenlaenge", "fibu_buchungen_startdatum", "rechnung_skonto_kontorahmen", "rechnung_schnelleingabe_konto","emailadresseempfang","telefon"
+        $toupdate = array('absender',
+			'sichtbar',
+			'rechnung_gutschrift_ansprechpartner',
+			'knickfalz',
+			'standardaufloesung',
+			'standardversanddrucker',
+			'standardetikettendrucker',
+			'etikettendrucker_wareneingang',
+			'barcode',
+			'aufgaben_bondrucker',
+			'schriftgroesse',
+			'betreffszeile',
+			'dokumententext',
+			'tabellenbeschriftung',
+			'tabelleninhalt',
+			'zeilenuntertext',
+			'freitext',
+			'infobox',
+			'brieftext',
+			'spaltenbreite',
+			'seite_von_sichtbar',
+			'seite_von_ausrichtung',
+			'footersichtbar',
+			'briefpapier2vorhanden',
+			'hintergrund',
+			'benutzername',
+			'abstand_adresszeileoben',
+			'abstand_boxrechtsoben',
+			'abstand_boxrechtsoben_lr',
+			'abstand_betreffzeileoben',
+			'abstand_artikeltabelleoben',
+			'abstand_name_beschreibung',
+			'artikel_suche_kurztext',
+			'adresse_freitext1_suche',
+			'artikel_freitext1_suche',
+			'artikel_suche_variante_von',
+			'artikel_artikelnummer_suche',
+			'standard_datensaetze_datatables',
+			'waehrung',
+			'branch',
+			'warnung_doppelte_nummern',
+			'wareneingang_zwischenlager',
+			'boxausrichtung',
+			'footer_breite1',
+			'footer_breite2',
+			'footer_breite3',
+			'footer_breite4',
+			'steuersatz_normal',
+			'steuersatz_ermaessigt',
+			'angebot_ohnebriefpapier',
+			'auftrag_ohnebriefpapier',
+			'rechnung_ohnebriefpapier',
+			'lieferschein_ohnebriefpapier',
+			'gutschrift_ohnebriefpapier',
+			'bestellung_ohnebriefpapier',
+			'arbeitsnachweis_ohnebriefpapier',
+			'externereinkauf',
+			'projektnummerimdokument',
+			'mailanstellesmtp',
+			'herstellerimdokument',
+			'herstellernummerimdokument',
+			'artikeleinheit',
+			'artikeleinheit_standard',
+			'auftrag_bezeichnung_bearbeiter',
+			'auftrag_bezeichnung_bestellnummer',
+			'bezeichnungkundennummer',
+			'auftrag_bezeichnung_vertrieb',
+			'standardmarge',
+			'schriftart',
+            'zahlungszieltage',
+			'zahlungszieltageskonto',
+			'zahlungszielskonto',
+			'kleinunternehmer',
+			'schnellanlegen',
+			'bestellvorschlaggroessernull',
+			'immernettorechnungen',
+			'rechnung_header',
+			'rechnung_footer',
+            'lieferschein_header',
+			'lieferschein_footer',
+			'auftrag_header',
+			'auftrag_footer',
+			'angebot_header',
+			'angebot_footer',
+			'gutschrift_header',
+			'gutschrift_footer',
+			'bestellung_header',
+			'bestellung_footer',
+			'arbeitsnachweis_header',
+			'arbeitsnachweis_footer',
+			'provisionsgutschrift_header',
+			'provisionsgutschrift_footer',
+			'proformarechnung_header',
+			'proformarechnung_footer',
+			'eu_lieferung_vermerk',
+			'export_lieferung_vermerk',
+			'wareneingang_kamera_waage',
+			'layout_iconbar',
+			'passwort',
+			'host',
+			'port',
+			'mailssl',
+			'signatur',
+			'email',
+			'absendername',
+			'bcc1',
+			'bcc2',
+			'bcc3',
+			'firmenfarbe',
+			'name',
+			'strasse',
+			'plz',
+			'ort',
+			'steuernummer',
+			'projekt',
+			'steuer_positionen_export',
+			'tabsnavigationfarbe',
+			'tabsnavigationfarbeschrift',
+			"buchhaltung_berater",
+			"buchhaltung_mandant",
+			"buchhaltung_wj_beginn",
+			"buchhaltung_sachkontenlaenge",
+			 "fibu_buchungen_startdatum",
+			 "rechnung_skonto_kontorahmen",
+			 "rechnung_schnelleingabe_konto",
+			"emailadresseempfang",
+			"telefon"
         );
 
         if(isset($sql2a)){
@@ -1349,35 +1406,6 @@ class Firmendaten  {
       $this->app->Tpl->Set('UPDATESTARTENBUTTON','&nbsp;<a href="update.php"><input type="button" value="{|Update starten|}" /></a>');
     }
 
-    $getPaymentmethodsToHide = $this->getPaymentmethodsToHide();
-    if(!empty($getPaymentmethodsToHide)) {
-      $this->app->Tpl->Add(
-        'MESSAGEZAHLUNGSWEISEN',
-        '<div class="info">Bitte stellen Sie die Zahlungstexte in den 
-          <a href="index.php?module=zahlungsweisen&action=list" target="_blank">Zahlungsweisen</a> ein.
-        </div>'
-      );
-      foreach($getPaymentmethodsToHide as $paymentMethod) {
-        $this->app->Tpl->Add('TR_ZAHLUNG_'.strtoupper($paymentMethod), ' class="hide" ');
-      }
-    }
-    if(!empty($this->getNotInstalledPayments())) {
-      $this->app->Tpl->Add(
-        'MESSAGEZAHLUNGSWEISEN',
-        '<div class="info">
-          Ab der Version 20.1 sind alle Zahlweisen in das Modul Zahlweisen verlagert worden. 
-          Sie sehen diese Meldung weil Sie vor der Version 20.1 mit Xentral gestartet hatten. 
-          Wenn Sie auf das neue Modul welchseln möchten 
-          (bitte nur nachdem Sie es in einem Testsystem geprüft hatten) 
-          können Sie das gerne hier mit dem Button durchführen. 
-          <div class="clear"></div>
-          <input type="submit" 
-          value="Auf neues Modul Zahlungsweise unwiderruflich wechseln" 
-          id="installnewpayent" name="installnewpayent" />
-          <div class="clear"></div>
-        </div>'
-      );
-    }
     $this->app->YUI->AutoComplete('steuersatz_normal','steuersatz',1);
     $this->app->YUI->AutoComplete('steuersatz_ermaessigt','steuersatz',1);
 
@@ -1592,22 +1620,11 @@ class Firmendaten  {
       $this->app->Tpl->Set('UNTERNAVIGATIONFARBE',$data[0]['unternavigationfarbe']);
       $this->app->Tpl->Set('UNTERNAVIGATIONFARBESCHRIFT',$data[0]['unternavigationfarbeschrift']);
 
-      $this->app->Tpl->Set('ZAHLUNG_RECHNUNG' , $this->parseCheckbox($data[0]['zahlung_rechnung']));
-      $this->app->Tpl->Set('ZAHLUNG_VORKASSE' , $this->parseCheckbox($data[0]['zahlung_vorkasse']));
-      $this->app->Tpl->Set('ZAHLUNG_NACHNAHME' , $this->parseCheckbox($data[0]['zahlung_nachnahme']));
-      $this->app->Tpl->Set('ZAHLUNG_LASTSCHRIFT' , $this->parseCheckbox($data[0]['zahlung_lastschrift']));
-      $this->app->Tpl->Set('ZAHLUNG_BAR' , $this->parseCheckbox($data[0]['zahlung_bar']));
-      $this->app->Tpl->Set('ZAHLUNG_KREDITKARTE' , $this->parseCheckbox($data[0]['zahlung_kreditkarte']));
-      $this->app->Tpl->Set('ZAHLUNG_PAYPAL' , $this->parseCheckbox($data[0]['zahlung_paypal']));
-      $this->app->Tpl->Set('ZAHLUNG_AMAZON' , $this->parseCheckbox($data[0]['zahlung_amazon']));
-      $this->app->Tpl->Set('ZAHLUNG_RATENZAHLUNG' , $this->parseCheckbox($data[0]['zahlung_ratenzahlung']));
       $this->app->Tpl->Set('KLEINUNTERNEHMER' , $this->parseCheckbox($data[0]['kleinunternehmer']));
       $this->app->Tpl->Set('SCHNELLANLEGEN' , $this->parseCheckbox($data[0]['schnellanlegen']));
       $this->app->Tpl->Set('BESTELLVORSCHLAGSGROESSERNULL' , $this->parseCheckbox($data[0]['bestellvorschlaggroessernull']));
       $this->app->Tpl->Set('IMMERNETTORECHNUNGEN' , $this->parseCheckbox($data[0]['immernettorechnungen']));
 
-      $this->app->Tpl->Set('ZAHLUNG_RECHNUNG_SOFORT_DE', $data[0]['zahlung_rechnung_sofort_de']);
-      $this->app->Tpl->Set('ZAHLUNG_RECHNUNG_DE', $data[0]['zahlung_rechnung_de']);
       $this->app->Tpl->Set('STEUER_POSITIONEN_EXPORT', $data[0]['steuer_positionen_export']);
       
       $fields = $this->app->erp->GetFirmaFields();
@@ -1668,19 +1685,9 @@ class Firmendaten  {
       );
 
 
-      $this->app->Tpl->Set('ZAHLUNG_VORKASSE_DE', $data[0]['zahlung_vorkasse_de']);
-      $this->app->Tpl->Set('ZAHLUNG_NACHNAHME_DE', $data[0]['zahlung_nachnahme_de']);
-      $this->app->Tpl->Set('ZAHLUNG_BAR_DE', $data[0]['zahlung_bar_de']);
-      $this->app->Tpl->Set('ZAHLUNG_PAYPAL_DE', $data[0]['zahlung_paypal_de']);
-      $this->app->Tpl->Set('ZAHLUNG_LASTSCHRIFT_DE', $data[0]['zahlung_lastschrift_de']);
-      $this->app->Tpl->Set('ZAHLUNG_KREDITKARTE_DE', $data[0]['zahlung_kreditkarte_de']);
-      $this->app->Tpl->Set('ZAHLUNG_AMAZON_DE', $data[0]['zahlung_amazon_de']);
-      $this->app->Tpl->Set('ZAHLUNG_RATENZAHLUNG_DE', $data[0]['zahlung_ratenzahlung_de']);
-
       $this->app->Tpl->Set('ZAHLUNGSZIELTAGE', $data[0]['zahlungszieltage']);
       $this->app->Tpl->Set('ZAHLUNGSZIELTAGESKONTO', $data[0]['zahlungszieltageskonto']);
       $this->app->Tpl->Set('ZAHLUNGSZIELSKONTO', $data[0]['zahlungszielskonto']);
-
 
       $this->app->Tpl->Set('WARENEINGANG_KAMERA_WAAGE', $this->parseCheckbox($data[0]['wareneingang_kamera_waage']));
       $this->app->Tpl->Set('LAYOUT_ICONBAR', $this->parseCheckbox($data[0]['layout_iconbar']));
@@ -1971,25 +1978,12 @@ class Firmendaten  {
     $this->app->Tpl->Set('UNTERNAVIGATIONFARBE',$data['unternavigationfarbe']);
     $this->app->Tpl->Set('UNTERNAVIGATIONFARBESCHRIFT',$data['unternavigationfarbeschrift']);
 
-    $this->app->Tpl->Set('ZAHLUNG_RECHNUNG' , $this->parseCheckbox($data['zahlung_rechnung']));
-    $this->app->Tpl->Set('ZAHLUNG_VORKASSE' , $this->parseCheckbox($data['zahlung_vorkasse']));
-    $this->app->Tpl->Set('ZAHLUNG_NACHNAHME' , $this->parseCheckbox($data['zahlung_nachnahme']));
-    $this->app->Tpl->Set('ZAHLUNG_LASTSCHRIFT' , $this->parseCheckbox($data['zahlung_lastschrift']));
-    $this->app->Tpl->Set('ZAHLUNG_BAR' , $this->parseCheckbox($data['zahlung_bar']));
-    $this->app->Tpl->Set('ZAHLUNG_KREDITKARTE' , $this->parseCheckbox($data['zahlung_kreditkarte']));
-    $this->app->Tpl->Set('ZAHLUNG_PAYPAL' , $this->parseCheckbox($data['zahlung_paypal']));
-    $this->app->Tpl->Set('ZAHLUNG_AMAZON' , $this->parseCheckbox($data['zahlung_amazon']));
-    $this->app->Tpl->Set('ZAHLUNG_RATENZAHLUNG' , $this->parseCheckbox($data['zahlung_ratenzahlung']));
     $this->app->Tpl->Set('KLEINUNTERNEHMER' , $this->parseCheckbox($data['kleinunternehmer']));
     $this->app->Tpl->Set('STEUER_POSITIONEN_EXPORT' , $this->parseCheckbox($data['steuer_positionen_export']));
     
     $this->app->Tpl->Set('SCHNELLANLEGEN' , $this->parseCheckbox($data['schnellanlegen']));
     $this->app->Tpl->Set('BESTELLVORSCHLAGSGROESSERNULL' , $this->parseCheckbox($data['bestellvorschlaggroessernull']));
     $this->app->Tpl->Set('IMMERNETTORECHNUNGEN' , $this->parseCheckbox($data['immernettorechnungen']));
-
-    $this->app->Tpl->Set('ZAHLUNG_RECHNUNG_SOFORT_DE', $data['zahlung_rechnung_sofort_de']);
-    $this->app->Tpl->Set('ZAHLUNG_RECHNUNG_DE', $data['zahlung_rechnung_de']);
-
 
     $fields = $this->app->erp->GetFirmaFields();
     foreach($fields as $key) {
@@ -2000,15 +1994,6 @@ class Firmendaten  {
     foreach($fields_checkbox as $key) {
       $this->app->Tpl->Set(strtoupper($key), $this->parseCheckbox($data[$key]));
     }
-
-    $this->app->Tpl->Set('ZAHLUNG_VORKASSE_DE', $data['zahlung_vorkasse_de']);
-    $this->app->Tpl->Set('ZAHLUNG_NACHNAHME_DE', $data['zahlung_nachnahme_de']);
-    $this->app->Tpl->Set('ZAHLUNG_LASTSCHRIFT_DE', $data['zahlung_lastschrift_de']);
-    $this->app->Tpl->Set('ZAHLUNG_AMAZON_DE', $data['zahlung_amazon_de']);
-    $this->app->Tpl->Set('ZAHLUNG_BAR_DE', $data['zahlung_bar_de']);
-    $this->app->Tpl->Set('ZAHLUNG_PAYPAL_DE', $data['zahlung_paypal_de']);
-    $this->app->Tpl->Set('ZAHLUNG_KREDITKARTE_DE', $data['zahlung_kreditkarte_de']);
-    $this->app->Tpl->Set('ZAHLUNG_RATENZAHLUNG_DE', $data['zahlung_ratenzahlung_de']);
 
     $this->app->Tpl->Set('ZAHLUNGSZIELTAGE', $data['zahlungszieltage']);
     $this->app->Tpl->Set('ZAHLUNGSZIELTAGESKONTO', $data['zahlungszieltageskonto']);
@@ -2669,120 +2654,6 @@ class Firmendaten  {
     $this->app->erp->CheckColumn('fontstyle','VARCHAR(2)', 'document_customization_infoblock_translation',"NOT NULL DEFAULT ''");
     $this->app->erp->CheckColumn('alignment','VARCHAR(2)', 'document_customization_infoblock_translation',"NOT NULL DEFAULT ''");
     $this->app->erp->CheckIndex('document_customization_infoblock_translation','document_customization_infoblock_id');
-  }
-
-  /**
-   * @param string $payment
-   * @param bool   $withInactive
-   *
-   * @return bool
-   */
-  public function isPaymentActive($payment, $withInactive = false)
-  {
-    if($withInactive) {
-      return $this->app->DB->Select(
-          sprintf(
-            "SELECT `id` FROM `zahlungsweisen` WHERE `type` = '%s' LIMIT 1",
-            $this->app->DB->real_escape_string($payment)
-          )
-        ) > 0;
-    }
-
-    return $this->app->DB->Select(
-      sprintf(
-        "SELECT `id` FROM `zahlungsweisen` WHERE `type` = '%s' AND `aktiv` = 1 AND `projekt` = 0 LIMIT 1",
-        $this->app->DB->real_escape_string($payment)
-      )
-    ) > 0;
-  }
-
-  /**
-   * @return array
-   */
-  public function getNotInstalledPayments()
-  {
-    $payments = array_keys($this->payments);
-    $installedPayments = $this->app->DB->SelectFirstCols(
-      "SELECT DISTINCT `type` FROM `zahlungsweisen` WHERE `type` <> ''"
-    );
-
-    return array_diff($payments, $installedPayments);
-  }
-
-  /**
-   * @param string $payment
-   * @param bool   $onlyNew
-   *
-   * @return int
-   */
-  public function checkPaymentModule($payment, $onlyNew = false) {
-    if(empty($this->payments[$payment])) {
-      return 0;
-    }
-    $description = $this->payments[$payment];
-    if($this->isPaymentActive($payment, $onlyNew)) {
-      return 0;
-    }
-    $this->app->DB->Insert(
-      sprintf(
-        "INSERT INTO `zahlungsweisen` (`type`, `aktiv`, `projekt`, `bezeichnung`, `freitext`) 
-                VALUES ('%s', 1, 0, '%s','%s')",
-        $this->app->DB->real_escape_string($payment),
-        $this->app->DB->real_escape_string($description),
-        $this->app->DB->real_escape_string($this->app->erp->Firmendaten('zahlung_'.$payment.'_de'))
-      )
-    );
-    $id = (int)$this->app->DB->GetInsertID();
-    if($payment === 'vorkasse') {
-      $this->app->DB->Update(
-        sprintf(
-          "UPDATE `zahlungsweisen` SET `verhalten` = 'vorkasse' WHERE `id` = %d",
-          $id
-        )
-      );
-    }
-    elseif($payment === 'lastschrift') {
-      $this->app->DB->Update(
-        sprintf(
-          "UPDATE `zahlungsweisen` SET `verhalten` = 'lastschrift' WHERE `id` = %d",
-          $id
-        )
-      );
-    }
-    $translations = $this->app->DB->SelectArr(
-      sprintf(
-        "SELECT * FROM `uebersetzung` WHERE `label` = 'zahlung_%s_de'",
-        $this->app->DB->real_escape_string($payment)
-      )
-    );
-    if(empty($translations)) {
-      return $id;
-    }
-
-    foreach($translations as $translation) {
-      $this->app->DB->Insert(
-        sprintf(
-          "INSERT INTO `uebersetzung` (`label`, `beschriftung`, `sprache`, `original`) 
-            VALUES ('%s','%s','%s','%s') ",
-          'zahlungsweise_freitext_'.$id,
-          $this->app->DB->real_escape_string($translation['beschriftung']),
-          $this->app->DB->real_escape_string($translation['sprache']),
-          $this->app->DB->real_escape_string($translation['original'])
-        )
-      );
-    }
-
-    return $id;
-  }
-
-  /**
-   * @param bool $onlyNew
-   */
-  public function checkPaymentModules($onlyNew = false)
-  {
-    foreach($this->payments as $payment => $description) {
-      $this->checkPaymentModule($payment, $onlyNew);
-    }
   }
 
   public function documentSettings()

@@ -157,7 +157,6 @@
 <li><a href="#tabs-3">Textvorlagen</a></li>
 <li><a href="#tabs-4">E-Mail</a></li>
 <li><a href="#tabs-6">Nummernkreise</a></li>
-<li><a href="#tabs-7">Zahlungsweisen</a></li>
 <li><a href="#tabs-8">Steuer / W&auml;hrung</a></li>
 <li><a href="#tabs-9">System</a></li>
 <li><a href="#tabs-14">Freifelder</a></li>
@@ -830,101 +829,6 @@
 	<br>
 	<input type="submit" name="submitFirmendaten" onclick="$('#firmendatenform').attr('action','#tabs-6');" value="Speichern" style="float:right">
 </div>
-
-<div id="tabs-7">
-[MESSAGE]
-[MESSAGEZAHLUNGSWEISEN]
-<fieldset><legend>{|Zahlungsweisen|}</legend>
-<table width="100%">
-  <tr [TR_ZAHLUNG_RECHNUNG]><td width="50"><input type="checkbox" name="zahlung_rechnung" [ZAHLUNG_RECHNUNG]></td><td>Rechnung</td><td></td></tr>
-
-  <tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td>Satz in Rechnung:<br />(sofort) (DE)</td><td><textarea name="zahlung_rechnung_sofort_de" data-lang="zahlung_rechnung_sofort_de" rows="4" cols="80" style="width:80%">[ZAHLUNG_RECHNUNG_SOFORT_DE]</textarea><br><i>z.B. Rechnung zahlbar sofort.</i></td></tr>
-	<tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td>Satz in Rechnung:<br />(>= 1 Tag) (DE)</td><td><textarea name="zahlung_rechnung_de" data-lang="zahlung_rechnung_de" rows="4" cols="80" style="width:80%">[ZAHLUNG_RECHNUNG_DE]</textarea><br>
-
-  <tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td>Satz in Angebot/Auftrag:<br />(sofort) (DE)</td><td><textarea name="zahlung_auftrag_sofort_de" data-lang="zahlung_auftrag_sofort_de" rows="4" cols="80" style="width:80%">[ZAHLUNG_AUFTRAG_SOFORT_DE]</textarea><br><i>z.B. Rechnung zahlbar sofort.</i></td></tr>
-	<tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td>Satz in Angebot/Auftrag:<br />(>= 1 Tag) (DE)</td><td><textarea name="zahlung_auftrag_de" data-lang="zahlung_auftrag_de" rows="4" cols="80" style="width:80%">[ZAHLUNG_AUFTRAG_DE]</textarea><br>
-
-
-	<i>z.B. Rechnung zahlbar innerhalb {ZAHLUNGSZIELTAGE}.</i></td></tr>
-  <tr [TR_ZAHLUNG_RECHNUNG]><td><br /></td></tr>
-  <tr [TR_ZAHLUNG_RECHNUNG]><td width="50"><input type="checkbox" name="eigener_skontotext" [EIGENER_SKONTOTEXT]></td><td colspan="2">Eigener Skontotext (wenn Skonto > 0%)</td></tr>
-  <tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td>Satz in Angebot/Auftrag (DE):</td><td><textarea name="eigener_skontotext_anab" data-lang="eigener_skontotext_anab" rows="4" cols="80" style="width:80%">[EIGENER_SKONTOTEXT_ANAB]</textarea><br><i>z.B. Skonto {ZAHLUNGSZIELSKONTO}% innerhalb {ZAHLUNGSZIELTAGESKONTO} Tage.</i></td></tr>
-	<tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td>Satz in Rechnung (DE):</td><td><textarea name="eigener_skontotext_re" data-lang="eigener_skontotext_re" rows="4" cols="80" style="width:80%">[EIGENER_SKONTOTEXT_RE]</textarea><br>
-	<i>z.B. Skonto {ZAHLUNGSZIELSKONTO}% innerhalb {ZAHLUNGSZIELTAGESKONTO} Tage bis zum {ZAHLUNGSZIELSKONTODATUM}.</i></td></tr>
-  <tr valign="top" [TR_ZAHLUNG_RECHNUNG]><td></td><td></td><td><br><i>Variabeln: {ZAHLUNGBISDATUM}, {ZAHLUNGSZIELTAGE}, {ZAHLUNGSZIELSKONTO}, {ZAHLUNGSZIELSKONTOTOTAL}, {ZAHLUNGSZIELTAGESKONTO}, {ZAHLUNGSZIELSKONTODATUM}, {SOLL}, {SOLLMITSKONTO}, {SKONTOBETRAG}, {SKONTOFAEHIG},{SKONTOFAEHIGNETTO}, {BELEGNR}, {NAME}, {STEUERNORMAL}, {GESAMTNETTO}, {GESAMTNETTONORMAL}, {STEUERERMAESSIGT}, {GESAMTNETTOERMAESSIGT}, {WAEHRUNG}</i></td></tr>
-  <tr><td></td><td>Rechnung Zahlungsziel in Tage:</td><td><input type="text" name="zahlungszieltage" size="10" value="[ZAHLUNGSZIELTAGE]"></td></tr>
-  <tr><td></td><td>Skonto in Tage:</td><td><input type="text" name="zahlungszieltageskonto" size="10" value="[ZAHLUNGSZIELTAGESKONTO]"></td></tr>
-  <tr><td></td><td>Skonto in Prozent:</td><td><input type="text" name="zahlungszielskonto" size="10" value="[ZAHLUNGSZIELSKONTO]"></td></tr>
-
-  <tr [TR_ZAHLUNG_VORKASSE]><td><input type="checkbox" name="zahlung_vorkasse" [ZAHLUNG_VORKASSE]></td><td>Vorkasse</td><td></td></tr>
-  <tr  valign="top" [TR_ZAHLUNG_VORKASSE]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_vorkasse_de" data-lang="zahlung_vorkasse_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_VORKASSE_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-  <tr [TR_ZAHLUNG_NACHNAHME]><td><input type="checkbox" name="zahlung_nachnahme" [ZAHLUNG_NACHNAHME]></td><td>Nachnahme</td><td></td></tr>
- <tr valign="top" [TR_ZAHLUNG_NACHNAHME]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_nachnahme_de" data-lang="zahlung_nachnahme_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_NACHNAHME_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-  <tr [TR_ZAHLUNG_LASTSCHRIFT]><td><input type="checkbox" name="zahlung_lastschrift" [ZAHLUNG_LASTSCHRIFT]></td><td>Lastschrift</td><td>
-</td></tr>
- <tr valign="top" [TR_ZAHLUNG_LASTSCHRIFT]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_lastschrift_de" data-lang="zahlung_lastschrift_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_LASTSCHRIFT_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i><!--<br><input type="checkbox" value="1" name="zahlung_lastschrift_konditionen" [ZAHLUNG_LASTSCHRIFT_KONDITIONEN]>&nbsp;Einzugsdatum berechnen anhand Rechnungskonditionen bei Kunden--></td></tr>
-
-  <tr [TR_ZAHLUNG_BAR]><td><input type="checkbox" name="zahlung_bar" [ZAHLUNG_BAR]></td><td>Barzahlung</td><td></td></tr>
-<tr valign="top" [TR_ZAHLUNG_BAR]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_bar_de" data-lang="zahlung_bar_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_BAR_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-  <tr [TR_ZAHLUNG_PAYPAL]><td><input type="checkbox" name="zahlung_paypal" [ZAHLUNG_PAYPAL]></td><td>Paypal</td><td></td></tr>
-<tr  valign="top" [TR_ZAHLUNG_PAYPAL]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_paypal_de" data-lang="zahlung_paypal_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_PAYPAL_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-  <tr [TR_ZAHLUNG_KREDITKARTE]><td><input type="checkbox" name="zahlung_kreditkarte" [ZAHLUNG_KREDITKARTE]></td><td>Kreditkarte</td><td></td></tr>
-<tr  valign="top" [TR_ZAHLUNG_KREDITKARTE]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_kreditkarte_de" data-lang="zahlung_kreditkarte_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_KREDITKARTE_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-  <tr [TR_ZAHLUNG_AMAZON]><td><input type="checkbox" name="zahlung_amazon" [ZAHLUNG_AMAZON]></td><td>Amazon Payments</td><td></td></tr>
-<tr  valign="top" [TR_ZAHLUNG_AMAZON]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_amazon_de" data-lang="zahlung_amazon_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_AMAZON_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-  <tr [TRZAHLUNG_AMAZON_BESTELLUNG]><td><input type="checkbox" name="zahlung_amazon_bestellung" [ZAHLUNG_AMAZON_BESTELLUNG]></td><td>Amazon Bestellung</td><td></td></tr>
-<tr  valign="top" [TRZAHLUNG_AMAZON_BESTELLUNG]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_amazon_bestellung_de" data-lang="zahlung_amazon_bestellung_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_AMAZON_BESTELLUNG_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-
-  <tr [TRZAHLUNG_SECUPAY]><td><input type="checkbox" name="zahlung_secupay" [ZAHLUNG_SECUPAY]></td><td>Secupay</td><td></td></tr>
-<tr  valign="top" [TRZAHLUNG_SECUPAY]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_secupay_de" data-lang="zahlung_secupay_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_SECUPAY_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-
-  <tr [TRZAHLUNG_SOFORTUEBERWEISUNG]><td><input type="checkbox" name="zahlung_sofortueberweisung" [ZAHLUNG_SOFORTUEBERWEISUNG]></td><td>Sofort&uuml;berweisung</td><td></td></tr>
-<tr  valign="top" [TRZAHLUNG_SOFORTUEBERWEISUNG]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_sofortueberweisung_de" data-lang="zahlung_sofortueberweisung_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_SOFORTUEBERWEISUNG_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-
-  <tr [TRZAHLUNG_RATENZAHLUNG]><td><input type="checkbox" name="zahlung_ratenzahlung" [ZAHLUNG_RATENZAHLUNG]></td><td>Ratenzahlung</td><td></td></tr>
-<tr  valign="top" [TRZAHLUNG_RATENZAHLUNG]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_ratenzahlung_de" data-lang="zahlung_ratenzahlung_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_RATENZAHLUNG_DE]</textarea><br>
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-  <tr [TRZAHLUNG_ECKARTE]><td><input type="checkbox" name="zahlung_eckarte" [ZAHLUNG_ECKARTE]></td><td>EC-Karte</td><td></td></tr>
-<tr  valign="top" [TRZAHLUNG_ECKARTE]><td></td><td>Zahlungsbedingungen:</td><td><textarea name="zahlung_eckarte_de" data-lang="zahlung_eckarte_de" rows="8" cols="80" style="width:80%">[ZAHLUNG_ECKARTE_DE]</textarea><br />
-<i>Dieser Text erscheint auf dem Angebot, Auftrag und der Rechnung.</i></td></tr>
-
-
-
-</table>
-
-</fieldset>
-
-<br><center><input type="submit" name="submitFirmendaten" onclick="$('#firmendatenform').attr('action','#tabs-7');" value="Speichern"></center>
-</div>
-
 
 <div id="tabs-8">
 [MESSAGE]
