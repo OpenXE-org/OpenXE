@@ -291,7 +291,7 @@ class Seriennummern {
                             adr.name,
                             ".$app->erp->FormatMengeFuerFormular("SUM(menge)").",
                             SUM(COALESCE(menge_nummern,0)),
-                            ".$app->erp->FormatMengeFuerFormular("if(SUM(menge)>SUM(COALESCE(menge_nummern,0)),SUM(menge)-SUM(COALESCE(menge_nummern,0)),0)").",
+                            ".$app->erp->FormatMengeFuerFormular("SUM(GREATEST(lp.menge-COALESCE(sbp.menge_nummern,0),0))").",
                             ".$app->erp->ConcatSQL($menu_link).",
                             l.id";
                 $sql_tables = "
@@ -1114,10 +1114,10 @@ class Seriennummern {
                     
                     $menge_lieferschein = array_sum(array_column($check_lieferschein_alle,'menge_lieferschein'));
                     $menge_nummern = array_sum(array_column($check_lieferschein_alle,'menge_nummern'));
-                    $anzahl_fehlt = $menge_lieferschein-$menge_nummern;               
-
-                    if ($anzahl_fehlt < 0) {
-                        $anzahl_fehlt = 0;
+                    // Fehlende Nummern je Position summieren, ueberzaehlige Nummern einer Position gleichen keine fehlenden aus
+                    $anzahl_fehlt = 0;
+                    foreach ($check_lieferschein_alle as $position) {
+                        $anzahl_fehlt += max($position['menge_soll']-$position['menge_nummern'], 0);
                     }
 
                     $this->app->Tpl->Set('ANZBELEG', $menge_lieferschein);        
@@ -1366,6 +1366,7 @@ class Seriennummern {
                     a.nummer artikel_nummer,
                     a.name_de,
                     ".$this->app->erp->FormatMenge('SUM(menge)')." menge_lieferschein,
+                    ".$this->app->erp->FormatMengeFuerFormular('SUM(lp.menge)')." menge_soll,
                     SUM(COALESCE(menge_nummern,0)) menge_nummern
                 FROM
                     lieferschein_position lp                
@@ -1403,7 +1404,8 @@ class Seriennummern {
         ";
 
         if ($only_missing) {
-            $sql .= " HAVING menge_lieferschein <> menge_nummern";
+            // Je Position vergleichen, damit sich fehlende und ueberzaehlige Nummern verschiedener Positionen nicht aufheben
+            $sql .= " HAVING SUM(lp.menge <> COALESCE(slp.menge_nummern,0)) > 0";
         }
 
         $result = $this->app->DB->SelectArr($sql);        
