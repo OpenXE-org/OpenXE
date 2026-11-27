@@ -68,9 +68,11 @@ class Kontoauszuege {
                         FROM
                             konten k
                         LEFT JOIN kontoauszuege ka ON
-                            k.id = ka.konto";                        
+                            k.id = ka.konto
+                            AND ka.buchung >= k.saldo_datum
+                            AND (ka.importfehler IS NULL OR ka.importfehler = 0)";
 
-                $where = " k.aktiv = 1 AND ka.importfehler IS NULL ";
+                $where = " k.aktiv = 1 ";
 
                 // Toggle filters
                 $app->Tpl->Add('JQUERYREADY', "$('#archiv').click( function() { fnFilterColumn1( 0 ); } );");
@@ -156,7 +158,7 @@ class Kontoauszuege {
                 if ($more_data1 == 1) {
                    $subwhere .= "";
                 } else {
-                   $subwhere .= " AND k.importfehler IS NULL ";
+                   $subwhere .= " AND (k.importfehler IS NULL OR k.importfehler = 0) ";
                 }
                 // END Toggle filters
 
