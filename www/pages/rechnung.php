@@ -1388,6 +1388,21 @@ class Rechnung extends GenRechnung
             $positionen[$key]['umsatz_netto_gesamt'] = round($position['umsatz_netto_gesamt'],2);
             $positionen[$key]['umsatz_brutto_gesamt'] = round($position['umsatz_brutto_gesamt'],2);
 
+            // Rabatt je Einheit (Listenpreis - Nettopreis), fuer den Preisnachlass in der XRechnung (BT-147)
+            $positionen[$key]['rabatt_preis'] = round($position['preis']-$position['umsatz_netto_einzeln'],8);
+
+            // Die Einheit (einheit_de der Artikeleinheit) als UN/ECE Rec 20/21 Code, fuer die XRechnung (BT-130).
+            // Ermittlung wie im PDF (Position, sonst Artikel, sonst Standardeinheit). Ohne gueltigen Code: C62 (Stueck)
+            $einheit = trim((string) $position['einheit']);
+            if ($einheit === '' && !empty($position['artikel'])) {
+                $einheit = trim((string) $this->app->DB->Select("SELECT einheit FROM artikel WHERE id = '".(int) $position['artikel']."' LIMIT 1"));
+            }
+            if ($einheit === '') {
+                $einheit = trim((string) $this->app->erp->Firmendaten('artikeleinheit_standard'));
+            }
+            $einheit_code = strtoupper($einheit);
+            $positionen[$key]['einheit_code'] = preg_match('/^[A-Z0-9]{2,3}$/', $einheit_code) ? $einheit_code : 'C62';
+
             $steuern[$steuersatz]['umsatz_netto'] += round($position['umsatz_netto_gesamt'],2);
             $steuern[$steuersatz]['umsatz_brutto'] += round($position['umsatz_brutto_gesamt'],2);
             $steuern[$steuersatz]['prozent'] = $steuersatz;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- OpenXE XRechnung template version 1.4.3 -->
+<!-- OpenXE XRechnung template version 1.4.4 -->
 <ubl:Invoice xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
              xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
              xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
@@ -61,9 +61,11 @@
 {else}
             <cbc:EndpointID schemeID="EM"><![CDATA[{$rechnung.kopf.email}]]></cbc:EndpointID>
 {/if}
+{if $rechnung.kopf.kundennummer}
             <cac:PartyIdentification>
-                <cbc:ID><![CDATA[{$rechnung.kopf.name}]]></cbc:ID>
+                <cbc:ID><![CDATA[{$rechnung.kopf.kundennummer}]]></cbc:ID>
             </cac:PartyIdentification>
+{/if}
             <cac:PostalAddress>
                 <cbc:StreetName><![CDATA[{$rechnung.kopf.strasse}]]></cbc:StreetName>
                 <cbc:CityName><![CDATA[{$rechnung.kopf.ort}]]></cbc:CityName>
@@ -75,6 +77,11 @@
             <cac:PartyLegalEntity>
                 <cbc:RegistrationName><![CDATA[{$rechnung.kopf.name}]]></cbc:RegistrationName>
             </cac:PartyLegalEntity>
+{if $rechnung.kopf.ansprechpartner}
+            <cac:Contact>
+                <cbc:Name><![CDATA[{$rechnung.kopf.ansprechpartner}]]></cbc:Name>
+            </cac:Contact>
+{/if}
         </cac:Party>
     </cac:AccountingCustomerParty>
 {if $rechnung.lieferschein}
@@ -141,7 +148,7 @@
 {if $position.beschreibung}        
         <cbc:Note><![CDATA[{$position.beschreibung}]]></cbc:Note>
 {/if}
-        <cbc:InvoicedQuantity unitCode="XPP">{$position.menge}</cbc:InvoicedQuantity>
+        <cbc:InvoicedQuantity unitCode="{$position.einheit_code}">{$position.menge}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_gesamt|string_format:"%.2f"}</cbc:LineExtensionAmount>
 <!--         <cac:InvoicePeriod>
             <cbc:StartDate>2016-01-01</cbc:StartDate>
@@ -171,6 +178,13 @@
         </cac:Item>
         <cac:Price>
             <cbc:PriceAmount currencyID="{$rechnung.kopf.waehrung}">{$position.umsatz_netto_einzeln}</cbc:PriceAmount>
+{if $position.rabatt_preis > 0}
+            <cac:AllowanceCharge>
+                <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
+                <cbc:Amount currencyID="{$rechnung.kopf.waehrung}">{$position.rabatt_preis}</cbc:Amount>
+                <cbc:BaseAmount currencyID="{$rechnung.kopf.waehrung}">{$position.preis}</cbc:BaseAmount>
+            </cac:AllowanceCharge>
+{/if}
         </cac:Price>
     </cac:InvoiceLine>
 {/foreach}
