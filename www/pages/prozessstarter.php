@@ -154,11 +154,11 @@ class Prozessstarter extends GenProzessstarter {
    */
   public function __construct($app, $intern = false) {
     $this->app=$app;
+    // Der Logger wird auch benoetigt, wenn das Modul intern (z.B. vom Cronjob ueber starter2.php) geladen wird
+    $this->logger = $this->app->Container->get('Logger');
     if($intern) {
       return;
     }
-
-    $this->logger = $this->app->Container->get('Logger');
 
     $this->app->ActionHandlerInit($this);
 
