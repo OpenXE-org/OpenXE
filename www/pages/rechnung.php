@@ -1376,6 +1376,39 @@ class Rechnung extends GenRechnung
             throw new exception("Rechnung enthält keine Positionen!");
         }
 
+        // Positionen weglassen, die im PDF ausgeblendet sind, wie in RechnungPDF::GetRechnung (class.rechnung.php):
+        // Positionen mit ausblenden_im_pdf und Teile einer Stueckliste, deren Artikel keineeinzelartikelanzeigen hat
+        // (rekursiv fuer verschachtelte Stuecklisten).
+        // Das PDF rechnet ihre Betraege trotzdem in die Summen ein, daher bleibt eine ausgeblendete Position mit Betrag
+        // erhalten, sonst passen die Positionsbetraege nicht mehr zu den Summen (EN 16931 BR-CO-10, BR-S-08).
+        // Das passiert vor dem Sammeln der Steuersaetze, damit es zu jedem Steuersatz eine Position gibt (BR-S-08).
+        $sichtbare_positionen = [];
+        $ausgeblendete_artikel = [];
+        $keineeinzelartikelanzeigen = [];
+        foreach ($positionen as $position) {
+            $ausblenden = false;
+            $parent_artikel = (int) $position['explodiert_parent_artikel'];
+            if ($parent_artikel > 0) {
+                if (!isset($keineeinzelartikelanzeigen[$parent_artikel])) {
+                    $keineeinzelartikelanzeigen[$parent_artikel] = (bool) $this->app->DB->Select("SELECT keineeinzelartikelanzeigen FROM artikel WHERE id = $parent_artikel LIMIT 1");
+                }
+                $ausblenden = $keineeinzelartikelanzeigen[$parent_artikel] || in_array($parent_artikel, $ausgeblendete_artikel);
+                if ($ausblenden) {
+                    $ausgeblendete_artikel[] = (int) $position['artikel'];
+                }
+            }
+            if ($position['ausblenden_im_pdf']) {
+                $ausblenden = true;
+            }
+            if (!$ausblenden || round($position['umsatz_netto_gesamt'], 2) != 0) {
+                $sichtbare_positionen[] = $position;
+            }
+        }
+        // Eine Rechnung braucht mindestens eine Position (EN 16931 BR-16)
+        if (!empty($sichtbare_positionen)) {
+            $positionen = $sichtbare_positionen;
+        }
+
         $steuern = Array();
         $steuer_gesamt = 0;
         $umsatz_brutto_gesamt = 0;
@@ -1413,6 +1446,14 @@ class Rechnung extends GenRechnung
 
         $this->remove_html_entities_from_array($result);
         $this->remove_CDATA_fragments_from_array($result);
+
+        // Eine Beschreibung nur aus Leerzeichen (z.B. ein dekodiertes &nbsp;) ergibt leere
+        // Note/Description-Elemente (PEPPOL-EN16931-R008)
+        foreach ($result['positionen'] as $key => $position) {
+            $beschreibung = (string) $position['beschreibung'];
+            $trimmed = preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $beschreibung);
+            $result['positionen'][$key]['beschreibung'] = ($trimmed === null) ? trim($beschreibung) : $trimmed;
+        }
 
         if ($json) {
             $headers[] = 'Content-type:text/plain';
