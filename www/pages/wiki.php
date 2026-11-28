@@ -953,7 +953,17 @@ class Wiki {
     $workspacefolder = $this->app->Secure->GetGET('workspacefolder', 'nothtml','', true);
     $article = $this->app->Secure->GetGET('article', 'nothtml','', true);
     $fileid = $this->app->Secure->GetGET('fileid', 'nothtml','', true);
-    $path = $this->getUserDataFolder().$workspacefolder.'/files/'.$article.'/'.$fileid;
+    $baseFolder = $this->getUserDataFolder();
+    $path = $baseFolder.$workspacefolder.'/files/'.$article.'/'.$fileid;
+    $realBase = realpath($baseFolder);
+    $realPath = realpath($path);
+    if($realBase === false || $realPath === false || strncmp($realPath, $realBase.DIRECTORY_SEPARATOR, strlen($realBase.DIRECTORY_SEPARATOR)) !== 0) {
+      if($exit) {
+        exit;
+      }
+      $this->app->ExitXentral();
+      return;
+    }
     $name = $article;
     if(is_file($path)) {
       if ( strpos ( $_SERVER [ 'HTTP_USER_AGENT' ], "MSIE" ) > 0 )
